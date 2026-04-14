@@ -9,7 +9,7 @@
     "runtime": "NestJS 11 (TypeScript 5.7)",
     "database": "PostgreSQL (Supabase) + pgvector",
     "orm": "Prisma 7 + PrismaPg adapter + pg Pool",
-    "auth": "Supabase Auth + Passport JWT (supabase-jwt strategy)",
+    "auth": "Supabase Auth Native SDK Edge Validation (getUser)",
     "ai": "OpenAI API (gpt-4o-mini default)",
     "validation": "class-validator (DTO) + Joi (env)",
     "api_docs": "Swagger (@nestjs/swagger)",
@@ -41,8 +41,8 @@
     "last_verified_sha": "421a13d"
   },
   "auth_flow": {
-    "strategy": "supabase-jwt (Passport)",
-    "jwt_source": "Supabase Auth (HS256, anon key as secret)",
+    "strategy": "SupabaseAuthGuard (Native SDK)",
+    "jwt_source": "Supabase Auth (ECC P-256 via SDK Edge)",
     "auto_register": "JWT validate -> find Seller by auth_id -> create if not exist",
     "request_user_shape": "{ authId: string, email: string, sellerId: string }",
     "guards": [
@@ -51,7 +51,6 @@
     ],
     "decorator": "@CurrentUser() extracts AuthenticatedUser from request.user",
     "source_files": [
-      "src/auth/strategies/supabase-jwt.strategy.ts",
       "src/common/guards/auth.guard.ts",
       "src/common/guards/tenant.guard.ts",
       "src/common/decorators/current-user.decorator.ts",
