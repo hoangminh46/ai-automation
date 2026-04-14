@@ -1,0 +1,29 @@
+{
+  "handoffs": [
+    {
+      "id": "handoff-20260414-172000",
+      "saved_at": "2026-04-14T17:20:00+07:00",
+      "branch": "main",
+      "head_sha": "6aaee7e1edeede767b6784966f1f1f601411acb2",
+      "base_sha": "initial",
+      "source": "commit",
+      "commit_range": "initial..6aaee7e",
+      "summary": "Hoàn thành SPRINT 2 (Authentication & Tenant Onboarding). Cấu trúc lại AuthGuard Supabase backend. Tích hợp Zustand và Next.js loading ở FE.",
+      "project_changes": [
+        "Hoàn tất cấu hình API Route Auth Callback ở FE.",
+        "Xoá Passport-JWT, thay thế bằng Supabase Edge validation ở Backend (AuthGuard).",
+        "Triển khai Tenant Store (Zustand) tự động load & tự sinh Slug."
+      ],
+      "commits": ["6aaee7e"],
+      "working_tree": {},
+      "decisions": [
+        "Không dùng PassportModule để chứng thực JWT Supabase nữa, mà dùng thư viện API SDK của Supabase trực tiếp do nó bắt buộc chuẩn ECC P-256.",
+        "Thiết kế Frontend Store với Zustand và chia nhỏ Loading UI chuẩn SSR."
+      ],
+      "next_steps": [
+        "Chuyển sang Sprint 3: Tạo UI Danh sách Agent/Bot và kết nối DTO tạo bot."
+      ],
+      "open_questions": []
+    }
+  ]
+}

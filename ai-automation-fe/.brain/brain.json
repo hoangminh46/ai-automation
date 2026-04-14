@@ -1,0 +1,24 @@
+{
+  "project_name": "ai-automation-fe",
+  "tech_stack": {
+    "frontend": "Next.js 16 (App Router), React 19, Tailwind CSS v4, Zustand, Supabase SSR"
+  },
+  "database_schema": {
+    "tenant": "Cửa hàng độc lập thuộc về seller",
+    "agent": "Binh đoàn Bot được cấu hình theo từng cửa hàng"
+  },
+  "api_endpoints": {
+    "POST /tenants": "Tạo Tenant (Yêu cầu nhận Name và Slug tự tạo từ FE)",
+    "GET /tenants": "Lấy danh sách cho activeTenant dropdown"
+  },
+  "features": [
+    "Authentication (Hoàn thành)",
+    "Tenant Onboarding (Hoàn thành)",
+    "Agent Config (Sắp triển khai)"
+  ],
+  "business_rules": [
+    "Mỗi Cửa Hàng (Tenant) phải có một Slug đơn nhất (Unique). Frontend tự động convert name thành slug gọi service REST API.",
+    "Frontend phải dùng Selectors của Zustand để Next.js SSR Layout re-render ổn định.",
+    "Bảo vệ Route Dashboard bằng tệp Middleware.ts gọi createServerClient."
+  ]
+}

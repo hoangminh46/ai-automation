@@ -1,0 +1,41 @@
+{
+  "updated_at": "2026-04-14T17:20:00+07:00",
+  "current_branch": "main",
+  "active_handoff_id": "handoff-20260414-172000",
+  "working_on": {
+    "module": "tenant",
+    "description": "Tenant Onboarding & Settings finished. Sprint 1 & 2 done."
+  },
+  "git_snapshot": {
+    "head_sha": "6aaee7e1edeede767b6784966f1f1f601411acb2",
+    "last_saved_head_sha": "initial-save",
+    "base_sha": "6aaee7e1edeede767b6784966f1f1f601411acb2",
+    "branch": "main",
+    "has_uncommitted_changes": false,
+    "changed_files": [],
+    "staged_files": [],
+    "unstaged_files": [],
+    "untracked_files": [],
+    "commit_range": "initial-save..6aaee7e",
+    "commits_since_last_save": [
+      {
+        "sha": "6aaee7e",
+        "message": "feat(sprint-2): Hoàn tất Auth, Tenant Onboarding, Zustand Store, Nextjs Loading"
+      }
+    ]
+  },
+  "pending_tasks": [
+    "Sprint 3: Quản lý Bot (Agent & Config) - Phase 04A (Agent List UI)"
+  ],
+  "recent_changes": [
+    "Khởi tạo Backend Auth Guard gọi thẳng Supabase Edge SDK.",
+    "Khởi tạo Frontend Tenant Onboarding, Middleware Router.",
+    "Hook Zustand cho activeTenant với re-render selector tối ưu.",
+    "Tạo Global Next.js Loader UI (loading.tsx) và LoadingScreen."
+  ],
+  "uncommitted_summary": {
+    "status": "clean",
+    "summary": "Working tree is completely clean.",
+    "files": []
+  }
+}
