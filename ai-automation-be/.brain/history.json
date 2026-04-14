@@ -10,40 +10,61 @@
       "commit_range": "initial-save",
       "summary": "Initial brain save. Phase 01 + 02 committed. Phase 03 code complete but uncommitted.",
       "project_changes": [
-        "Phase 01: NestJS project init, Prisma, Supabase config, env validation (commit 750efb7)",
-        "Phase 02: Database schema (11 tables), Supabase JWT auth, guards, decorators (commit b96af61)",
-        "Phase 03: Tenant + Agent CRUD modules with RBAC (uncommitted, 27 files changed/added)"
+        "Phase 01: NestJS project init, Prisma, Supabase config (750efb7)",
+        "Phase 02: Database schema (11 tables), Supabase JWT auth (b96af61)",
+        "Phase 03: Tenant + Agent CRUD with RBAC (uncommitted)"
       ],
       "commits": [
         { "sha": "750efb7", "message": "chore: init monorepo - AI Automation Suite" },
         { "sha": "b96af61", "message": "feat(be): Phase 02 - Database schema, Prisma, Auth module" }
       ],
       "working_tree": {
-        "summary": "Phase 03 fully implemented and reviewed. 14 new files (Tenant + Agent modules), 13 modified files (schema updates, guard refactor, auth fixes).",
-        "key_files": [
-          "src/modules/tenant/ (module, controller, service, DTOs)",
-          "src/modules/agent/ (module, controller, service, DTOs)",
-          "src/common/guards/tenant.guard.ts (RBAC via TenantMember)",
-          "prisma/schema.prisma (TenantMember, TOOL role, HNSW)"
-        ]
+        "summary": "Phase 03 fully implemented. 14 new files, 13 modified.",
+        "key_files": ["src/modules/tenant/", "src/modules/agent/", "src/common/guards/tenant.guard.ts"]
       },
       "decisions": [
-        "Use sellerId (not authId/sub) as the identity key for all service layer queries",
-        "AuthenticatedUser.sellerId is required (not optional) because Strategy always auto-creates Seller",
-        "Controllers use inline type { sellerId: string } instead of AuthenticatedUser interface (TS isolatedModules constraint)",
-        "TenantGuard attaches both tenant and membership to request for downstream use",
-        "AgentService has its own verifyTenantAccess (defense in depth, checks isActive)",
+        "Use sellerId (not authId/sub) as identity key for service queries",
+        "AuthenticatedUser.sellerId is required (Strategy always auto-creates Seller)",
+        "Controllers use inline type { sellerId: string } (TS isolatedModules constraint)",
+        "TenantGuard attaches tenant + membership to request",
         "Nested REST routes: /tenants/:tenantId/agents"
       ],
+      "next_steps": ["Commit Phase 03", "Start Phase 04 LLM Integration"],
+      "open_questions": ["Tenant.settings DTO timing", "HNSW index manual migration"]
+    },
+    {
+      "id": "handoff-20260414-144100",
+      "saved_at": "2026-04-14T14:41:00+07:00",
+      "branch": "main",
+      "head_sha": "421a13d06fe0cbb7a4dd32c8440aa4314329b1e9",
+      "base_sha": "b96af61c86d1084e51b07c330ef275fd113c88cb",
+      "source": "commit",
+      "commit_range": "b96af61..421a13d",
+      "summary": "Phase 03 committed. Working tree clean. Brain files included in commit for cross-machine portability.",
+      "project_changes": [
+        "Phase 03 committed: Tenant + Agent CRUD, RBAC, DTOs, Guards (421a13d)",
+        "Project knowledge base doc created in docs/",
+        "Brain files (.brain/) added to repo for portability"
+      ],
+      "commits": [
+        { "sha": "421a13d", "message": "feat(be): Phase 03 - Tenant & Agent CRUD with RBAC" }
+      ],
+      "working_tree": {
+        "summary": "Clean. No uncommitted changes.",
+        "key_files": []
+      },
+      "decisions": [
+        "Brain files committed to Git for cross-machine usage",
+        "Branch renamed from master to main"
+      ],
       "next_steps": [
-        "git add + commit Phase 03 changes",
-        "Start Phase 04: LLM Integration (OpenAI chat completion)",
-        "Clean up empty scaffolding dirs (src/tenant/, src/agent/)",
-        "Tenant.settings column exists in DB but needs DTO exposure in future phase"
+        "Phase 04: LLM Integration (OpenAI chat completion)",
+        "Phase 05: Agent Pipeline Core",
+        "Clean up empty scaffolding dirs"
       ],
       "open_questions": [
-        "Should settings DTO be added in Phase 10 (Self-serve API) or earlier?",
-        "HNSW index needs manual SQL migration (Prisma db push doesn't support it)"
+        "Tenant.settings DTO - add in Phase 10 or earlier?",
+        "HNSW index needs manual SQL (Prisma db push does not support)"
       ]
     }
   ]

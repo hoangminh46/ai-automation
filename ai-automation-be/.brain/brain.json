@@ -1,7 +1,7 @@
 {
   "project": {
     "name": "AI Chatbot Backend",
-    "description": "AI Chatbot backend cho seller TMÐT Vi?t Nam. Multi-tenant, RAG-based, NestJS standalone service.",
+    "description": "AI Chatbot backend cho seller TMDT Viet Nam. Multi-tenant, RAG-based, NestJS standalone service.",
     "repository": "ai-automation/ai-automation-be",
     "created_at": "2026-04-13"
   },
@@ -15,7 +15,7 @@
     "api_docs": "Swagger (@nestjs/swagger)",
     "security": "Helmet, CORS",
     "dependencies_source": "package.json",
-    "last_verified_sha": "b96af61"
+    "last_verified_sha": "421a13d"
   },
   "database_schema": {
     "tables": [
@@ -38,7 +38,7 @@
       "KnowledgeDocument -> KnowledgeChunk": "1:N (with pgvector embedding)"
     },
     "source_file": "prisma/schema.prisma",
-    "last_verified_sha": "b96af61"
+    "last_verified_sha": "421a13d"
   },
   "auth_flow": {
     "strategy": "supabase-jwt (Passport)",
@@ -57,7 +57,7 @@
       "src/common/decorators/current-user.decorator.ts",
       "src/auth/interfaces/auth.interfaces.ts"
     ],
-    "last_verified_sha": "b96af61"
+    "last_verified_sha": "421a13d"
   },
   "api_endpoints": [
     { "method": "POST", "path": "/tenants", "module": "tenant", "auth": "JWT", "permission": "any authenticated" },
@@ -73,7 +73,7 @@
   "features": {
     "phase_01_project_init": { "status": "done", "last_changed_sha": "750efb7" },
     "phase_02_db_auth": { "status": "done", "last_changed_sha": "b96af61" },
-    "phase_03_tenant_agent_crud": { "status": "done_uncommitted", "note": "Code complete, reviewed, TSC+ESLint pass. Awaiting commit." },
+    "phase_03_tenant_agent_crud": { "status": "done", "last_changed_sha": "421a13d" },
     "phase_04_llm_integration": { "status": "not_started" },
     "phase_05_agent_pipeline": { "status": "not_started" },
     "phase_06_conversation_memory": { "status": "not_started" },
@@ -84,7 +84,7 @@
     "phase_11_testing": { "status": "not_started" }
   },
   "business_rules": [
-    "T?o Tenant -> auto-create OWNER TenantMember + default Agent (transaction)",
+    "Tao Tenant -> auto-create OWNER TenantMember + default Agent (transaction)",
     "Slug unique, lowercase+numbers+hyphens only",
     "RBAC: OWNER > ADMIN > AGENT",
     "AGENT role cannot create/edit/delete bots",
