@@ -1,0 +1,110 @@
+{
+  "project": {
+    "name": "AI Chatbot Backend",
+    "description": "AI Chatbot backend cho seller TMÐT Vi?t Nam. Multi-tenant, RAG-based, NestJS standalone service.",
+    "repository": "ai-automation/ai-automation-be",
+    "created_at": "2026-04-13"
+  },
+  "tech_stack": {
+    "runtime": "NestJS 11 (TypeScript 5.7)",
+    "database": "PostgreSQL (Supabase) + pgvector",
+    "orm": "Prisma 7 + PrismaPg adapter + pg Pool",
+    "auth": "Supabase Auth + Passport JWT (supabase-jwt strategy)",
+    "ai": "OpenAI API (gpt-4o-mini default)",
+    "validation": "class-validator (DTO) + Joi (env)",
+    "api_docs": "Swagger (@nestjs/swagger)",
+    "security": "Helmet, CORS",
+    "dependencies_source": "package.json",
+    "last_verified_sha": "b96af61"
+  },
+  "database_schema": {
+    "tables": [
+      "sellers", "tenants", "tenant_members", "agents", "agent_tools",
+      "channel_connections", "knowledge_documents", "knowledge_chunks",
+      "customers", "conversations", "messages"
+    ],
+    "enums": ["TenantRole", "ChannelType", "DocumentStatus", "MessageRole", "ConversationStatus"],
+    "key_relations": {
+      "Seller -> Tenant": "1:N (seller_id FK, owner who created)",
+      "Seller -> TenantMember": "1:N (RBAC membership)",
+      "Tenant -> TenantMember": "1:N (staff of shop)",
+      "Tenant -> Agent": "1:N (AI bots per shop)",
+      "Agent -> AgentTool": "1:N (function calling tools)",
+      "Tenant -> Conversation": "1:N",
+      "Agent -> Conversation": "1:N",
+      "Customer -> Conversation": "1:N",
+      "Conversation -> Message": "1:N",
+      "Tenant -> KnowledgeDocument": "1:N",
+      "KnowledgeDocument -> KnowledgeChunk": "1:N (with pgvector embedding)"
+    },
+    "source_file": "prisma/schema.prisma",
+    "last_verified_sha": "b96af61"
+  },
+  "auth_flow": {
+    "strategy": "supabase-jwt (Passport)",
+    "jwt_source": "Supabase Auth (HS256, anon key as secret)",
+    "auto_register": "JWT validate -> find Seller by auth_id -> create if not exist",
+    "request_user_shape": "{ authId: string, email: string, sellerId: string }",
+    "guards": [
+      "SupabaseAuthGuard (verify JWT, populate request.user)",
+      "TenantGuard (verify TenantMember by sellerId + tenantId + isActive)"
+    ],
+    "decorator": "@CurrentUser() extracts AuthenticatedUser from request.user",
+    "source_files": [
+      "src/auth/strategies/supabase-jwt.strategy.ts",
+      "src/common/guards/auth.guard.ts",
+      "src/common/guards/tenant.guard.ts",
+      "src/common/decorators/current-user.decorator.ts",
+      "src/auth/interfaces/auth.interfaces.ts"
+    ],
+    "last_verified_sha": "b96af61"
+  },
+  "api_endpoints": [
+    { "method": "POST", "path": "/tenants", "module": "tenant", "auth": "JWT", "permission": "any authenticated" },
+    { "method": "GET", "path": "/tenants", "module": "tenant", "auth": "JWT", "permission": "any authenticated" },
+    { "method": "GET", "path": "/tenants/:id", "module": "tenant", "auth": "JWT+TenantGuard", "permission": "member" },
+    { "method": "PATCH", "path": "/tenants/:id", "module": "tenant", "auth": "JWT+TenantGuard", "permission": "OWNER/ADMIN" },
+    { "method": "POST", "path": "/tenants/:tenantId/agents", "module": "agent", "auth": "JWT+TenantGuard", "permission": "OWNER/ADMIN" },
+    { "method": "GET", "path": "/tenants/:tenantId/agents", "module": "agent", "auth": "JWT+TenantGuard", "permission": "member" },
+    { "method": "GET", "path": "/tenants/:tenantId/agents/:id", "module": "agent", "auth": "JWT+TenantGuard", "permission": "member" },
+    { "method": "PATCH", "path": "/tenants/:tenantId/agents/:id", "module": "agent", "auth": "JWT+TenantGuard", "permission": "OWNER/ADMIN" },
+    { "method": "DELETE", "path": "/tenants/:tenantId/agents/:id", "module": "agent", "auth": "JWT+TenantGuard", "permission": "OWNER/ADMIN" }
+  ],
+  "features": {
+    "phase_01_project_init": { "status": "done", "last_changed_sha": "750efb7" },
+    "phase_02_db_auth": { "status": "done", "last_changed_sha": "b96af61" },
+    "phase_03_tenant_agent_crud": { "status": "done_uncommitted", "note": "Code complete, reviewed, TSC+ESLint pass. Awaiting commit." },
+    "phase_04_llm_integration": { "status": "not_started" },
+    "phase_05_agent_pipeline": { "status": "not_started" },
+    "phase_06_conversation_memory": { "status": "not_started" },
+    "phase_07_knowledge_upload": { "status": "not_started" },
+    "phase_08_knowledge_rag": { "status": "not_started" },
+    "phase_09_facebook_messenger": { "status": "not_started" },
+    "phase_10_selfserve_polish": { "status": "not_started" },
+    "phase_11_testing": { "status": "not_started" }
+  },
+  "business_rules": [
+    "T?o Tenant -> auto-create OWNER TenantMember + default Agent (transaction)",
+    "Slug unique, lowercase+numbers+hyphens only",
+    "RBAC: OWNER > ADMIN > AGENT",
+    "AGENT role cannot create/edit/delete bots",
+    "Only OWNER/ADMIN can delete bots",
+    "Only OWNER/ADMIN can edit tenant info",
+    "TenantGuard checks isActive on TenantMember",
+    "ValidationPipe: whitelist=true, forbidNonWhitelisted=true",
+    "Supabase port 6543 (pooler) for runtime, 5432 (direct) for migrations"
+  ],
+  "coding_conventions": [
+    "Import paths use .js extension (ESM compat)",
+    "Controller user type: inline { sellerId: string } (not AuthenticatedUser interface, due to isolatedModules+emitDecoratorMetadata)",
+    "Services receive sellerId as first param",
+    "Nested resources: /tenants/:tenantId/agents",
+    "DTOs use class-validator decorators + @nestjs/swagger ApiProperty",
+    "UpdateDto extends PartialType(CreateDto)",
+    "PrismaService is @Global() via CommonModule"
+  ],
+  "known_issues": [
+    "src/tenant/ and src/agent/ (root level) are empty scaffolding dirs, real code is in src/modules/",
+    "Tenant.settings column exists in DB but no DTO exposes it yet"
+  ]
+}

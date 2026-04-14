@@ -10,5 +10,5 @@ export interface JwtPayload {
 export interface AuthenticatedUser {
   authId: string;
   email: string;
-  sellerId?: string;
+  sellerId: string;
 }

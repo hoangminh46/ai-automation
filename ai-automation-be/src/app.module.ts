@@ -10,13 +10,21 @@ import {
 } from './config/index.js';
 import { CommonModule } from './common/common.module.js';
 import { AuthModule } from './auth/auth.module.js';
+import { TenantModule } from './modules/tenant/tenant.module.js';
+import { AgentModule } from './modules/agent/agent.module.js';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: envValidationSchema,
-      load: [appConfig, databaseConfig, supabaseConfig, openaiConfig, facebookConfig],
+      load: [
+        appConfig,
+        databaseConfig,
+        supabaseConfig,
+        openaiConfig,
+        facebookConfig,
+      ],
       validationOptions: {
         abortEarly: true,
         allowUnknown: true,
@@ -24,6 +32,8 @@ import { AuthModule } from './auth/auth.module.js';
     }),
     CommonModule,
     AuthModule,
+    TenantModule,
+    AgentModule,
   ],
 })
 export class AppModule {}

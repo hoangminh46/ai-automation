@@ -1,0 +1,50 @@
+{
+  "entries": [
+    {
+      "id": "handoff-20260414-143400",
+      "saved_at": "2026-04-14T14:34:00+07:00",
+      "branch": "master",
+      "head_sha": "b96af61c86d1084e51b07c330ef275fd113c88cb",
+      "base_sha": null,
+      "source": "mixed",
+      "commit_range": "initial-save",
+      "summary": "Initial brain save. Phase 01 + 02 committed. Phase 03 code complete but uncommitted.",
+      "project_changes": [
+        "Phase 01: NestJS project init, Prisma, Supabase config, env validation (commit 750efb7)",
+        "Phase 02: Database schema (11 tables), Supabase JWT auth, guards, decorators (commit b96af61)",
+        "Phase 03: Tenant + Agent CRUD modules with RBAC (uncommitted, 27 files changed/added)"
+      ],
+      "commits": [
+        { "sha": "750efb7", "message": "chore: init monorepo - AI Automation Suite" },
+        { "sha": "b96af61", "message": "feat(be): Phase 02 - Database schema, Prisma, Auth module" }
+      ],
+      "working_tree": {
+        "summary": "Phase 03 fully implemented and reviewed. 14 new files (Tenant + Agent modules), 13 modified files (schema updates, guard refactor, auth fixes).",
+        "key_files": [
+          "src/modules/tenant/ (module, controller, service, DTOs)",
+          "src/modules/agent/ (module, controller, service, DTOs)",
+          "src/common/guards/tenant.guard.ts (RBAC via TenantMember)",
+          "prisma/schema.prisma (TenantMember, TOOL role, HNSW)"
+        ]
+      },
+      "decisions": [
+        "Use sellerId (not authId/sub) as the identity key for all service layer queries",
+        "AuthenticatedUser.sellerId is required (not optional) because Strategy always auto-creates Seller",
+        "Controllers use inline type { sellerId: string } instead of AuthenticatedUser interface (TS isolatedModules constraint)",
+        "TenantGuard attaches both tenant and membership to request for downstream use",
+        "AgentService has its own verifyTenantAccess (defense in depth, checks isActive)",
+        "Nested REST routes: /tenants/:tenantId/agents"
+      ],
+      "next_steps": [
+        "git add + commit Phase 03 changes",
+        "Start Phase 04: LLM Integration (OpenAI chat completion)",
+        "Clean up empty scaffolding dirs (src/tenant/, src/agent/)",
+        "Tenant.settings column exists in DB but needs DTO exposure in future phase"
+      ],
+      "open_questions": [
+        "Should settings DTO be added in Phase 10 (Self-serve API) or earlier?",
+        "HNSW index needs manual SQL migration (Prisma db push doesn't support it)"
+      ]
+    }
+  ]
+}

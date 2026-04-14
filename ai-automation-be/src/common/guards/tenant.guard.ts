@@ -6,7 +6,13 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service.js';
-import { AuthenticatedUser } from '../../auth/interfaces/auth.interfaces.js';
+
+interface RequestWithTenant {
+  user?: { sellerId?: string };
+  params: { tenantId?: string; id?: string };
+  tenant?: unknown;
+  membership?: unknown;
+}
 
 @Injectable()
 export class TenantGuard implements CanActivate {
@@ -15,9 +21,9 @@ export class TenantGuard implements CanActivate {
   constructor(private readonly prisma: PrismaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-    const user = request.user as AuthenticatedUser;
-    const tenantId = request.params.tenantId;
+    const request = context.switchToHttp().getRequest<RequestWithTenant>();
+    const user = request.user;
+    const tenantId = request.params.tenantId || request.params.id;
 
     if (!tenantId) {
       return true;
@@ -26,23 +32,30 @@ export class TenantGuard implements CanActivate {
     if (!user?.sellerId) {
       throw new ForbiddenException('User not authenticated');
     }
+    const sellerId = user.sellerId;
 
-    const tenant = await this.prisma.tenant.findFirst({
+    const membership = await this.prisma.tenantMember.findFirst({
       where: {
-        id: tenantId,
-        sellerId: user.sellerId,
+        tenantId,
+        sellerId,
+        isActive: true,
+      },
+      include: {
+        tenant: true,
       },
     });
 
-    if (!tenant) {
+    if (!membership) {
       this.logger.warn(
-        `Seller ${user.sellerId} tried to access tenant ${tenantId} they don't own`,
+        `Seller ${sellerId} access denied for tenant ${tenantId}`,
       );
       throw new ForbiddenException('You do not have access to this tenant');
     }
 
-    // Attach tenant to request for downstream use
-    request.tenant = tenant;
+    // Attach tenant and membership to request for downstream use
+    request.tenant = membership.tenant;
+    request.membership = membership;
+
     return true;
   }
 }

@@ -16,11 +16,12 @@ async function bootstrap() {
 
   // CORS — allow frontend dev server + production
   app.enableCors({
-    origin: nodeEnv === 'development'
-      ? ['http://localhost:3000', 'http://localhost:3001']
-      : (configService.get<string>('CORS_ORIGINS') || '')
-          .split(',')
-          .filter(Boolean),
+    origin:
+      nodeEnv === 'development'
+        ? ['http://localhost:3000', 'http://localhost:3001']
+        : (configService.get<string>('CORS_ORIGINS') || '')
+            .split(',')
+            .filter(Boolean),
     credentials: true,
   });
 
@@ -37,7 +38,12 @@ async function bootstrap() {
   );
 
   await app.listen(port);
-  logger.log(`🚀 AI Chatbot Service running on http://localhost:${port} [${nodeEnv}]`);
+  logger.log(
+    `🚀 AI Chatbot Service running on http://localhost:${port} [${nodeEnv}]`,
+  );
 }
 
-bootstrap();
+bootstrap().catch((err) => {
+  console.error('Error starting server', err);
+  process.exit(1);
+});

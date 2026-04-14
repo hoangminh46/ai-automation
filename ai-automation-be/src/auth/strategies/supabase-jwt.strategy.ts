@@ -3,10 +3,16 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../common/prisma.service.js';
-import { JwtPayload, AuthenticatedUser } from '../interfaces/auth.interfaces.js';
+import {
+  JwtPayload,
+  AuthenticatedUser,
+} from '../interfaces/auth.interfaces.js';
 
 @Injectable()
-export class SupabaseJwtStrategy extends PassportStrategy(Strategy, 'supabase-jwt') {
+export class SupabaseJwtStrategy extends PassportStrategy(
+  Strategy,
+  'supabase-jwt',
+) {
   private readonly logger = new Logger(SupabaseJwtStrategy.name);
 
   constructor(

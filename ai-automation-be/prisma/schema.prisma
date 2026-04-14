@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
   provider   = "postgresql"
-  extensions = [vector]
+  extensions = [vector, pg_graphql, pg_stat_statements, pgcrypto, supabase_vault, uuid_ossp(map: "uuid-ossp")]
 }
 
 // ============================================
@@ -21,7 +21,9 @@ model Seller {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  tenants Tenant[]
+  tenants           Tenant[]       // Cửa hàng mà Seller đang làm chủ/tạo ra
+  tenantMembers     TenantMember[] // Các cửa hàng mà Seller được mời vào làm nhân sự
+  assignedChats     Conversation[] // Hội thoại được phân công cho nhân sự này (Staff Assignee)
 
   @@map("sellers")
 }
@@ -38,13 +40,43 @@ model Tenant {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   seller             Seller              @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  members            TenantMember[]
   agents             Agent[]
   channelConnections ChannelConnection[]
   knowledgeDocuments KnowledgeDocument[]
   conversations      Conversation[]
+  customers          Customer[]
 
   @@index([sellerId])
   @@map("tenants")
+}
+
+// ============================================
+// Tenant Membership (Phân quyền nhân sự)
+// ============================================
+
+enum TenantRole {
+  OWNER  // Người tạo ra cửa hàng (All permissions)
+  ADMIN  // Quản lý (Chỉnh sửa Bot, xóa dữ liệu)
+  AGENT  // Nhân viên trực page (Chỉ được xem chat và trả lời)
+}
+
+model TenantMember {
+  id        String     @id @default(uuid())
+  tenantId  String     @map("tenant_id")
+  sellerId  String     @map("seller_id")
+  role      TenantRole @default(AGENT)
+  isActive  Boolean    @default(true) @map("is_active")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  seller Seller @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, sellerId]) // Một người chỉ có 1 vai trò duy nhất trong 1 shop
+  @@index([tenantId])
+  @@index([sellerId])
+  @@map("tenant_members")
 }
 
 // ============================================
@@ -66,9 +98,26 @@ model Agent {
 
   tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   conversations Conversation[]
+  tools         AgentTool[]
 
   @@index([tenantId])
   @@map("agents")
+}
+
+model AgentTool {
+  id          String   @id @default(uuid())
+  agentId     String   @map("agent_id")
+  name        String   // Tên của function/tool (vd: check_order_status)
+  description String   // Lời mô tả cho LLM biết tool này dùng để làm gì
+  config      Json     @default("{}") // Cấu hình API, Auth header cho Tool
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([agentId])
+  @@map("agent_tools")
 }
 
 // ============================================
@@ -148,6 +197,33 @@ model KnowledgeChunk {
 }
 
 // ============================================
+// Customer CRM
+// ============================================
+
+model Customer {
+  id             String    @id @default(uuid())
+  tenantId       String    @map("tenant_id")
+  // ID ngoài hệ thống (UID Facebook, ID Zalo, v.v...)
+  externalId     String?   @map("external_id")
+  name           String
+  phone          String?
+  email          String?
+  tags           String[]  @default([])
+  notes          String?
+  hasPurchased   Boolean   @default(false) @map("has_purchased")
+  lastInteracted DateTime? @map("last_interacted")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  conversations Conversation[]
+
+  @@unique([tenantId, externalId])
+  @@index([tenantId])
+  @@map("customers")
+}
+
+// ============================================
 // Conversation & Messages
 // ============================================
 
@@ -155,37 +231,55 @@ enum MessageRole {
   CUSTOMER
   ASSISTANT
   SYSTEM
+  HUMAN_AGENT
+  TOOL // Khi OpenAI thực hiện Tool Call, ứng dụng sẽ gọi API và trả message dạng Tool về
+}
+
+enum ConversationStatus {
+  BOT_HANDLING // Máy tự động chat
+  OPEN         // Nhân sự đang chat/chờ trực
+  SNOOZED      // Tạm hoãn/Đang đợi khách xác nhận
+  RESOLVED     // Đã xử lý xong/Đóng
 }
 
 model Conversation {
-  id                    String   @id @default(uuid())
-  tenantId              String   @map("tenant_id")
-  agentId               String   @map("agent_id")
-  // Channel-specific conversation ID (FB sender_id, etc.)
-  channelConversationId String?  @map("channel_conversation_id")
-  channelType           ChannelType? @map("channel_type")
-  customerName          String?  @map("customer_name")
-  lastMessageAt         DateTime? @map("last_message_at")
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
+  id                    String             @id @default(uuid())
+  tenantId              String             @map("tenant_id")
+  agentId               String             @map("agent_id")
+  customerId            String             @map("customer_id")
+  // Người trực chat (Tham chiếu Seller ID)
+  assigneeId            String?            @map("assignee_id")
+  status                ConversationStatus @default(BOT_HANDLING)
+  channelConversationId String?            @map("channel_conversation_id")
+  channelType           ChannelType?       @map("channel_type")
+  lastMessageAt         DateTime?          @map("last_message_at")
+  createdAt             DateTime           @default(now()) @map("created_at")
+  updatedAt             DateTime           @updatedAt @map("updated_at")
 
   tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   agent    Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  customer Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  assignee Seller?   @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
   messages Message[]
 
   @@unique([tenantId, channelType, channelConversationId])
   @@index([tenantId, lastMessageAt(sort: Desc)])
+  @@index([customerId])
   @@map("conversations")
 }
 
 model Message {
-  id             String      @id @default(uuid())
-  conversationId String      @map("conversation_id")
-  role           MessageRole
-  content        String
-  tokenCount     Int?        @map("token_count")
-  metadata       Json        @default("{}")
-  createdAt      DateTime    @default(now()) @map("created_at")
+  id               String      @id @default(uuid())
+  conversationId   String      @map("conversation_id")
+  role             MessageRole
+  content          String? // Để null vì khách có thể chỉ gửi ảnh mà không gõ chữ
+  attachments      Json        @default("[]") // Danh sách file ảnh/audio đính kèm
+  // Analytics
+  promptTokens     Int?        @map("prompt_tokens")
+  completionTokens Int?        @map("completion_tokens")
+  feedbackScore    Int?        @map("feedback_score") // 1 (Upvote) / -1 (Downvote)
+  metadata         Json        @default("{}") // LLM Logs, function_calls
+  createdAt        DateTime    @default(now()) @map("created_at")
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
