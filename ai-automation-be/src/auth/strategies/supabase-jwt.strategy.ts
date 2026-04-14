@@ -20,12 +20,12 @@ export class SupabaseJwtStrategy extends PassportStrategy(
     private readonly prisma: PrismaService,
   ) {
     const supabaseUrl = configService.get<string>('supabase.url')!;
-    const anonKey = configService.get<string>('supabase.anonKey')!;
 
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       issuer: `${supabaseUrl}/auth/v1`,
-      secretOrKey: anonKey,
+      // FIXED: Phải sử dụng JWT Secret để giải mã thay vì Anon Key
+      secretOrKey: process.env.SUPABASE_JWT_SECRET!,
       algorithms: ['HS256'] as const,
     });
   }
