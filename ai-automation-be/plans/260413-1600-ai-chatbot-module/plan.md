@@ -26,7 +26,7 @@ Module AI Chatbot backend độc lập (NestJS), AI Agent Pipeline lấy cảm h
 | Phase | Name | Tasks | Status |
 |-------|------|-------|--------|
 | 01 | Project Init & Config | 5 | ✅ |
-| 02 | Database Schema & Auth | 7 | ⬜ |
+| 02 | Database Schema & Auth | 7 | ✅ |
 | 03 | Tenant & Agent CRUD | 6 | ⬜ |
 | 04 | LLM Integration | 5 | ⬜ |
 | 05 | Agent Pipeline Core | 7 | ⬜ |
