@@ -6,7 +6,7 @@ import { useTenantStore } from "@/store/tenant-store";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 
 export default function DashboardPage() {
-  const { tenants, activeTenant, isLoading, hasLoaded, fetchTenants, createNewTenant } = useTenantStore();
+  const { tenants, activeTenant, hasLoaded, fetchTenants, createNewTenant } = useTenantStore();
   const [shopName, setShopName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
