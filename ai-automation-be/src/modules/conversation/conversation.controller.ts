@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import { ConversationService } from './conversation.service.js';
 import { SendMessageDto } from './dto/send-message.dto.js';
 import { TestChatDto } from './dto/test-chat.dto.js';
@@ -24,8 +25,15 @@ export class ConversationController {
     return this.conversationService.sendMessage(user.sellerId, tenantId, dto);
   }
 
-  @ApiOperation({ summary: 'Test Bot — gọi LLM nhưng KHÔNG lưu DB' })
+  @ApiOperation({
+    summary: 'Test Bot — gọi LLM nhưng KHÔNG lưu DB (rate limited)',
+  })
   @Post('chat/test')
+  @UseGuards(ThrottlerGuard)
+  @Throttle({
+    short: { ttl: 60000, limit: 5 },
+    long: { ttl: 3600000, limit: 30 },
+  })
   testChat(
     @CurrentUser() user: { sellerId: string },
     @Param('tenantId') tenantId: string,

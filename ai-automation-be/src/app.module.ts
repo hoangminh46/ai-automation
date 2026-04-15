@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import {
   envValidationSchema,
   appConfig,
@@ -31,6 +32,10 @@ import { ConversationModule } from './modules/conversation/conversation.module.j
         allowUnknown: true,
       },
     }),
+    ThrottlerModule.forRoot([
+      { name: 'short', ttl: 60000, limit: 10 },
+      { name: 'long', ttl: 3600000, limit: 100 },
+    ]),
     CommonModule,
     AuthModule,
     TenantModule,

@@ -194,11 +194,7 @@ export class ConversationService {
    * Test chat: gọi LLM với persona của agent nhưng KHÔNG lưu gì vào DB.
    * History được FE gửi lên (in-memory) để duy trì context trong phiên test.
    */
-  async testMessage(
-    sellerId: string,
-    tenantId: string,
-    dto: TestChatDto,
-  ) {
+  async testMessage(sellerId: string, tenantId: string, dto: TestChatDto) {
     await this.verifyTenantAccess(tenantId, sellerId);
 
     const agent = await this.prisma.agent.findFirst({
@@ -236,7 +232,8 @@ export class ConversationService {
         max_tokens: agent.maxTokens,
       });
 
-      const replyContent = completion.choices[0]?.message?.content ?? agent.greeting;
+      const replyContent =
+        completion.choices[0]?.message?.content ?? agent.greeting;
       const promptTokens = completion.usage?.prompt_tokens ?? 0;
       const completionTokens = completion.usage?.completion_tokens ?? 0;
       const totalTokens = completion.usage?.total_tokens ?? 0;

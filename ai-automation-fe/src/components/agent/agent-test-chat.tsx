@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { X, Send, Bot, User, Loader2 } from "lucide-react";
+import { X, Send, Bot, User, Loader2, AlertTriangle } from "lucide-react";
 import { Agent, agentService, ChatMessage } from "@/lib/services/agent.service";
 import { useTenantStore } from "@/store/tenant-store";
+
+const MAX_SESSION_MESSAGES = 5;
+const MAX_HISTORY_CONTEXT = 10;
 
 interface AgentTestChatProps {
   agent: Agent;
@@ -35,9 +38,12 @@ export function AgentTestChat({ agent, isOpen, onClose }: AgentTestChatProps) {
 
   if (!isOpen) return null;
 
+  const userMessageCount = messages.filter(m => m.role === "CUSTOMER").length;
+  const isSessionLimitReached = userMessageCount >= MAX_SESSION_MESSAGES;
+
   const handleSend = async () => {
     const trimmed = input.trim();
-    if (!trimmed || isLoading || !activeTenant) return;
+    if (!trimmed || isLoading || !activeTenant || isSessionLimitReached) return;
 
     setInput("");
     setError("");
@@ -48,11 +54,14 @@ export function AgentTestChat({ agent, isOpen, onClose }: AgentTestChatProps) {
     setIsLoading(true);
 
     try {
+      // Context Pruning: chỉ gửi N messages gần nhất → giảm ~60% token consumption
+      const prunedHistory = messages.slice(-MAX_HISTORY_CONTEXT);
+
       const response = await agentService.testChatWithAgent(
         activeTenant.id,
         agent.id,
         trimmed,
-        messages,
+        prunedHistory,
       );
 
       const botMsg: ChatMessage = { role: "BOT", content: response.reply };
@@ -100,7 +109,7 @@ export function AgentTestChat({ agent, isOpen, onClose }: AgentTestChatProps) {
                 Thử Bot: {agent.name}
               </h2>
               <p className="text-xs text-slate-400 truncate">
-                Kiểm tra trước khi deploy
+                {userMessageCount}/{MAX_SESSION_MESSAGES} tin nhắn
               </p>
             </div>
           </div>
@@ -185,29 +194,36 @@ export function AgentTestChat({ agent, isOpen, onClose }: AgentTestChatProps) {
 
         {/* Input area */}
         <div className="px-5 py-4 border-t border-slate-100 dark:border-slate-800 shrink-0">
-          <div className="flex items-center gap-2">
-            <input
-              ref={inputRef}
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Nhập tin nhắn thử..."
-              disabled={isLoading}
-              className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all disabled:opacity-60"
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || isLoading}
-              className="p-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-            >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4" />
-              )}
-            </button>
-          </div>
+          {isSessionLimitReached ? (
+            <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 rounded-xl text-sm">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <span>Đã hết {MAX_SESSION_MESSAGES} lượt test. Đóng và mở lại để tiếp tục.</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Nhập tin nhắn thử..."
+                disabled={isLoading}
+                className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all disabled:opacity-60"
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim() || isLoading}
+                className="p-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
