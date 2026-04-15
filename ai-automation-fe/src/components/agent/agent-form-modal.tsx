@@ -57,18 +57,20 @@ function AgentFormInner({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (name.trim().length < 2) return;
 
     const payload: CreateAgentPayload = {
       name: name.trim(),
     };
 
-    // Chỉ gửi field có giá trị (tránh ghi đè default của BE)
     if (persona.trim()) payload.persona = persona.trim();
     if (greeting.trim()) payload.greeting = greeting.trim();
 
     await onSubmit(payload);
   };
+
+  const nameError = name.length > 0 && name.trim().length < 2 ? "Tên Bot phải từ 2 ký tự" : "";
+  const isFormValid = name.trim().length >= 2;
 
   return (
     <div className="relative bg-white dark:bg-slate-950 rounded-2xl shadow-2xl border border-slate-200/60 dark:border-slate-800 w-full max-w-lg max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300">
@@ -113,9 +115,10 @@ function AgentFormInner({
             onChange={(e) => setName(e.target.value)}
             placeholder="Ví dụ: Trợ lý Bán Hàng"
             maxLength={100}
-            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-sm"
+            className={`w-full bg-slate-50 dark:bg-slate-900 border ${nameError ? 'border-red-300 dark:border-red-700' : 'border-slate-200 dark:border-slate-800'} text-slate-900 dark:text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-sm`}
             autoFocus
           />
+          {nameError && <p className="text-xs text-red-500">{nameError}</p>}
         </div>
 
         {/* Persona */}
@@ -128,11 +131,17 @@ function AgentFormInner({
             onChange={(e) => setPersona(e.target.value)}
             placeholder="Mô tả chi tiết vai trò, phong cách, kiến thức chuyên môn của Bot..."
             rows={3}
+            maxLength={2000}
             className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-sm resize-none"
           />
-          <p className="text-xs text-slate-400">
-            Đây là chỉ thị giúp AI hiểu vai trò và cách nói chuyện của Bot.
-          </p>
+          <div className="flex justify-between">
+            <p className="text-xs text-slate-400">
+              Đây là chỉ thị giúp AI hiểu vai trò và cách nói chuyện của Bot.
+            </p>
+            <span className={`text-xs ${persona.length > 1800 ? 'text-amber-500' : 'text-slate-300 dark:text-slate-600'}`}>
+              {persona.length}/2000
+            </span>
+          </div>
         </div>
 
         {/* Greeting */}
@@ -145,6 +154,7 @@ function AgentFormInner({
             value={greeting}
             onChange={(e) => setGreeting(e.target.value)}
             placeholder="Xin chào, tôi có thể giúp gì cho bạn?"
+            maxLength={500}
             className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-sm"
           />
         </div>
@@ -161,7 +171,7 @@ function AgentFormInner({
           </button>
           <button
             type="submit"
-            disabled={isSubmitting || !name.trim()}
+            disabled={isSubmitting || !isFormValid}
             className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed text-sm"
           >
             {isSubmitting ? (

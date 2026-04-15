@@ -4,7 +4,7 @@ import { Agent, CreateAgentPayload, UpdateAgentPayload, agentService } from "@/l
 interface AgentState {
   agents: Agent[];
   isLoading: boolean;
-  hasLoaded: boolean;
+  loadedForTenantId: string | null;
   error: string | null;
 
   fetchAgents: (tenantId: string) => Promise<void>;
@@ -18,23 +18,25 @@ interface AgentState {
 export const useAgentStore = create<AgentState>((set, get) => ({
   agents: [],
   isLoading: false,
-  hasLoaded: false,
+  loadedForTenantId: null,
   error: null,
 
   resetAgentStore: () => {
-    set({ agents: [], isLoading: false, hasLoaded: false, error: null });
+    set({ agents: [], isLoading: false, loadedForTenantId: null, error: null });
   },
 
   fetchAgents: async (tenantId: string) => {
-    if (get().hasLoaded) return;
+    // Nếu đã load cho đúng tenant này rồi thì bỏ qua
+    if (get().loadedForTenantId === tenantId) return;
 
-    set({ isLoading: true, error: null });
+    // Reset data cũ + bật loading (atomic, không có trạng thái trung gian)
+    set({ agents: [], isLoading: true, error: null, loadedForTenantId: null });
     try {
       const data = await agentService.getAgents(tenantId);
-      set({ agents: data, hasLoaded: true });
+      set({ agents: data, loadedForTenantId: tenantId });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Không thể tải danh sách Bot";
-      set({ error: message });
+      set({ error: message, loadedForTenantId: tenantId });
       console.error("Lỗi tải danh sách Agent:", error);
     } finally {
       set({ isLoading: false });

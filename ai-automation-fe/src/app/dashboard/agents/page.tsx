@@ -10,19 +10,20 @@ import { AgentCard } from "@/components/agent/agent-card";
 import { AgentEmptyState } from "@/components/agent/agent-empty-state";
 import { AgentFormModal } from "@/components/agent/agent-form-modal";
 import { AgentDeleteDialog } from "@/components/agent/agent-delete-dialog";
+import { AgentTestChat } from "@/components/agent/agent-test-chat";
 
 export default function AgentsPage() {
   const activeTenant = useTenantStore((state) => state.activeTenant);
+  const tenantHasLoaded = useTenantStore((state) => state.hasLoaded);
 
   const agents = useAgentStore((state) => state.agents);
-  const hasLoaded = useAgentStore((state) => state.hasLoaded);
+  const loadedForTenantId = useAgentStore((state) => state.loadedForTenantId);
   const error = useAgentStore((state) => state.error);
   const fetchAgents = useAgentStore((state) => state.fetchAgents);
   const createAgent = useAgentStore((state) => state.createAgent);
   const updateAgent = useAgentStore((state) => state.updateAgent);
   const deleteAgent = useAgentStore((state) => state.deleteAgent);
   const toggleAgentActive = useAgentStore((state) => state.toggleAgentActive);
-  const resetAgentStore = useAgentStore((state) => state.resetAgentStore);
 
   // Modal states
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -30,14 +31,14 @@ export default function AgentsPage() {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [testChatAgent, setTestChatAgent] = useState<Agent | null>(null);
 
-  // Khi đổi Tenant: reset cache cũ rồi fetch data mới
+  // Khi vào trang hoặc đổi Tenant: fetch data (store tự skip nếu đã load cho tenant này)
   const tenantId = activeTenant?.id;
   useEffect(() => {
     if (!tenantId) return;
-    resetAgentStore();
     fetchAgents(tenantId);
-  }, [tenantId, resetAgentStore, fetchAgents]);
+  }, [tenantId, fetchAgents]);
 
   // Handlers
   const handleOpenCreate = useCallback(() => {
@@ -95,7 +96,12 @@ export default function AgentsPage() {
     }
   }, [activeTenant, selectedAgent, deleteAgent]);
 
-  // Nếu chưa chọn Tenant
+  // 1. Chờ cả tenant và agent data load xong
+  if (!tenantHasLoaded || (activeTenant && loadedForTenantId !== activeTenant.id)) {
+    return <LoadingScreen text="Đang tải Binh đoàn Bot AI..." />;
+  }
+
+  // 2. Tenant đã load nhưng chưa tạo cửa hàng
   if (!activeTenant) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] text-center">
@@ -108,11 +114,6 @@ export default function AgentsPage() {
         </p>
       </div>
     );
-  }
-
-  // Loading lần đầu
-  if (!hasLoaded) {
-    return <LoadingScreen text="Đang tải Binh đoàn Bot AI..." />;
   }
 
   return (
@@ -161,6 +162,7 @@ export default function AgentsPage() {
               onEdit={handleOpenEdit}
               onDelete={handleOpenDelete}
               onToggleActive={handleToggleActive}
+              onTestChat={setTestChatAgent}
             />
           ))}
         </div>
@@ -188,6 +190,14 @@ export default function AgentsPage() {
         onConfirm={handleDeleteConfirm}
         isDeleting={isDeleting}
       />
+
+      {testChatAgent && (
+        <AgentTestChat
+          agent={testChatAgent}
+          isOpen={!!testChatAgent}
+          onClose={() => setTestChatAgent(null)}
+        />
+      )}
     </div>
   );
 }

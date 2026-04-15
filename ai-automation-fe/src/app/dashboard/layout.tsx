@@ -2,6 +2,7 @@
 
 import { ReactNode, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 import { 
   Bot, 
   Store, 
@@ -72,7 +73,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           {MENU_ITEMS.map((item) => {
             const isActive = pathname === item.href;
             return (
-              <a
+              <Link
                 key={item.name}
                 href={item.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors font-medium text-sm ${
@@ -83,7 +84,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               >
                 {item.icon}
                 {item.name}
-              </a>
+              </Link>
             );
           })}
         </nav>

@@ -33,7 +33,7 @@
   - [x] Cài đặt Context toàn cục lưu dữ liệu "Cửa hàng đang chọn" bằng thư viện Zustand (Fetch tự động).
   - [x] Đổi tên Cửa hàng (inline edit trên tiêu đề Dashboard, không cần trang Settings riêng).
 
-### 🤖 SPRINT 3: Quản Lý Bot (Agent) & Config ⚡ ĐANG LÀM
+### 🤖 SPRINT 3: Quản Lý Bot (Agent) & Config ✅
 - **Phase 04A: Agent List UI** ✅
   - [x] Vẽ UI Danh sách Bot (Dạng lưới Cards), kèm Indicator bật/tắt (active/inactive).
   - [x] Tính năng xoá/huỷ bot qua API.
@@ -42,9 +42,11 @@
   - [x] Layout Form: Input Text (Name, Greeting), Textarea lớn (Persona).
   - [x] ~~Sliders (Temperature, MaxTokens)~~ → Ẩn khỏi user, platform controls model.
   - [x] Agent Card hiển thị persona preview thay vì model chips.
-- **Phase 04C: Cấu hình chuyên sâu - Data Binding** ⬜ CÒN THIẾU
-  - [ ] Nút "Thử Bot" (Test Chat dialog) — giúp seller kiểm tra persona trước khi deploy.
-  - [ ] Validation nâng cao cho form Agent (persona required khi active, maxLength, etc).
+- **Phase 04C: Cấu hình chuyên sâu - Data Binding** ✅
+  - [x] Nút "Thử Bot" (Test Chat dialog) — giúp seller kiểm tra persona trước khi deploy.
+  - [x] Validation nâng cao cho form Agent (name ≥ 2 chars, persona maxLength 2000, greeting maxLength 500).
+  - [x] Fix sidebar `<a>` → `<Link>` (SPA client-side navigation).
+  - [x] Fix loading flash: dùng `loadedForTenantId` + `tenantHasLoaded` gate.
 
 ### 📚 SPRINT 4: Tri thức (Knowledge Base / RAG) ⬜
 - **Phase 05A: Upload Area & List UI**

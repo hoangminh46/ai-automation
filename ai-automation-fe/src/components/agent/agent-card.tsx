@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Pencil, Trash2, Power, MessageSquare, Sparkles } from "lucide-react";
+import { Bot, Pencil, Trash2, Power, MessageSquare, Sparkles, MessageCircle } from "lucide-react";
 import { Agent } from "@/lib/services/agent.service";
 
 interface AgentCardProps {
@@ -8,11 +8,12 @@ interface AgentCardProps {
   onEdit: (agent: Agent) => void;
   onDelete: (agent: Agent) => void;
   onToggleActive: (agent: Agent) => void;
+  onTestChat: (agent: Agent) => void;
 }
 
 
 
-export function AgentCard({ agent, onEdit, onDelete, onToggleActive }: AgentCardProps) {
+export function AgentCard({ agent, onEdit, onDelete, onToggleActive, onTestChat }: AgentCardProps) {
   return (
     <div className="group relative bg-white dark:bg-slate-950 rounded-2xl border border-slate-200/60 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-blue-200 dark:hover:border-blue-900/60 transition-all duration-300 overflow-hidden">
       {/* Active indicator bar */}
@@ -101,6 +102,15 @@ export function AgentCard({ agent, onEdit, onDelete, onToggleActive }: AgentCard
           </button>
 
           <div className="flex-1" />
+
+          <button
+            onClick={() => onTestChat(agent)}
+            className="flex items-center gap-1.5 px-3 py-2 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded-lg text-xs font-medium transition-all"
+            title="Thử Bot"
+          >
+            <MessageCircle className="w-4 h-4" />
+            Thử Bot
+          </button>
 
           <button
             onClick={() => onEdit(agent)}

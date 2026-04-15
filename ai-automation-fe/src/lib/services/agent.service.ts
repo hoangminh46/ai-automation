@@ -33,6 +33,23 @@ export interface CreateAgentPayload {
 
 export type UpdateAgentPayload = Partial<CreateAgentPayload>;
 
+export interface ChatMessage {
+  role: "CUSTOMER" | "BOT" | "HUMAN_AGENT";
+  content: string;
+}
+
+export interface ChatResponse {
+  reply: string;
+  conversationId: string;
+  messageId: string;
+  agentName: string;
+  usage: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+}
+
 export const agentService = {
   getAgents: async (tenantId: string): Promise<Agent[]> => {
     const response = await api.get(`/tenants/${tenantId}/agents`);
@@ -56,5 +73,14 @@ export const agentService = {
 
   deleteAgent: async (tenantId: string, agentId: string): Promise<void> => {
     await api.delete(`/tenants/${tenantId}/agents/${agentId}`);
+  },
+
+  chatWithAgent: async (tenantId: string, agentId: string, message: string, conversationId?: string): Promise<ChatResponse> => {
+    const response = await api.post(`/tenants/${tenantId}/chat`, {
+      agentId,
+      message,
+      conversationId,
+    });
+    return response.data;
   },
 };
