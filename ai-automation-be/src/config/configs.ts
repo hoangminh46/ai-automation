@@ -15,8 +15,13 @@ export const supabaseConfig = registerAs('supabase', () => ({
   serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
 }));
 
+// Dùng OpenAI SDK với Gemini endpoint (OpenAI-compatible API)
 export const openaiConfig = registerAs('openai', () => ({
   apiKey: process.env.OPENAI_API_KEY,
+  baseUrl:
+    process.env.GEMINI_BASE_URL ||
+    'https://generativelanguage.googleapis.com/v1beta/openai/',
+  model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
 }));
 
 export const facebookConfig = registerAs('facebook', () => ({

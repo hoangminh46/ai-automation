@@ -66,6 +66,52 @@
         "Tenant.settings DTO - add in Phase 10 or earlier?",
         "HNSW index needs manual SQL (Prisma db push does not support)"
       ]
+    },
+    {
+      "id": "handoff-20260415-104500",
+      "saved_at": "2026-04-15T10:45:00+07:00",
+      "branch": "main",
+      "head_sha": "1020f0c",
+      "base_sha": "0480746756e28fb65e8a8ff28f6a7999a603b980",
+      "source": "commit",
+      "commit_range": "0480746..1020f0c",
+      "summary": "Phase 04 LLM Integration complete. Gemini 2.5 Flash connected via OpenAI-compatible API. ConversationModule with chat endpoint, conversation list, message history. TSC 0, ESLint 0.",
+      "project_changes": [
+        "Switched AI provider from OpenAI placeholder to Gemini 2.5 Flash (free tier)",
+        "Created LlmModule + LlmService (OpenAI SDK → Gemini endpoint)",
+        "Created ConversationModule: POST /chat, GET /conversations, GET /conversations/:id/messages",
+        "Chat flow: resolve customer → resolve conversation → save user msg → build context (persona+history) → call Gemini → save reply + token tracking",
+        "Logic fixes: history desc+reverse, HUMAN_AGENT→assistant, LLM error handling with try/catch+Logger"
+      ],
+      "commits": [],
+      "working_tree": {
+        "summary": "14 files changed (8 new, 6 modified), 481 insertions. All committed.",
+        "key_files": [
+          "src/common/llm/llm.service.ts",
+          "src/common/llm/llm.module.ts",
+          "src/modules/conversation/conversation.service.ts",
+          "src/modules/conversation/conversation.controller.ts",
+          "src/modules/conversation/dto/"
+        ]
+      },
+      "decisions": [
+        "Gemini 2.5 Flash chosen over OpenAI: free tier, OpenAI-compat API, quality ngang GPT-4o",
+        "Reuse OpenAI SDK (npm openai) with Gemini base URL — easy provider switch later",
+        "OPENAI_API_KEY env var stores Gemini key (backward compatible naming)",
+        "LlmService is @Global via CommonModule — any module can inject",
+        "Customer auto-create on chat if no customerId provided",
+        "HISTORY_LIMIT = 20 messages (desc+reverse for correct recency)"
+      ],
+      "next_steps": [
+        "FE Sprint 4: Chat UI (page /dashboard/chat, agent selector, message input, reply display)",
+        "E2E test via Chat UI (natural test — login → select agent → chat → verify Gemini reply)",
+        "BE Phase 05: Knowledge RAG (upload docs, embedding, retrieval)"
+      ],
+      "open_questions": [
+        "Gemini API key exposed in chat — need to rotate",
+        "Swagger UI not configured (optional but useful for API testing)",
+        "Streaming response support (future enhancement)"
+      ]
     }
   ]
 }

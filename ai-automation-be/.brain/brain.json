@@ -10,12 +10,18 @@
     "database": "PostgreSQL (Supabase) + pgvector",
     "orm": "Prisma 7 + PrismaPg adapter + pg Pool",
     "auth": "Supabase Auth Native SDK Edge Validation (getUser)",
-    "ai": "OpenAI API (gpt-4o-mini default)",
+    "ai": "Gemini 2.5 Flash via OpenAI-compatible API (openai npm package)",
+    "ai_provider_details": {
+      "sdk": "openai (npm)",
+      "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+      "default_model": "gemini-2.5-flash",
+      "strategy": "OpenAI SDK trỏ vào Gemini endpoint — dễ switch provider sau"
+    },
     "validation": "class-validator (DTO) + Joi (env)",
     "api_docs": "Swagger (@nestjs/swagger)",
     "security": "Helmet, CORS",
     "dependencies_source": "package.json",
-    "last_verified_sha": "421a13d"
+    "last_verified_sha": "1020f0c"
   },
   "database_schema": {
     "tables": [
@@ -67,13 +73,16 @@
     { "method": "GET", "path": "/tenants/:tenantId/agents", "module": "agent", "auth": "JWT+TenantGuard", "permission": "member" },
     { "method": "GET", "path": "/tenants/:tenantId/agents/:id", "module": "agent", "auth": "JWT+TenantGuard", "permission": "member" },
     { "method": "PATCH", "path": "/tenants/:tenantId/agents/:id", "module": "agent", "auth": "JWT+TenantGuard", "permission": "OWNER/ADMIN" },
-    { "method": "DELETE", "path": "/tenants/:tenantId/agents/:id", "module": "agent", "auth": "JWT+TenantGuard", "permission": "OWNER/ADMIN" }
+    { "method": "DELETE", "path": "/tenants/:tenantId/agents/:id", "module": "agent", "auth": "JWT+TenantGuard", "permission": "OWNER/ADMIN" },
+    { "method": "POST", "path": "/tenants/:tenantId/chat", "module": "conversation", "auth": "JWT+TenantGuard", "permission": "member", "description": "Send message to AI bot, receive reply" },
+    { "method": "GET", "path": "/tenants/:tenantId/conversations", "module": "conversation", "auth": "JWT+TenantGuard", "permission": "member", "description": "List conversations" },
+    { "method": "GET", "path": "/tenants/:tenantId/conversations/:id/messages", "module": "conversation", "auth": "JWT+TenantGuard", "permission": "member", "description": "Get conversation message history" }
   ],
   "features": {
     "phase_01_project_init": { "status": "done", "last_changed_sha": "750efb7" },
     "phase_02_db_auth": { "status": "done", "last_changed_sha": "b96af61" },
     "phase_03_tenant_agent_crud": { "status": "done", "last_changed_sha": "421a13d" },
-    "phase_04_llm_integration": { "status": "not_started" },
+    "phase_04_llm_integration": { "status": "done", "last_changed_sha": "1020f0c" },
     "phase_05_agent_pipeline": { "status": "not_started" },
     "phase_06_conversation_memory": { "status": "not_started" },
     "phase_07_knowledge_upload": { "status": "not_started" },
@@ -91,7 +100,11 @@
     "Only OWNER/ADMIN can edit tenant info",
     "TenantGuard checks isActive on TenantMember",
     "ValidationPipe: whitelist=true, forbidNonWhitelisted=true",
-    "Supabase port 6543 (pooler) for runtime, 5432 (direct) for migrations"
+    "Supabase port 6543 (pooler) for runtime, 5432 (direct) for migrations",
+    "Chat: auto-create Customer if customerId not provided (name fallback: Khách vãng lai)",
+    "Chat: auto-create Conversation if conversationId not provided (status: BOT_HANDLING)",
+    "Chat: history context uses LAST 20 messages (not oldest 20)",
+    "Chat: HUMAN_AGENT messages map to 'assistant' role for LLM context"
   ],
   "coding_conventions": [
     "Import paths use .js extension (ESM compat)",
@@ -100,10 +113,14 @@
     "Nested resources: /tenants/:tenantId/agents",
     "DTOs use class-validator decorators + @nestjs/swagger ApiProperty",
     "UpdateDto extends PartialType(CreateDto)",
-    "PrismaService is @Global() via CommonModule"
+    "PrismaService is @Global() via CommonModule",
+    "LlmService is @Global() via CommonModule > LlmModule",
+    "LLM calls must be wrapped in try/catch with Logger + InternalServerErrorException"
   ],
   "known_issues": [
     "src/tenant/ and src/agent/ (root level) are empty scaffolding dirs, real code is in src/modules/",
-    "Tenant.settings column exists in DB but no DTO exposes it yet"
+    "Tenant.settings column exists in DB but no DTO exposes it yet",
+    "Swagger UI not configured in main.ts bootstrap",
+    "E2E test for /chat not yet run (needs JWT from Supabase login)"
   ]
 }

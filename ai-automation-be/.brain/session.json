@@ -1,41 +1,43 @@
 {
-  "updated_at": "2026-04-14T14:41:00+07:00",
+  "updated_at": "2026-04-15T10:45:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260414-144100",
+  "active_handoff_id": "handoff-20260415-104500",
   "working_on": {
-    "phase": "phase-03 complete, ready for phase-04",
-    "status": "committed",
-    "summary": "Phase 03 committed at 421a13d. Working tree clean. Next: Phase 04 LLM Integration."
+    "phase": "phase-04 complete, ready for FE Sprint 4 (Chat UI)",
+    "status": "committing",
+    "summary": "Phase 04 LLM Integration complete. Gemini 2.5 Flash connected via OpenAI SDK. ConversationModule with POST /chat, GET /conversations, GET /messages. TSC 0, ESLint 0, routes verified."
   },
   "git_snapshot": {
-    "head_sha": "421a13d06fe0cbb7a4dd32c8440aa4314329b1e9",
-    "last_saved_head_sha": "b96af61c86d1084e51b07c330ef275fd113c88cb",
-    "base_sha": "b96af61c86d1084e51b07c330ef275fd113c88cb",
+    "head_sha": "1020f0c",
+    "last_saved_head_sha": "0480746756e28fb65e8a8ff28f6a7999a603b980",
+    "base_sha": "0480746756e28fb65e8a8ff28f6a7999a603b980",
     "branch": "main",
     "has_uncommitted_changes": false,
     "changed_files": [],
     "staged_files": [],
     "unstaged_files": [],
     "untracked_files": [],
-    "commit_range": "b96af61..421a13d",
-    "commits_since_last_save": [
-      { "sha": "421a13d", "message": "feat(be): Phase 03 - Tenant & Agent CRUD with RBAC" }
-    ]
+    "commit_range": "0480746..1020f0c",
+    "commits_since_last_save": []
   },
-  "pending_tasks": [
-    "Phase 04: LLM Integration (connect OpenAI API, basic chat completion)",
+  "1020f0c_tasks": [
+    "FE Sprint 4: Chat UI (chat page, agent selector, message list, send input)",
+    "E2E test: login → chat → verify Gemini reply (via Chat UI)",
     "Clean up empty scaffolding dirs: src/tenant/, src/agent/",
+    "Setup Swagger UI in main.ts (optional, improves API testing)",
     "Expose Tenant.settings via DTO (future phase)"
   ],
   "recent_changes": [
-    "Committed Phase 03: 30 files, 992 insertions (421a13d)",
-    "All code reviewed: TSC 0 errors, ESLint 0 errors",
-    "Created project knowledge base docs",
-    "Initial brain save + post-commit update"
+    "Installed openai npm package for Gemini OpenAI-compatible API",
+    "Created LlmModule + LlmService (OpenAI SDK → Gemini endpoint)",
+    "Created ConversationModule (controller + service + DTOs)",
+    "Endpoints: POST /chat, GET /conversations, GET /conversations/:id/messages",
+    "Logic review: fixed history ordering (desc+reverse), added LLM error handling, fixed HUMAN_AGENT role mapping",
+    "TSC 0 errors, ESLint 0 errors, 3/3 routes return 401 (auth working)"
   ],
   "uncommitted_summary": {
     "status": "clean",
-    "summary": "Working tree is clean after Phase 03 commit.",
+    "summary": "Phase 04 committed. Working tree clean.",
     "files": []
   }
 }

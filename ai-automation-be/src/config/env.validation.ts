@@ -15,8 +15,10 @@ export const envValidationSchema = Joi.object({
   SUPABASE_ANON_KEY: Joi.string().required(),
   SUPABASE_SERVICE_ROLE_KEY: Joi.string().required(),
 
-  // OpenAI
+  // AI Provider (Gemini via OpenAI-compatible API)
   OPENAI_API_KEY: Joi.string().required(),
+  GEMINI_BASE_URL: Joi.string().uri().optional(),
+  GEMINI_MODEL: Joi.string().optional(),
 
   // Facebook (Phase 09)
   FB_APP_ID: Joi.string().optional(),
