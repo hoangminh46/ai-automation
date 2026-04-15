@@ -4,6 +4,7 @@ import { KnowledgeService } from './knowledge.service.js';
 import { TextExtractorService } from './services/text-extractor.service.js';
 import { TextChunkerService } from './services/text-chunker.service.js';
 import { EmbeddingService } from './services/embedding.service.js';
+import { KnowledgeSearchService } from './services/knowledge-search.service.js';
 
 @Module({
   controllers: [KnowledgeController],
@@ -12,7 +13,8 @@ import { EmbeddingService } from './services/embedding.service.js';
     TextExtractorService,
     TextChunkerService,
     EmbeddingService,
+    KnowledgeSearchService,
   ],
-  exports: [EmbeddingService],
+  exports: [EmbeddingService, KnowledgeSearchService],
 })
 export class KnowledgeModule {}

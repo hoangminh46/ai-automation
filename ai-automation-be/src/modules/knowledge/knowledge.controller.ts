@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Delete,
+  Body,
   Param,
   UseGuards,
   UseInterceptors,
@@ -12,6 +13,8 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { KnowledgeService } from './knowledge.service.js';
+import { KnowledgeSearchService } from './services/knowledge-search.service.js';
+import { SearchKnowledgeDto } from './dto/search-knowledge.dto.js';
 import { SupabaseAuthGuard } from '../../common/guards/auth.guard.js';
 import { TenantGuard } from '../../common/guards/tenant.guard.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
@@ -25,13 +28,16 @@ import {
 @ApiTags('Knowledge Base')
 @ApiBearerAuth()
 @UseGuards(SupabaseAuthGuard, TenantGuard)
-@Controller('tenants/:tenantId/knowledge/documents')
+@Controller('tenants/:tenantId/knowledge')
 export class KnowledgeController {
-  constructor(private readonly knowledgeService: KnowledgeService) {}
+  constructor(
+    private readonly knowledgeService: KnowledgeService,
+    private readonly searchService: KnowledgeSearchService,
+  ) {}
 
   @ApiOperation({ summary: 'Upload tài liệu (.txt, .pdf) vào Knowledge Base' })
   @ApiConsumes('multipart/form-data')
-  @Post()
+  @Post('documents')
   @UseInterceptors(FileInterceptor('file'))
   uploadDocument(
     @CurrentUser() user: { sellerId: string },
@@ -48,7 +54,7 @@ export class KnowledgeController {
   }
 
   @ApiOperation({ summary: 'Danh sách tài liệu của cửa hàng' })
-  @Get()
+  @Get('documents')
   findAll(
     @CurrentUser() user: { sellerId: string },
     @Param('tenantId') tenantId: string,
@@ -57,7 +63,7 @@ export class KnowledgeController {
   }
 
   @ApiOperation({ summary: 'Xoá tài liệu (cascade xoá chunks + vectors)' })
-  @Delete(':documentId')
+  @Delete('documents/:documentId')
   deleteDocument(
     @CurrentUser() user: { sellerId: string },
     @Param('tenantId') tenantId: string,
@@ -68,5 +74,18 @@ export class KnowledgeController {
       tenantId,
       documentId,
     );
+  }
+
+  @ApiOperation({
+    summary: 'Tìm kiếm knowledge chunks theo semantic similarity',
+  })
+  @Post('search')
+  search(
+    @CurrentUser() user: { sellerId: string },
+    @Param('tenantId') tenantId: string,
+    @Body() dto: SearchKnowledgeDto,
+  ) {
+    // verifyTenantAccess is handled by TenantGuard
+    return this.searchService.search(tenantId, dto.query, dto.topK);
   }
 }

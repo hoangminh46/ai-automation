@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service.js';
 import { LlmService } from '../../common/llm/llm.service.js';
+import { KnowledgeSearchService } from '../knowledge/services/knowledge-search.service.js';
 import { SendMessageDto } from './dto/send-message.dto.js';
 import { TestChatDto } from './dto/test-chat.dto.js';
 import { ChatResponseDto } from './dto/chat-response.dto.js';
@@ -23,6 +24,7 @@ export class ConversationService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly llm: LlmService,
+    private readonly knowledgeSearch: KnowledgeSearchService,
   ) {}
 
   private async verifyTenantAccess(tenantId: string, sellerId: string) {
@@ -107,10 +109,27 @@ export class ConversationService {
       select: { role: true, content: true },
     });
     const history = recentHistory.reverse();
-    const llmMessages = this.buildLlmMessages(agent, history);
     metrics['history'] = Date.now() - stageStart;
 
-    // Stage 5: LLM — call AI model
+    // Stage 5: Knowledge Search — semantic search top-K chunks (graceful fallback)
+    stageStart = Date.now();
+    let knowledgeContext: string | null = null;
+    try {
+      knowledgeContext = await this.knowledgeSearch.buildKnowledgeContext(
+        tenantId,
+        dto.message,
+      );
+    } catch (error) {
+      this.logger.warn(
+        `Knowledge search failed (non-fatal): ${error instanceof Error ? error.message : error}`,
+      );
+    }
+    metrics['knowledge'] = Date.now() - stageStart;
+
+    // Stage 6: Build prompt (persona + knowledge + history)
+    const llmMessages = this.buildLlmMessages(agent, history, knowledgeContext);
+
+    // Stage 7: LLM — call AI model
     stageStart = Date.now();
     let replyContent: string;
     let promptTokens = 0;
@@ -138,7 +157,7 @@ export class ConversationService {
     }
     metrics['llm'] = Date.now() - stageStart;
 
-    // Stage 6: Response — save reply + update quota
+    // Stage 8: Response — save reply + update quota
     stageStart = Date.now();
     const assistantMessage = await this.prisma.message.create({
       data: {
@@ -365,11 +384,18 @@ export class ConversationService {
   private buildLlmMessages(
     agent: { persona: string },
     history: { role: string; content: string | null }[],
+    knowledgeContext?: string | null,
   ): OpenAI.Chat.ChatCompletionMessageParam[] {
     const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
 
-    // System prompt = agent persona
-    messages.push({ role: 'system', content: agent.persona });
+    // System prompt = persona + knowledge context (if available)
+    let systemPrompt = agent.persona;
+
+    if (knowledgeContext) {
+      systemPrompt += `\n\n<knowledge>\nThông tin sản phẩm/dịch vụ liên quan (chỉ tham khảo, KHÔNG bịa thêm):\n---\n${knowledgeContext}\n</knowledge>\n\nQuy tắc:\n- Ưu tiên trả lời dựa trên thông tin trong <knowledge> nếu có.\n- Nếu không tìm thấy câu trả lời cụ thể trong knowledge, hãy trả lời bằng kiến thức chung.\n- Luôn giữ đúng giọng nói và phong cách trong persona.`;
+    }
+
+    messages.push({ role: 'system', content: systemPrompt });
 
     // Conversation history → map DB roles to OpenAI roles
     for (const msg of history) {
