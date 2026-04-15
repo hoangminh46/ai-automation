@@ -40,8 +40,6 @@ export interface ChatMessage {
 
 export interface ChatResponse {
   reply: string;
-  conversationId: string;
-  messageId: string;
   agentName: string;
   usage: {
     promptTokens: number;
@@ -75,11 +73,16 @@ export const agentService = {
     await api.delete(`/tenants/${tenantId}/agents/${agentId}`);
   },
 
-  chatWithAgent: async (tenantId: string, agentId: string, message: string, conversationId?: string): Promise<ChatResponse> => {
-    const response = await api.post(`/tenants/${tenantId}/chat`, {
+  testChatWithAgent: async (
+    tenantId: string,
+    agentId: string,
+    message: string,
+    history?: ChatMessage[],
+  ): Promise<ChatResponse> => {
+    const response = await api.post(`/tenants/${tenantId}/chat/test`, {
       agentId,
       message,
-      conversationId,
+      history,
     });
     return response.data;
   },

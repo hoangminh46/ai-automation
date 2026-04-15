@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '../../common/prisma.service.js';
 import { LlmService } from '../../common/llm/llm.service.js';
 import { SendMessageDto } from './dto/send-message.dto.js';
+import { TestChatDto } from './dto/test-chat.dto.js';
 import { ChatResponseDto } from './dto/chat-response.dto.js';
 import type OpenAI from 'openai';
 
@@ -185,6 +186,76 @@ export class ConversationService {
     });
 
     return { conversation, messages };
+  }
+
+  // === Test Chat (no DB persistence) ===
+
+  /**
+   * Test chat: gọi LLM với persona của agent nhưng KHÔNG lưu gì vào DB.
+   * History được FE gửi lên (in-memory) để duy trì context trong phiên test.
+   */
+  async testMessage(
+    sellerId: string,
+    tenantId: string,
+    dto: TestChatDto,
+  ) {
+    await this.verifyTenantAccess(tenantId, sellerId);
+
+    const agent = await this.prisma.agent.findFirst({
+      where: { id: dto.agentId, tenantId },
+    });
+    if (!agent) {
+      throw new NotFoundException('Bot không tồn tại');
+    }
+
+    // Build LLM messages từ in-memory history (FE gửi lên)
+    const llmMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+      { role: 'system', content: agent.persona },
+    ];
+
+    if (dto.history) {
+      for (const msg of dto.history) {
+        llmMessages.push({
+          role: msg.role === 'CUSTOMER' ? 'user' : 'assistant',
+          content: msg.content,
+        });
+      }
+    }
+
+    // Thêm tin nhắn hiện tại
+    llmMessages.push({ role: 'user', content: dto.message });
+
+    try {
+      this.logger.log(
+        `[TEST] Calling LLM for agent="${agent.name}" (${llmMessages.length} messages)`,
+      );
+
+      const completion = await this.llm.chat(llmMessages, {
+        model: agent.model,
+        temperature: agent.temperature,
+        max_tokens: agent.maxTokens,
+      });
+
+      const replyContent = completion.choices[0]?.message?.content ?? agent.greeting;
+      const promptTokens = completion.usage?.prompt_tokens ?? 0;
+      const completionTokens = completion.usage?.completion_tokens ?? 0;
+      const totalTokens = completion.usage?.total_tokens ?? 0;
+
+      this.logger.log(`[TEST] Reply received: ${totalTokens} tokens`);
+
+      return {
+        reply: replyContent,
+        agentName: agent.name,
+        usage: { promptTokens, completionTokens, totalTokens },
+      };
+    } catch (error) {
+      this.logger.error(
+        `[TEST] LLM call failed: ${error instanceof Error ? error.message : error}`,
+      );
+      throw new InternalServerErrorException(
+        'Bot hiện không thể trả lời. Vui lòng thử lại sau.',
+      );
+    }
   }
 
   // === Private helpers ===

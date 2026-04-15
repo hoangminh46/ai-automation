@@ -17,7 +17,6 @@ export function AgentTestChat({ agent, isOpen, onClose }: AgentTestChatProps) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [conversationId, setConversationId] = useState<string | undefined>();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -26,7 +25,6 @@ export function AgentTestChat({ agent, isOpen, onClose }: AgentTestChatProps) {
       setMessages([]);
       setInput("");
       setError("");
-      setConversationId(undefined);
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [isOpen]);
@@ -45,18 +43,17 @@ export function AgentTestChat({ agent, isOpen, onClose }: AgentTestChatProps) {
     setError("");
 
     const userMsg: ChatMessage = { role: "CUSTOMER", content: trimmed };
-    setMessages(prev => [...prev, userMsg]);
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
     setIsLoading(true);
 
     try {
-      const response = await agentService.chatWithAgent(
+      const response = await agentService.testChatWithAgent(
         activeTenant.id,
         agent.id,
         trimmed,
-        conversationId,
+        messages,
       );
-
-      if (!conversationId) setConversationId(response.conversationId);
 
       const botMsg: ChatMessage = { role: "BOT", content: response.reply };
       setMessages(prev => [...prev, botMsg]);

@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { ConversationService } from './conversation.service.js';
 import { SendMessageDto } from './dto/send-message.dto.js';
+import { TestChatDto } from './dto/test-chat.dto.js';
 import { SupabaseAuthGuard } from '../../common/guards/auth.guard.js';
 import { TenantGuard } from '../../common/guards/tenant.guard.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
@@ -21,6 +22,16 @@ export class ConversationController {
     @Body() dto: SendMessageDto,
   ) {
     return this.conversationService.sendMessage(user.sellerId, tenantId, dto);
+  }
+
+  @ApiOperation({ summary: 'Test Bot — gọi LLM nhưng KHÔNG lưu DB' })
+  @Post('chat/test')
+  testChat(
+    @CurrentUser() user: { sellerId: string },
+    @Param('tenantId') tenantId: string,
+    @Body() dto: TestChatDto,
+  ) {
+    return this.conversationService.testMessage(user.sellerId, tenantId, dto);
   }
 
   @ApiOperation({ summary: 'Danh sách hội thoại của cửa hàng' })
