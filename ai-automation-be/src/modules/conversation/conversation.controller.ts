@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import { ConversationService } from './conversation.service.js';
 import { SendMessageDto } from './dto/send-message.dto.js';
@@ -59,6 +67,20 @@ export class ConversationController {
     @Param('conversationId') conversationId: string,
   ) {
     return this.conversationService.getMessages(
+      user.sellerId,
+      tenantId,
+      conversationId,
+    );
+  }
+
+  @ApiOperation({ summary: 'Đánh dấu hội thoại đã xử lý xong' })
+  @Patch('conversations/:conversationId/resolve')
+  resolveConversation(
+    @CurrentUser() user: { sellerId: string },
+    @Param('tenantId') tenantId: string,
+    @Param('conversationId') conversationId: string,
+  ) {
+    return this.conversationService.resolveConversationStatus(
       user.sellerId,
       tenantId,
       conversationId,

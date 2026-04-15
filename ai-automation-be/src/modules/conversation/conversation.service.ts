@@ -3,6 +3,8 @@ import {
   NotFoundException,
   ForbiddenException,
   InternalServerErrorException,
+  HttpException,
+  HttpStatus,
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service.js';
@@ -41,28 +43,52 @@ export class ConversationService {
     tenantId: string,
     dto: SendMessageDto,
   ): Promise<ChatResponseDto> {
+    const metrics: Record<string, number> = {};
+    const pipelineStart = Date.now();
+    let stageStart: number;
+
     await this.verifyTenantAccess(tenantId, sellerId);
 
-    // Step 1: Load agent
+    // Stage 1: Context — load agent config
+    stageStart = Date.now();
     const agent = await this.prisma.agent.findFirst({
       where: { id: dto.agentId, tenantId, isActive: true },
     });
     if (!agent) {
       throw new NotFoundException('Bot không tồn tại hoặc đã bị vô hiệu hóa');
     }
+    metrics['context'] = Date.now() - stageStart;
 
-    // Step 2: Resolve or create customer
+    // Quota check: reject nếu tenant đã hết quota
+    stageStart = Date.now();
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { messageUsed: true, messageQuota: true },
+    });
+    if (tenant && tenant.messageUsed >= tenant.messageQuota) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.TOO_MANY_REQUESTS,
+          message: `Đã hết quota tin nhắn (${tenant.messageUsed}/${tenant.messageQuota}). Vui lòng nâng cấp gói.`,
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+    metrics['quota_check'] = Date.now() - stageStart;
+
+    // Stage 2: Resolve customer + conversation
+    stageStart = Date.now();
     const customer = await this.resolveCustomer(tenantId, dto);
-
-    // Step 3: Resolve or create conversation
     const conversation = await this.resolveConversation(
       tenantId,
       agent.id,
       customer.id,
       dto.conversationId,
     );
+    metrics['resolve'] = Date.now() - stageStart;
 
-    // Step 4: Save customer message to DB
+    // Stage 3: Save customer message
+    stageStart = Date.now();
     await this.prisma.message.create({
       data: {
         conversationId: conversation.id,
@@ -70,8 +96,10 @@ export class ConversationService {
         content: dto.message,
       },
     });
+    metrics['save_input'] = Date.now() - stageStart;
 
-    // Step 5: Load LAST N messages for context (desc → take → reverse to chronological)
+    // Stage 4: History — load last N messages for context
+    stageStart = Date.now();
     const recentHistory = await this.prisma.message.findMany({
       where: { conversationId: conversation.id },
       orderBy: { createdAt: 'desc' },
@@ -79,21 +107,17 @@ export class ConversationService {
       select: { role: true, content: true },
     });
     const history = recentHistory.reverse();
-
-    // Step 6: Build message array for LLM
     const llmMessages = this.buildLlmMessages(agent, history);
+    metrics['history'] = Date.now() - stageStart;
 
-    // Step 7: Call LLM (with error handling for Gemini failures)
+    // Stage 5: LLM — call AI model
+    stageStart = Date.now();
     let replyContent: string;
     let promptTokens = 0;
     let completionTokens = 0;
     let totalTokens = 0;
 
     try {
-      this.logger.log(
-        `Calling LLM for agent="${agent.name}" conversation=${conversation.id} (${llmMessages.length} messages)`,
-      );
-
       const completion = await this.llm.chat(llmMessages, {
         model: agent.model,
         temperature: agent.temperature,
@@ -104,8 +128,6 @@ export class ConversationService {
       promptTokens = completion.usage?.prompt_tokens ?? 0;
       completionTokens = completion.usage?.completion_tokens ?? 0;
       totalTokens = completion.usage?.total_tokens ?? 0;
-
-      this.logger.log(`LLM reply received: ${totalTokens} tokens used`);
     } catch (error) {
       this.logger.error(
         `LLM call failed for conversation=${conversation.id}: ${error instanceof Error ? error.message : error}`,
@@ -114,8 +136,10 @@ export class ConversationService {
         'Bot hiện không thể trả lời. Vui lòng thử lại sau.',
       );
     }
+    metrics['llm'] = Date.now() - stageStart;
 
-    // Step 8: Save assistant reply to DB with token tracking
+    // Stage 6: Response — save reply + update quota
+    stageStart = Date.now();
     const assistantMessage = await this.prisma.message.create({
       data: {
         conversationId: conversation.id,
@@ -126,11 +150,27 @@ export class ConversationService {
       },
     });
 
-    // Step 9: Update conversation lastMessageAt
-    await this.prisma.conversation.update({
-      where: { id: conversation.id },
-      data: { lastMessageAt: new Date() },
-    });
+    // Update conversation lastMessageAt + increment tenant message quota
+    await Promise.all([
+      this.prisma.conversation.update({
+        where: { id: conversation.id },
+        data: { lastMessageAt: new Date() },
+      }),
+      this.prisma.tenant.update({
+        where: { id: tenantId },
+        data: { messageUsed: { increment: 1 } },
+      }),
+    ]);
+    metrics['response'] = Date.now() - stageStart;
+
+    // Pipeline metrics log
+    const totalMs = Date.now() - pipelineStart;
+    const metricsStr = Object.entries(metrics)
+      .map(([k, v]) => `${k}=${v}ms`)
+      .join(' ');
+    this.logger.log(
+      `[Pipeline] agent="${agent.name}" conv=${conversation.id} total=${totalMs}ms | ${metricsStr} | tokens=${totalTokens}`,
+    );
 
     return {
       conversationId: conversation.id,
@@ -186,6 +226,29 @@ export class ConversationService {
     });
 
     return { conversation, messages };
+  }
+
+  /**
+   * Đánh dấu hội thoại đã xử lý xong (RESOLVED)
+   */
+  async resolveConversationStatus(
+    sellerId: string,
+    tenantId: string,
+    conversationId: string,
+  ) {
+    await this.verifyTenantAccess(tenantId, sellerId);
+
+    const conversation = await this.prisma.conversation.findFirst({
+      where: { id: conversationId, tenantId },
+    });
+    if (!conversation) {
+      throw new NotFoundException('Không tìm thấy hội thoại');
+    }
+
+    return this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: { status: 'RESOLVED' },
+    });
   }
 
   // === Test Chat (no DB persistence) ===

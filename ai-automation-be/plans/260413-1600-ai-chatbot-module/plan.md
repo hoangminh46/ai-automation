@@ -29,8 +29,8 @@ Module AI Chatbot backend độc lập (NestJS), AI Agent Pipeline lấy cảm h
 | 02 | Database Schema & Auth | 7 | ✅ |
 | 03 | Tenant & Agent CRUD | 6 | ✅ |
 | 04 | LLM Integration | 5 | ✅ |
-| 05 | Agent Pipeline Core | 7 | ⬜ |
-| 06 | Conversation & Memory | 6 | ⬜ |
+| 05 | Agent Pipeline Core | 7 | ✅ |
+| 06 | Conversation & Memory | 6 | ✅ |
 | 07 | Knowledge Upload & Processing | 6 | ⬜ |
 | 08 | Knowledge Search & RAG | 5 | ⬜ |
 | 09 | Facebook Messenger Channel | 8 | ⬜ |
