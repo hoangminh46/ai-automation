@@ -1,24 +1,44 @@
 {
   "project_name": "ai-automation-fe",
   "tech_stack": {
-    "frontend": "Next.js 16 (App Router), React 19, Tailwind CSS v4, Zustand, Supabase SSR"
+    "frontend": "Next.js 16 (App Router), React 19, Tailwind CSS v4, Zustand, Supabase SSR",
+    "theme": "next-themes (class-based dark mode, system preference support)",
+    "icons": "lucide-react",
+    "http": "axios (configured with Supabase auth interceptor)"
   },
   "database_schema": {
     "tenant": "Cửa hàng độc lập thuộc về seller",
-    "agent": "Binh đoàn Bot được cấu hình theo từng cửa hàng"
+    "agent": "Bot AI cấu hình per-tenant: name, persona, greeting, model, temperature, maxTokens, isActive"
   },
   "api_endpoints": {
-    "POST /tenants": "Tạo Tenant (Yêu cầu nhận Name và Slug tự tạo từ FE)",
-    "GET /tenants": "Lấy danh sách cho activeTenant dropdown"
+    "POST /tenants": "Tạo Tenant (nhận name, slug tự sinh từ FE)",
+    "GET /tenants": "Lấy danh sách tenants cho activeTenant dropdown",
+    "GET /tenants/:tenantId/agents": "Lấy danh sách agents theo tenant",
+    "POST /tenants/:tenantId/agents": "Tạo agent mới",
+    "PATCH /tenants/:tenantId/agents/:agentId": "Cập nhật agent",
+    "DELETE /tenants/:tenantId/agents/:agentId": "Xóa agent"
   },
   "features": [
-    "Authentication (Hoàn thành)",
-    "Tenant Onboarding (Hoàn thành)",
-    "Agent Config (Sắp triển khai)"
+    "Authentication (Hoàn thành - Sprint 1)",
+    "Tenant Onboarding (Hoàn thành - Sprint 2)",
+    "Agent CRUD UI (Hoàn thành - Sprint 3)",
+    "Dark/Light/System Theme Mode (Hoàn thành - Sprint 3)",
+    "Phase 04 LLM Integration (Chưa bắt đầu - BE)",
+    "Knowledge RAG UI (Chưa bắt đầu)",
+    "Live Chat CRM UI (Chưa bắt đầu)"
   ],
   "business_rules": [
-    "Mỗi Cửa Hàng (Tenant) phải có một Slug đơn nhất (Unique). Frontend tự động convert name thành slug gọi service REST API.",
-    "Frontend phải dùng Selectors của Zustand để Next.js SSR Layout re-render ổn định.",
-    "Bảo vệ Route Dashboard bằng tệp Middleware.ts gọi createServerClient."
+    "Mỗi Tenant có Slug đơn nhất. FE tự convert name → slug khi gọi API.",
+    "FE dùng Zustand selectors (không destructure) để layout re-render ổn định với SSR.",
+    "Route Dashboard bảo vệ bằng middleware.ts gọi createServerClient.",
+    "fetchTenants() phải được gọi ở dashboard/layout.tsx (không chỉ ở page con) để mọi sub-route đều có activeTenant.",
+    "AgentFormModal dùng key-based remount pattern (key=agent.id|'create') thay vì useEffect+setState (React 19 rule).",
+    "ThemeProvider bọc ở root layout với suppressHydrationWarning trên <html>.",
+    "Tailwind CSS v4 dark mode: @custom-variant dark (&:where(.dark, .dark *)) — class-based, không dùng media query."
+  ],
+  "coding_conventions": [
+    "useEffect+setState bị cấm bởi ESLint react-hooks/set-state-in-effect — thay bằng key remount hoặc useSyncExternalStore.",
+    "Zustand store: dùng selector riêng lẻ (không destructure) trong layout để tránh re-render không cần thiết.",
+    "Agent store có resetAgentStore() — gọi khi đổi activeTenant để flush cache cũ."
   ]
 }

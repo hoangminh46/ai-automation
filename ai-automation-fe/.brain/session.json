@@ -1,14 +1,14 @@
 {
-  "updated_at": "2026-04-14T17:20:00+07:00",
+  "updated_at": "2026-04-15T09:48:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260414-172000",
+  "active_handoff_id": "handoff-20260415-094800",
   "working_on": {
-    "module": "tenant",
-    "description": "Tenant Onboarding & Settings finished. Sprint 1 & 2 done."
+    "sprint": "Sprint 3 COMPLETE",
+    "description": "Agent CRUD UI + Dark/Light/System Mode hoàn tất và committed tại 8fe2fdc."
   },
   "git_snapshot": {
-    "head_sha": "6aaee7e1edeede767b6784966f1f1f601411acb2",
-    "last_saved_head_sha": "initial-save",
+    "head_sha": "8fe2fdca7a9014c511c4cc2b89f18ef0c58dcc38",
+    "last_saved_head_sha": "6aaee7e1edeede767b6784966f1f1f601411acb2",
     "base_sha": "6aaee7e1edeede767b6784966f1f1f601411acb2",
     "branch": "main",
     "has_uncommitted_changes": false,
@@ -16,26 +16,32 @@
     "staged_files": [],
     "unstaged_files": [],
     "untracked_files": [],
-    "commit_range": "initial-save..6aaee7e",
+    "commit_range": "6aaee7e..8fe2fdc",
     "commits_since_last_save": [
       {
-        "sha": "6aaee7e",
-        "message": "feat(sprint-2): Hoàn tất Auth, Tenant Onboarding, Zustand Store, Nextjs Loading"
+        "sha": "8fe2fdc",
+        "message": "feat(fe): Sprint 3 - Agent UI (CRUD) + Dark/Light/System Mode"
       }
     ]
   },
   "pending_tasks": [
-    "Sprint 3: Quản lý Bot (Agent & Config) - Phase 04A (Agent List UI)"
+    "Phase 04 BE: LLM Integration (OpenAI API, chat completion endpoint)",
+    "Sprint 4 FE: Knowledge RAG UI (upload docs, view chunks)",
+    "Sprint 5 FE: Live Chat CRM UI (chat widget with bot)"
   ],
   "recent_changes": [
-    "Khởi tạo Backend Auth Guard gọi thẳng Supabase Edge SDK.",
-    "Khởi tạo Frontend Tenant Onboarding, Middleware Router.",
-    "Hook Zustand cho activeTenant với re-render selector tối ưu.",
-    "Tạo Global Next.js Loader UI (loading.tsx) và LoadingScreen."
+    "Thêm agent.service.ts — CRUD layer kết nối BE Agent API",
+    "Thêm agent-store.ts — Zustand store với reset khi đổi tenant",
+    "Thêm 4 Agent components: AgentCard, AgentEmptyState, AgentFormModal, AgentDeleteDialog",
+    "Thêm /dashboard/agents page với loading state và error banner",
+    "Tích hợp next-themes: ThemeProvider + ThemeToggle (Light/Dark/System) ở Sidebar footer",
+    "Fix layout.tsx: fetchTenants() hoisted lên layout để mọi sub-route có tenant data",
+    "Fix globals.css: @custom-variant dark cho Tailwind CSS v4 class-based dark mode",
+    "Fix agent-form-modal: key-based remount thay useEffect+setState (React 19 rule)"
   ],
   "uncommitted_summary": {
     "status": "clean",
-    "summary": "Working tree is completely clean.",
+    "summary": "Working tree sạch sau commit 8fe2fdc.",
     "files": []
   }
 }

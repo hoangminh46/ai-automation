@@ -24,6 +24,48 @@
         "Chuyển sang Sprint 3: Tạo UI Danh sách Agent/Bot và kết nối DTO tạo bot."
       ],
       "open_questions": []
+    },
+    {
+      "id": "handoff-20260415-094800",
+      "saved_at": "2026-04-15T09:48:00+07:00",
+      "branch": "main",
+      "head_sha": "8fe2fdca7a9014c511c4cc2b89f18ef0c58dcc38",
+      "base_sha": "6aaee7e1edeede767b6784966f1f1f601411acb2",
+      "source": "commit",
+      "commit_range": "6aaee7e..8fe2fdc",
+      "summary": "Hoàn thành SPRINT 3 (Agent CRUD UI) + Dark/Light/System Mode. TSC 0 errors, ESLint 0 errors.",
+      "project_changes": [
+        "Thêm agent.service.ts — CRUD API layer cho Agent (GET/POST/PATCH/DELETE)",
+        "Thêm agent-store.ts — Zustand store với hasLoaded pattern, optimistic toggle, reset khi đổi tenant",
+        "Thêm AgentCard: hiện status bar, model chip, greeting preview, toggle/edit/delete actions",
+        "Thêm AgentEmptyState: empty state với CTA tạo bot đầu tiên",
+        "Thêm AgentFormModal: key-based remount form (React 19 compliant), name/persona/greeting/model/temperature/maxTokens",
+        "Thêm AgentDeleteDialog: confirm dialog với tên bot echo",
+        "Thêm /dashboard/agents/page.tsx + loading.tsx: tenant-aware, error banner, grid layout 1/2/3 cols",
+        "Thêm ThemeProvider (next-themes, attribute=class, defaultTheme=system)",
+        "Thêm ThemeToggle: dropdown mở lên trên (bottom-full), 3 options Light/Dark/System, Check icon active",
+        "Sidebar footer redesign: pill container với logout + divider + theme toggle",
+        "Fix globals.css: @custom-variant dark cho Tailwind CSS v4 (không dùng media query)",
+        "Fix layout.tsx: fetchTenants() hoisted lên DashboardLayout — fix bug agent page không có tenant data"
+      ],
+      "commits": ["8fe2fdc"],
+      "working_tree": {},
+      "decisions": [
+        "AgentFormModal dùng key remount (key=agent.id|'create') thay vì useEffect+setState vì React 19 strict rule (set-state-in-effect).",
+        "useSyncExternalStore thay useEffect+setState để detect client mount (ThemeToggle), tránh hydration mismatch.",
+        "fetchTenants() được đặt ở layout.tsx chứ không phải dashboard/page.tsx để mọi sub-route đều có activeTenant.",
+        "Tailwind v4 dùng @custom-variant dark thay vì darkMode: 'class' trong config (v4 không có config file).",
+        "ThemeToggle dropdown mở bottom-full để tránh tràn sidebar footer."
+      ],
+      "next_steps": [
+        "BE Phase 04: LLM Integration — tạo ConversationModule, tích hợp OpenAI SDK, endpoint POST /chat",
+        "FE Sprint 4: Knowledge RAG UI — upload document, view chunks, liên kết với Agent",
+        "FE Sprint 5: Live Chat UI — widget chat, kết nối agent + conversation API"
+      ],
+      "open_questions": [
+        "Agent toggle active có cần optimistic UI rollback khi BE lỗi không (hiện tại chỉ refetch)?",
+        "BE Phase 04 dùng OpenAI hay cho phép chọn provider (Gemini, Anthropic) từ đầu?"
+      ]
     }
   ]
 }
