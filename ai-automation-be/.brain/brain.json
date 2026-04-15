@@ -10,18 +10,23 @@
     "database": "PostgreSQL (Supabase) + pgvector",
     "orm": "Prisma 7 + PrismaPg adapter + pg Pool",
     "auth": "Supabase Auth Native SDK Edge Validation (getUser)",
-    "ai": "Gemini 2.5 Flash via OpenAI-compatible API (openai npm package)",
+    "ai_llm": "Gemini 2.5 Flash via OpenAI-compatible API (openai npm package)",
+    "ai_embedding": "Gemini gemini-embedding-001 via @google/generative-ai SDK (1536d MRL)",
     "ai_provider_details": {
-      "sdk": "openai (npm)",
-      "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
-      "default_model": "gemini-2.5-flash",
-      "strategy": "OpenAI SDK trỏ vào Gemini endpoint — dễ switch provider sau"
+      "llm_sdk": "openai (npm)",
+      "llm_base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+      "llm_default_model": "gemini-2.5-flash",
+      "embedding_sdk": "@google/generative-ai (npm)",
+      "embedding_model": "gemini-embedding-001",
+      "embedding_dimensions": 1536,
+      "strategy": "OpenAI SDK cho LLM chat, Google SDK cho embedding — cùng 1 API key"
     },
+    "pdf_parsing": "pdf-parse",
     "validation": "class-validator (DTO) + Joi (env)",
     "api_docs": "Swagger (@nestjs/swagger)",
     "security": "Helmet, CORS",
     "dependencies_source": "package.json",
-    "last_verified_sha": "cc2d9ff"
+    "last_verified_sha": "dfe8d15"
   },
   "database_schema": {
     "tables": [
@@ -41,10 +46,10 @@
       "Customer -> Conversation": "1:N",
       "Conversation -> Message": "1:N",
       "Tenant -> KnowledgeDocument": "1:N",
-      "KnowledgeDocument -> KnowledgeChunk": "1:N (with pgvector embedding)"
+      "KnowledgeDocument -> KnowledgeChunk": "1:N (with pgvector embedding vector(1536))"
     },
     "source_file": "prisma/schema.prisma",
-    "last_verified_sha": "421a13d"
+    "last_verified_sha": "dfe8d15"
   },
   "auth_flow": {
     "strategy": "SupabaseAuthGuard (Native SDK)",
@@ -56,37 +61,37 @@
       "TenantGuard (verify TenantMember by sellerId + tenantId + isActive)"
     ],
     "decorator": "@CurrentUser() extracts AuthenticatedUser from request.user",
-    "source_files": [
-      "src/common/guards/auth.guard.ts",
-      "src/common/guards/tenant.guard.ts",
-      "src/common/decorators/current-user.decorator.ts",
-      "src/auth/interfaces/auth.interfaces.ts"
-    ],
     "last_verified_sha": "421a13d"
   },
   "api_endpoints": [
-    { "method": "POST", "path": "/tenants", "module": "tenant", "auth": "JWT", "permission": "any authenticated" },
-    { "method": "GET", "path": "/tenants", "module": "tenant", "auth": "JWT", "permission": "any authenticated" },
-    { "method": "GET", "path": "/tenants/:id", "module": "tenant", "auth": "JWT+TenantGuard", "permission": "member" },
-    { "method": "PATCH", "path": "/tenants/:id", "module": "tenant", "auth": "JWT+TenantGuard", "permission": "OWNER/ADMIN" },
-    { "method": "POST", "path": "/tenants/:tenantId/agents", "module": "agent", "auth": "JWT+TenantGuard", "permission": "OWNER/ADMIN" },
-    { "method": "GET", "path": "/tenants/:tenantId/agents", "module": "agent", "auth": "JWT+TenantGuard", "permission": "member" },
-    { "method": "GET", "path": "/tenants/:tenantId/agents/:id", "module": "agent", "auth": "JWT+TenantGuard", "permission": "member" },
-    { "method": "PATCH", "path": "/tenants/:tenantId/agents/:id", "module": "agent", "auth": "JWT+TenantGuard", "permission": "OWNER/ADMIN" },
-    { "method": "DELETE", "path": "/tenants/:tenantId/agents/:id", "module": "agent", "auth": "JWT+TenantGuard", "permission": "OWNER/ADMIN" },
-    { "method": "POST", "path": "/tenants/:tenantId/chat", "module": "conversation", "auth": "JWT+TenantGuard", "permission": "member", "description": "Send message to AI bot, receive reply" },
-    { "method": "GET", "path": "/tenants/:tenantId/conversations", "module": "conversation", "auth": "JWT+TenantGuard", "permission": "member", "description": "List conversations" },
-    { "method": "GET", "path": "/tenants/:tenantId/conversations/:id/messages", "module": "conversation", "auth": "JWT+TenantGuard", "permission": "member", "description": "Get conversation message history" }
+    { "method": "POST", "path": "/tenants", "module": "tenant", "auth": "JWT" },
+    { "method": "GET", "path": "/tenants", "module": "tenant", "auth": "JWT" },
+    { "method": "GET", "path": "/tenants/:id", "module": "tenant", "auth": "JWT+TenantGuard" },
+    { "method": "PATCH", "path": "/tenants/:id", "module": "tenant", "auth": "JWT+TenantGuard" },
+    { "method": "POST", "path": "/tenants/:tenantId/agents", "module": "agent", "auth": "JWT+TenantGuard" },
+    { "method": "GET", "path": "/tenants/:tenantId/agents", "module": "agent", "auth": "JWT+TenantGuard" },
+    { "method": "GET", "path": "/tenants/:tenantId/agents/:id", "module": "agent", "auth": "JWT+TenantGuard" },
+    { "method": "PATCH", "path": "/tenants/:tenantId/agents/:id", "module": "agent", "auth": "JWT+TenantGuard" },
+    { "method": "DELETE", "path": "/tenants/:tenantId/agents/:id", "module": "agent", "auth": "JWT+TenantGuard" },
+    { "method": "POST", "path": "/tenants/:tenantId/chat", "module": "conversation", "description": "Send message to AI bot" },
+    { "method": "POST", "path": "/tenants/:tenantId/chat/test", "module": "conversation", "description": "Test chat (rate limited 5/min)" },
+    { "method": "GET", "path": "/tenants/:tenantId/conversations", "module": "conversation" },
+    { "method": "GET", "path": "/tenants/:tenantId/conversations/:id/messages", "module": "conversation" },
+    { "method": "PATCH", "path": "/tenants/:tenantId/conversations/:id/resolve", "module": "conversation", "description": "Mark conversation as RESOLVED" },
+    { "method": "POST", "path": "/tenants/:tenantId/knowledge/documents", "module": "knowledge", "description": "Upload document (multipart, .txt/.pdf, max 10MB)" },
+    { "method": "GET", "path": "/tenants/:tenantId/knowledge/documents", "module": "knowledge", "description": "List documents with status" },
+    { "method": "DELETE", "path": "/tenants/:tenantId/knowledge/documents/:docId", "module": "knowledge", "description": "Delete document (cascade chunks)" },
+    { "method": "POST", "path": "/tenants/:tenantId/knowledge/search", "module": "knowledge", "description": "Semantic search knowledge chunks" }
   ],
   "features": {
     "phase_01_project_init": { "status": "done", "last_changed_sha": "750efb7" },
     "phase_02_db_auth": { "status": "done", "last_changed_sha": "b96af61" },
     "phase_03_tenant_agent_crud": { "status": "done", "last_changed_sha": "421a13d" },
     "phase_04_llm_integration": { "status": "done", "last_changed_sha": "cc2d9ff" },
-    "phase_05_agent_pipeline": { "status": "not_started" },
-    "phase_06_conversation_memory": { "status": "not_started" },
-    "phase_07_knowledge_upload": { "status": "not_started" },
-    "phase_08_knowledge_rag": { "status": "not_started" },
+    "phase_05_agent_pipeline": { "status": "done", "last_changed_sha": "3560291", "notes": "Pipeline metrics logging, quota tracking" },
+    "phase_06_conversation_memory": { "status": "done", "last_changed_sha": "3560291", "notes": "Resolve endpoint, cost protection" },
+    "phase_07_knowledge_upload": { "status": "done", "last_changed_sha": "b2c1504", "notes": "PDF/TXT extract, chunking, Gemini embedding, pgvector store" },
+    "phase_08_knowledge_rag": { "status": "done", "last_changed_sha": "dfe8d15", "notes": "Semantic search, RAG pipeline injection, soft-lock prompt" },
     "phase_09_facebook_messenger": { "status": "not_started" },
     "phase_10_selfserve_polish": { "status": "not_started" },
     "phase_11_testing": { "status": "not_started" }
@@ -105,23 +110,30 @@
     "Chat: auto-create Conversation if conversationId not provided (status: BOT_HANDLING)",
     "Chat: history context uses LAST 20 messages (not oldest 20)",
     "Chat: HUMAN_AGENT messages map to 'assistant' role for LLM context",
-    "Platform controls AI model — user only configures name/persona/greeting, not model/temperature/maxTokens"
+    "Platform controls AI model — user only configures name/persona/greeting",
+    "Quota: check messageUsed < messageQuota before LLM call, increment after success",
+    "Knowledge upload: max 10MB, .txt/.pdf only, sync processing",
+    "Knowledge chunking: recursive split 1500 chars, 200 overlap",
+    "RAG: soft-lock prompt — prioritize knowledge but allow general answers",
+    "RAG: similarity threshold 0.3, top-K=5, graceful fallback on search failure"
   ],
   "coding_conventions": [
     "Import paths use .js extension (ESM compat)",
-    "Controller user type: inline { sellerId: string } (not AuthenticatedUser interface, due to isolatedModules+emitDecoratorMetadata)",
+    "Controller user type: inline { sellerId: string }",
     "Services receive sellerId as first param",
     "Nested resources: /tenants/:tenantId/agents",
     "DTOs use class-validator decorators + @nestjs/swagger ApiProperty",
     "UpdateDto extends PartialType(CreateDto)",
     "PrismaService is @Global() via CommonModule",
     "LlmService is @Global() via CommonModule > LlmModule",
-    "LLM calls must be wrapped in try/catch with Logger + InternalServerErrorException"
+    "LLM calls must be wrapped in try/catch with Logger + InternalServerErrorException",
+    "pgvector operations use $queryRawUnsafe with parameterized queries ($1, $2...)",
+    "Knowledge chunks inserted via raw SQL (Prisma doesn't support vector type natively)"
   ],
   "known_issues": [
     "src/tenant/ and src/agent/ (root level) are empty scaffolding dirs, real code is in src/modules/",
     "Tenant.settings column exists in DB but no DTO exposes it yet",
-    "Swagger UI not configured in main.ts bootstrap",
+    "HNSW vector index on knowledge_chunks.embedding not yet created (needs manual SQL)",
     "E2E test for /chat not yet run (needs JWT from Supabase login)"
   ]
 }

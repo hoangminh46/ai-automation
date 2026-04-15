@@ -18,18 +18,23 @@
     "PATCH /tenants/:tenantId/agents/:agentId": "Cập nhật agent",
     "DELETE /tenants/:tenantId/agents/:agentId": "Xóa agent",
     "POST /tenants/:tenantId/chat": "Gửi tin nhắn và nhận reply từ AI bot",
+    "POST /tenants/:tenantId/chat/test": "Test chat (rate limited 5/min)",
     "GET /tenants/:tenantId/conversations": "Lấy danh sách conversations",
-    "GET /tenants/:tenantId/conversations/:id/messages": "Lấy lịch sử tin nhắn"
+    "GET /tenants/:tenantId/conversations/:id/messages": "Lấy lịch sử tin nhắn",
+    "PATCH /tenants/:tenantId/conversations/:id/resolve": "Đánh dấu conversation đã giải quyết",
+    "POST /tenants/:tenantId/knowledge/documents": "Upload tài liệu (multipart, .txt/.pdf, max 10MB)",
+    "GET /tenants/:tenantId/knowledge/documents": "Danh sách tài liệu đã upload",
+    "DELETE /tenants/:tenantId/knowledge/documents/:docId": "Xoá tài liệu (cascade)",
+    "POST /tenants/:tenantId/knowledge/search": "Tìm kiếm knowledge chunks (semantic)"
   },
   "features": [
     "Authentication (Hoàn thành - Sprint 1)",
     "Tenant Onboarding (Hoàn thành - Sprint 2)",
     "Agent CRUD UI (Hoàn thành - Sprint 3)",
     "Dark/Light/System Theme Mode (Hoàn thành - Sprint 3)",
-    "BE Phase 04 LLM Integration (Hoàn thành - Gemini 2.5 Flash)",
-    "Model refactor: platform controls model (Hoàn thành)",
+    "BE Phase 01-08 done (LLM + Pipeline + Knowledge RAG)",
     "Chat UI (Chưa bắt đầu - Sprint 4)",
-    "Knowledge RAG UI (Chưa bắt đầu)",
+    "Knowledge Upload UI (Chưa bắt đầu)",
     "Live Chat CRM UI (Chưa bắt đầu)"
   ],
   "business_rules": [

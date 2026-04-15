@@ -150,6 +150,50 @@
       "open_questions": [
         "DB agents still have model='gpt-4o-mini' — need manual SQL update via Supabase"
       ]
+    },
+    {
+      "id": "handoff-20260415-171500",
+      "saved_at": "2026-04-15T17:15:00+07:00",
+      "branch": "main",
+      "head_sha": "dfe8d15",
+      "base_sha": "83eebc4",
+      "source": "commit",
+      "commit_range": "83eebc4..dfe8d15",
+      "summary": "Phase 05-08 complete. Pipeline metrics + quota (05+06), Knowledge Upload (07), RAG Search (08). Chat pipeline now 8 stages with knowledge injection. BE 8/11 phases done.",
+      "project_changes": [
+        "Phase 05+06: Pipeline metrics logging, quota check/increment, resolve endpoint (3560291)",
+        "Phase 07: Knowledge Upload — TextExtractor (pdf-parse), TextChunker (recursive), EmbeddingService (Gemini gemini-embedding-001 1536d), pgvector store (b2c1504)",
+        "Phase 08: KnowledgeSearchService (cosine similarity, threshold 0.3, top-K=5), RAG prompt injection (soft-lock), graceful fallback (dfe8d15)",
+        "Chat pipeline: Context → Quota → Resolve → Save → History → Knowledge Search → LLM → Response",
+        "New deps: @google/generative-ai, pdf-parse, @types/multer"
+      ],
+      "commits": [
+        { "sha": "d5e9f04", "message": "feat: test chat cost protection" },
+        { "sha": "b4f99e3", "message": "feat: add POST /chat/test endpoint" },
+        { "sha": "3560291", "message": "feat(be): Phase 05+06 complete" },
+        { "sha": "b2c1504", "message": "feat(be): Phase 07 — Knowledge Upload & Processing pipeline" },
+        { "sha": "dfe8d15", "message": "feat(be): Phase 08 — Knowledge Search & RAG pipeline integration" }
+      ],
+      "working_tree": {
+        "summary": "Clean. All changes committed.",
+        "key_files": []
+      },
+      "decisions": [
+        "Gemini gemini-embedding-001 for embedding (free tier, MRL truncation to 1536d)",
+        "Recursive text splitter (1500 chars, 200 overlap) over sentence-based",
+        "Soft-lock RAG prompt: prioritize knowledge but allow general answers (ecommerce chatbot needs greetings)",
+        "Graceful fallback: knowledge search failure does not break chat",
+        "Similarity threshold 0.3 (conservative to avoid discarding marginal matches)"
+      ],
+      "next_steps": [
+        "Phase 09: Facebook Messenger Channel (webhook, page token, message routing)",
+        "Create HNSW index on knowledge_chunks.embedding",
+        "FE: Knowledge upload UI, Chat test with uploaded knowledge"
+      ],
+      "open_questions": [
+        "HNSW index needs manual SQL on Supabase (prisma db push doesn't support)",
+        "Facebook App Review process timing"
+      ]
     }
   ]
 }

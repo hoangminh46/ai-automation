@@ -1,37 +1,47 @@
 {
-  "updated_at": "2026-04-15T11:20:00+07:00",
+  "updated_at": "2026-04-15T17:15:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260415-111600",
+  "active_handoff_id": "handoff-20260415-171500",
   "working_on": {
-    "phase": "Phase 04 complete. Ready for FE Sprint 4 (Chat UI)",
+    "phase": "Phase 08 complete. BE Phase 01-08 done (8/11).",
     "status": "committed",
-    "summary": "Phase 04 LLM Integration + model refactor committed. Next: build Chat UI in FE."
+    "summary": "Knowledge Upload + RAG Search pipeline fully integrated. Chat pipeline now has 8 stages including knowledge injection."
   },
   "git_snapshot": {
-    "head_sha": "83eebc4",
-    "last_saved_head_sha": "83eebc4",
-    "base_sha": "9190a57",
+    "head_sha": "dfe8d15",
+    "last_saved_head_sha": "dfe8d15",
+    "base_sha": "83eebc4",
     "branch": "main",
     "has_uncommitted_changes": false,
     "changed_files": [],
     "staged_files": [],
     "unstaged_files": [],
     "untracked_files": [],
-    "commit_range": "9190a57..83eebc4",
+    "commit_range": "83eebc4..dfe8d15",
     "commits_since_last_save": [
-      { "sha": "83eebc4", "message": "refactor: hide LLM params from user, platform controls model" }
+      { "sha": "b4f99e3", "message": "feat: add POST /chat/test endpoint" },
+      { "sha": "dd556eb", "message": "feat(fe): Sprint 3 Phase 04C complete" },
+      { "sha": "b3bb9dd", "message": "feat(fe): Sprint 2 complete — inline rename" },
+      { "sha": "bb8ba7c", "message": "chore: fix brain files" },
+      { "sha": "d5e9f04", "message": "feat: test chat cost protection" },
+      { "sha": "79621c5", "message": "docs: update plans" },
+      { "sha": "3560291", "message": "feat(be): Phase 05+06 complete — pipeline metrics + quota" },
+      { "sha": "b2c1504", "message": "feat(be): Phase 07 — Knowledge Upload & Processing pipeline" },
+      { "sha": "dfe8d15", "message": "feat(be): Phase 08 — Knowledge Search & RAG pipeline integration" }
     ]
   },
   "pending_tasks": [
-    "FE Sprint 4: Chat UI (page, agent selector, message list, send input)",
-    "Run SQL to update existing agents: UPDATE agents SET model='gemini-2.5-flash' WHERE model='gpt-4o-mini'",
-    "E2E test via Chat UI"
+    "Phase 09: Facebook Messenger Channel (webhook, message handling)",
+    "Phase 10: Self-serve API & Polish",
+    "Phase 11: Testing & Hardening",
+    "Create HNSW index on knowledge_chunks.embedding (manual SQL on Supabase)",
+    "FE: Knowledge upload UI + Chat UI integration"
   ],
   "recent_changes": [
-    "Phase 04: LLM Integration (Gemini 2.5 Flash + ConversationModule) — 9190a57",
-    "Refactor: hide model/temperature/maxTokens from user, platform controls — 83eebc4",
-    "Simplified CreateAgentPayload to name/persona/greeting/isActive",
-    "Agent card now shows persona preview instead of model chips"
+    "Phase 05+06: Pipeline metrics, quota tracking, resolve endpoint — 3560291",
+    "Phase 07: Knowledge upload pipeline (PDF/TXT → chunk → embed → pgvector) — b2c1504",
+    "Phase 08: Semantic search + RAG prompt injection (soft-lock) — dfe8d15",
+    "Chat pipeline now 8 stages: Context → Quota → Resolve → Save → History → Knowledge → LLM → Response"
   ],
   "uncommitted_summary": {
     "status": "clean",
