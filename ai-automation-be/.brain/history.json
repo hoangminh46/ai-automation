@@ -112,6 +112,42 @@
         "Swagger UI not configured (optional but useful for API testing)",
         "Streaming response support (future enhancement)"
       ]
+    },
+    {
+      "id": "handoff-20260415-111600",
+      "saved_at": "2026-04-15T11:16:00+07:00",
+      "branch": "main",
+      "head_sha": "cc2d9ffdab4ba7dbadf816b36d6f0569fd5f45ab",
+      "base_sha": "9190a574b77d1a20843112d3a5dd0240d9829607",
+      "source": "commit",
+      "commit_range": "9190a57..cc2d9ff",
+      "summary": "Refactored Agent UX: platform controls AI model, user focuses on persona. FE form simplified, Agent card shows persona preview. Schema default updated to gemini-2.5-flash.",
+      "project_changes": [
+        "FE: Removed model/temperature/maxTokens from Agent form and card",
+        "FE: Agent card shows persona preview instead of model chips",
+        "BE: Prisma Agent default model changed from gpt-4o-mini to gemini-2.5-flash",
+        "Business rule: Platform controls model, user only configures name/persona/greeting"
+      ],
+      "commits": [
+        { "sha": "9190a57", "message": "feat(be): Phase 04 - LLM Integration (Gemini 2.5 Flash + ConversationModule)" },
+        { "sha": "cc2d9ff", "message": "refactor: hide LLM params from user, platform controls model" }
+      ],
+      "working_tree": {
+        "summary": "Clean. All changes committed.",
+        "key_files": []
+      },
+      "decisions": [
+        "Platform controls AI model — prevents cost mismatch with message-based billing",
+        "Agent form simplified to 3 fields: name, persona, greeting",
+        "BE DTO keeps optional model/temp/maxTokens for admin override via API"
+      ],
+      "next_steps": [
+        "FE Sprint 4: Chat UI page",
+        "Run SQL migration on existing agents in Supabase Dashboard"
+      ],
+      "open_questions": [
+        "DB agents still have model='gpt-4o-mini' — need manual SQL update via Supabase"
+      ]
     }
   ]
 }

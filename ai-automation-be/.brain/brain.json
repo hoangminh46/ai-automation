@@ -21,7 +21,7 @@
     "api_docs": "Swagger (@nestjs/swagger)",
     "security": "Helmet, CORS",
     "dependencies_source": "package.json",
-    "last_verified_sha": "1020f0c"
+    "last_verified_sha": "cc2d9ff"
   },
   "database_schema": {
     "tables": [
@@ -82,7 +82,7 @@
     "phase_01_project_init": { "status": "done", "last_changed_sha": "750efb7" },
     "phase_02_db_auth": { "status": "done", "last_changed_sha": "b96af61" },
     "phase_03_tenant_agent_crud": { "status": "done", "last_changed_sha": "421a13d" },
-    "phase_04_llm_integration": { "status": "done", "last_changed_sha": "1020f0c" },
+    "phase_04_llm_integration": { "status": "done", "last_changed_sha": "cc2d9ff" },
     "phase_05_agent_pipeline": { "status": "not_started" },
     "phase_06_conversation_memory": { "status": "not_started" },
     "phase_07_knowledge_upload": { "status": "not_started" },
@@ -104,7 +104,8 @@
     "Chat: auto-create Customer if customerId not provided (name fallback: Khách vãng lai)",
     "Chat: auto-create Conversation if conversationId not provided (status: BOT_HANDLING)",
     "Chat: history context uses LAST 20 messages (not oldest 20)",
-    "Chat: HUMAN_AGENT messages map to 'assistant' role for LLM context"
+    "Chat: HUMAN_AGENT messages map to 'assistant' role for LLM context",
+    "Platform controls AI model — user only configures name/persona/greeting, not model/temperature/maxTokens"
   ],
   "coding_conventions": [
     "Import paths use .js extension (ESM compat)",

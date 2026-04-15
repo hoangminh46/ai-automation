@@ -1,43 +1,41 @@
 {
-  "updated_at": "2026-04-15T10:45:00+07:00",
+  "updated_at": "2026-04-15T11:16:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260415-104500",
+  "active_handoff_id": "handoff-20260415-111600",
   "working_on": {
-    "phase": "phase-04 complete, ready for FE Sprint 4 (Chat UI)",
-    "status": "committing",
-    "summary": "Phase 04 LLM Integration complete. Gemini 2.5 Flash connected via OpenAI SDK. ConversationModule with POST /chat, GET /conversations, GET /messages. TSC 0, ESLint 0, routes verified."
+    "phase": "Phase 04 complete. Ready for FE Sprint 4 (Chat UI)",
+    "status": "committed",
+    "summary": "Phase 04 LLM Integration + model refactor committed. Next: build Chat UI in FE."
   },
   "git_snapshot": {
-    "head_sha": "1020f0c",
-    "last_saved_head_sha": "0480746756e28fb65e8a8ff28f6a7999a603b980",
-    "base_sha": "0480746756e28fb65e8a8ff28f6a7999a603b980",
+    "head_sha": "cc2d9ffdab4ba7dbadf816b36d6f0569fd5f45ab",
+    "last_saved_head_sha": "cc2d9ffdab4ba7dbadf816b36d6f0569fd5f45ab",
+    "base_sha": "9190a574b77d1a20843112d3a5dd0240d9829607",
     "branch": "main",
     "has_uncommitted_changes": false,
     "changed_files": [],
     "staged_files": [],
     "unstaged_files": [],
     "untracked_files": [],
-    "commit_range": "0480746..1020f0c",
-    "commits_since_last_save": []
+    "commit_range": "9190a57..cc2d9ff",
+    "commits_since_last_save": [
+      { "sha": "cc2d9ff", "message": "refactor: hide LLM params from user, platform controls model" }
+    ]
   },
-  "1020f0c_tasks": [
-    "FE Sprint 4: Chat UI (chat page, agent selector, message list, send input)",
-    "E2E test: login → chat → verify Gemini reply (via Chat UI)",
-    "Clean up empty scaffolding dirs: src/tenant/, src/agent/",
-    "Setup Swagger UI in main.ts (optional, improves API testing)",
-    "Expose Tenant.settings via DTO (future phase)"
+  "pending_tasks": [
+    "FE Sprint 4: Chat UI (page, agent selector, message list, send input)",
+    "Run SQL to update existing agents: UPDATE agents SET model='gemini-2.5-flash' WHERE model='gpt-4o-mini'",
+    "E2E test via Chat UI"
   ],
   "recent_changes": [
-    "Installed openai npm package for Gemini OpenAI-compatible API",
-    "Created LlmModule + LlmService (OpenAI SDK → Gemini endpoint)",
-    "Created ConversationModule (controller + service + DTOs)",
-    "Endpoints: POST /chat, GET /conversations, GET /conversations/:id/messages",
-    "Logic review: fixed history ordering (desc+reverse), added LLM error handling, fixed HUMAN_AGENT role mapping",
-    "TSC 0 errors, ESLint 0 errors, 3/3 routes return 401 (auth working)"
+    "Hid model/temperature/maxTokens from FE Agent form + card",
+    "Simplified CreateAgentPayload to name/persona/greeting/isActive",
+    "Updated Prisma schema default model to gemini-2.5-flash",
+    "Agent card now shows persona preview instead of model chips"
   ],
   "uncommitted_summary": {
     "status": "clean",
-    "summary": "Phase 04 committed. Working tree clean.",
+    "summary": "All changes committed.",
     "files": []
   }
 }

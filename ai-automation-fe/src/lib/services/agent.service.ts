@@ -28,9 +28,6 @@ export interface CreateAgentPayload {
   name: string;
   persona?: string;
   greeting?: string;
-  model?: string;
-  temperature?: number;
-  maxTokens?: number;
   isActive?: boolean;
 }
 

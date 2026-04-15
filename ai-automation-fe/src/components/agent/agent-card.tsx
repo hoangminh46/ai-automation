@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Pencil, Trash2, Power, Cpu, Thermometer, MessageSquare } from "lucide-react";
+import { Bot, Pencil, Trash2, Power, MessageSquare, Sparkles } from "lucide-react";
 import { Agent } from "@/lib/services/agent.service";
 
 interface AgentCardProps {
@@ -10,12 +10,7 @@ interface AgentCardProps {
   onToggleActive: (agent: Agent) => void;
 }
 
-const MODEL_LABELS: Record<string, string> = {
-  "gpt-4o-mini": "GPT-4o Mini",
-  "gpt-4o": "GPT-4o",
-  "gpt-4-turbo": "GPT-4 Turbo",
-  "gpt-3.5-turbo": "GPT-3.5",
-};
+
 
 export function AgentCard({ agent, onEdit, onDelete, onToggleActive }: AgentCardProps) {
   return (
@@ -80,20 +75,15 @@ export function AgentCard({ agent, onEdit, onDelete, onToggleActive }: AgentCard
           </div>
         </div>
 
-        {/* Model info chips */}
-        <div className="flex flex-wrap gap-2 mb-5">
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-1.5 rounded-lg">
-            <Cpu className="w-3.5 h-3.5" />
-            {MODEL_LABELS[agent.model] || agent.model}
-          </span>
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-1.5 rounded-lg">
-            <Thermometer className="w-3.5 h-3.5" />
-            {agent.temperature}
-          </span>
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-1.5 rounded-lg">
-            {agent.maxTokens} tokens
-          </span>
-        </div>
+        {/* Persona preview */}
+        {agent.persona && (
+          <div className="flex items-start gap-2 mb-5 px-3 py-2 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg border border-blue-100 dark:border-blue-900/30">
+            <Sparkles className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
+            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+              {agent.persona}
+            </p>
+          </div>
+        )}
 
         {/* Action buttons */}
         <div className="flex items-center gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
