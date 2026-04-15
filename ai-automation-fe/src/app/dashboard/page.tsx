@@ -1,16 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Store, ArrowRight, Bot, MessageSquare, Zap } from "lucide-react";
+import { Store, ArrowRight, Bot, MessageSquare, Zap, Pencil, Check, X } from "lucide-react";
 import { useTenantStore } from "@/store/tenant-store";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 
 export default function DashboardPage() {
   const { tenants, activeTenant, hasLoaded, fetchTenants, createNewTenant } = useTenantStore();
+  const updateTenantName = useTenantStore(state => state.updateTenantName);
   const [shopName, setShopName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Mồi dữ liệu khi rớt vào màn hình này
+  // Inline rename state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {
     fetchTenants();
   }, [fetchTenants]);
@@ -24,13 +29,38 @@ export default function DashboardPage() {
     setIsSubmitting(false);
   };
 
-  // 1. TRẠNG THÁI CHỜ KẾT QUẢ API LẦN ĐẦU
-  // Dùng !hasLoaded thay vì isLoading để chặn UI nháy rách màn hình do (React First-Render chưa kịp bật isLoading)
+  const startEditing = () => {
+    setEditName(activeTenant?.name ?? "");
+    setIsEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setIsEditing(false);
+    setEditName("");
+  };
+
+  const saveNewName = async () => {
+    if (!activeTenant || !editName.trim() || editName.trim() === activeTenant.name) {
+      cancelEditing();
+      return;
+    }
+    setIsSaving(true);
+    const success = await updateTenantName(activeTenant.id, editName.trim());
+    setIsSaving(false);
+    if (success) setIsEditing(false);
+  };
+
+  const handleEditKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") saveNewName();
+    if (e.key === "Escape") cancelEditing();
+  };
+
+  // 1. Loading
   if (!hasLoaded) {
     return <LoadingScreen text="Đang đồng bộ phân hệ Cửa Hàng..." />;
   }
 
-  // 2. NHÁNH ONBOARDING: CHƯA CÓ CỬA HÀNG NÀO
+  // 2. Onboarding
   if (tenants.length === 0) {
     return (
       <div className="max-w-2xl mx-auto mt-10">
@@ -86,14 +116,53 @@ export default function DashboardPage() {
     );
   }
 
-  // 3. NHÁNH DASHBOARD: NẾU ĐÃ CÓ CỬA HÀNG
+  // 3. Dashboard
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-            Tổng quan: {activeTenant?.name}
-          </h1>
+          {/* Inline editable title */}
+          {isEditing ? (
+            <div className="flex items-center gap-2">
+              <input
+                autoFocus
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                onKeyDown={handleEditKeyDown}
+                disabled={isSaving}
+                className="text-3xl font-bold text-slate-900 dark:text-white bg-transparent border-b-2 border-blue-500 focus:outline-none py-0 px-0 w-auto min-w-[200px]"
+              />
+              <button
+                onClick={saveNewName}
+                disabled={isSaving || !editName.trim()}
+                className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors"
+                title="Lưu"
+              >
+                <Check className="w-5 h-5" />
+              </button>
+              <button
+                onClick={cancelEditing}
+                disabled={isSaving}
+                className="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                title="Huỷ"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+                Tổng quan: {activeTenant?.name}
+              </h1>
+              <button
+                onClick={startEditing}
+                className="p-1.5 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                title="Đổi tên cửa hàng"
+              >
+                <Pencil className="w-5 h-5" />
+              </button>
+            </div>
+          )}
           <p className="text-slate-500 dark:text-slate-400 mt-2">
             Báo cáo hiệu suất hoạt động của Bot AI trong cửa hàng.
           </p>
@@ -116,7 +185,7 @@ export default function DashboardPage() {
           <div>
             <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Quota Tin Nhắn</h3>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-slate-900 dark:text-white">{activeTenant?.message_quota || 0}</span>
+              <span className="text-3xl font-bold text-slate-900 dark:text-white">{activeTenant?.messageQuota || 0}</span>
               <span className="text-slate-400 text-sm">tin</span>
             </div>
           </div>
@@ -132,7 +201,7 @@ export default function DashboardPage() {
           <div>
             <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Tin đã tiêu thụ</h3>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-slate-900 dark:text-white">{activeTenant?.message_used || 0}</span>
+              <span className="text-3xl font-bold text-slate-900 dark:text-white">{activeTenant?.messageUsed || 0}</span>
               <span className="text-slate-400 text-sm">tin</span>
             </div>
           </div>

@@ -4,8 +4,8 @@ export interface Tenant {
   id: string;
   name: string;
   slug: string;
-  message_quota: number;
-  message_used: number;
+  messageQuota: number;
+  messageUsed: number;
   createdAt: string;
   updatedAt: string;
   settings?: Record<string, unknown>;
@@ -35,6 +35,11 @@ export const tenantService = {
       slug,
       description,
     });
+    return response.data;
+  },
+
+  updateTenant: async (tenantId: string, payload: { name?: string; slug?: string }): Promise<Tenant> => {
+    const response = await api.patch(`/tenants/${tenantId}`, payload);
     return response.data;
   },
 };

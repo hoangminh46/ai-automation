@@ -14,7 +14,7 @@
 
 ## 🗺️ Các Giai Đoạn Triển Khai (Sprints)
 
-### 🧱 SPRINT 1: Nền Tảng (Foundation)
+### 🧱 SPRINT 1: Nền Tảng (Foundation) ✅
 - **Phase 01: Core Architecture**
   - [x] Khởi tạo folder structure.
   - [x] Cài đặt dependencies (`lucide-react`, `zustand`, `@supabase/ssr`, `twMerge`).
@@ -24,32 +24,36 @@
   - [x] UI/UX trang Login / Đăng ký với Dark/Light mode đẹp mắt.
   - [x] Tích hợp Supabase Auth Client xác thực trực tiếp trên màn hình, Callback API route xử lý Session.
 
-### 🏪 SPRINT 2: Quản Lý Cửa Hàng (Tenant)
+### 🏪 SPRINT 2: Quản Lý Cửa Hàng (Tenant) ✅
 - **Phase 03A: Onboarding**
   - [x] Flow bắt buộc cho User chưa có Cửa hàng: Màn hình chào mừng & Tạo Tenant đầu tiên.
   - [x] Form Create Tenant kết hợp gọi API NestJS BE, Tự sinh Slug.
 - **Phase 03B: Dashboard Layout & Settings**
   - [x] Sidebar Navigation tĩnh & Top header.
   - [x] Cài đặt Context toàn cục lưu dữ liệu "Cửa hàng đang chọn" bằng thư viện Zustand (Fetch tự động).
-  - [ ] Màn hình Settings đổi tên Cửa hàng.
+  - [x] Đổi tên Cửa hàng (inline edit trên tiêu đề Dashboard, không cần trang Settings riêng).
 
-### 🤖 SPRINT 3: Quản Lý Bot (Agent) & Config
-- **Phase 04A: Agent List UI**
-  - [ ] Vẽ UI Danh sách Bot (Dạng lưới Cards), kèm Indicator bật/tắt (active/inactive).
-  - [ ] Tính năng xoá/huỷ bot qua API.
-- **Phase 04B: Cấu hình chuyên sâu (Agent Config) - Phần UI**
-  - [ ] Layout Form đẹp: Input Text (Name, Greeting), Textarea lớn (Persona), Sliders (Temperature).
-- **Phase 04C: Cấu hình chuyên sâu - Data Binding**
-  - [ ] Áp dụng Hook Form / DTO Validation. Load trạng thái Bot từ API BE vào form, và Save.
+### 🤖 SPRINT 3: Quản Lý Bot (Agent) & Config ⚡ ĐANG LÀM
+- **Phase 04A: Agent List UI** ✅
+  - [x] Vẽ UI Danh sách Bot (Dạng lưới Cards), kèm Indicator bật/tắt (active/inactive).
+  - [x] Tính năng xoá/huỷ bot qua API.
+  - [x] Dark/Light/System Theme Mode + ThemeToggle.
+- **Phase 04B: Cấu hình chuyên sâu (Agent Config) - Phần UI** ✅
+  - [x] Layout Form: Input Text (Name, Greeting), Textarea lớn (Persona).
+  - [x] ~~Sliders (Temperature, MaxTokens)~~ → Ẩn khỏi user, platform controls model.
+  - [x] Agent Card hiển thị persona preview thay vì model chips.
+- **Phase 04C: Cấu hình chuyên sâu - Data Binding** ⬜ CÒN THIẾU
+  - [ ] Nút "Thử Bot" (Test Chat dialog) — giúp seller kiểm tra persona trước khi deploy.
+  - [ ] Validation nâng cao cho form Agent (persona required khi active, maxLength, etc).
 
-### 📚 SPRINT 4: Tri thức (Knowledge Base / RAG)
+### 📚 SPRINT 4: Tri thức (Knowledge Base / RAG) ⬜
 - **Phase 05A: Upload Area & List UI**
   - [ ] Component vùng kéo/thả File (Drag & Drop Zone).
   - [ ] Bảng trạng thái tài liệu (Đang xử lý Vector, Lỗi, Xong).
 - **Phase 05B: API Integration**
   - [ ] Đẩy file multipart/form-data sang NestJS Endpoint.
 
-### 💬 SPRINT 5: Tương tác (CRM & Channels)
+### 💬 SPRINT 5: Tương tác (CRM & Channels) ⬜
 - **Phase 06A: CRM Layout 3 Cột (Chỉ vẽ UI)**
   - [ ] Vẽ bộ khung: Sidebar trái (List Box chat), Cột giữa (Bóng thoại Customer vs AI), Cột phải (Khách CRM metadata). Mockup dummy data thuần HTML/Tailwind.
 - **Phase 06B: Data Binding & Sockets/Polling**
@@ -61,7 +65,29 @@
 
 ---
 
-## 🎯 Current Status
-- Đã hoàn tất 100% **SPRINT 1 & SPRINT 2 (UI Hạt Nhân + Onboarding Cửa hàng)**.
-- Đã xử lý triệt để Re-renders Layout NextJS, Zustand Global Stores, Middleware Edge Supabase V2 Auth. 
-- **Next Turn:** Bắt đầu **SPRINT 3 - Quản lý Cấu hình Bot (Agent & Config)**. Chuẩn bị thao tác với API Cấu Hình Bot từ Supabase/NestJS (Phase 04A).
+## 🎯 Current Status (2026-04-15)
+
+### Đã hoàn tất:
+- ✅ **SPRINT 1**: Foundation + Auth (100%)
+- ✅ **SPRINT 2**: Tenant Onboarding + Dashboard Layout + Đổi tên (100%)
+- ✅ **SPRINT 3 Phase 04A+04B**: Agent List + Config UI (100%)
+
+### Đang làm:
+- ⚡ **SPRINT 3 Phase 04C**: Data Binding — cần thêm "Thử Bot" test chat + validation
+
+### Chưa bắt đầu:
+- ⬜ SPRINT 4: Knowledge RAG UI
+- ⬜ SPRINT 5: CRM + Facebook Channels
+
+### Thay đổi so với plan gốc:
+- **Model/Temperature/MaxTokens**: Ẩn khỏi user — platform controls AI model (business decision 2026-04-15)
+- **BE Phase 04 LLM**: Đã hoàn tất — Gemini 2.5 Flash, ConversationModule ready. API sẵn sàng cho Sprint 5.
+- **"Thử Bot"**: Thêm vào Phase 04C thay vì dựng Chat UI full — seller test persona trước khi deploy Facebook.
+- **Settings page**: Không tạo trang riêng — gộp inline edit đổi tên ngay trên Dashboard title. Bỏ menu "Cài đặt hệ thống" khỏi Sidebar.
+
+### Thứ tự ưu tiên tiếp theo:
+```
+Sprint 3 Phase 04C (Thử Bot + Validation)  ← ĐANG LÀM
+Sprint 4 (Knowledge RAG UI)                ← SAU ĐÓ
+Sprint 5 (CRM 3-cột + Facebook)            ← SAU NỮA
+```

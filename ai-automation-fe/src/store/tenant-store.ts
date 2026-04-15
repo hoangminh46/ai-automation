@@ -11,6 +11,7 @@ interface TenantState {
   fetchTenants: () => Promise<void>;
   setActiveTenant: (tenant: Tenant) => void;
   createNewTenant: (name: string) => Promise<boolean>;
+  updateTenantName: (tenantId: string, name: string) => Promise<boolean>;
   clearStore: () => void;
 }
 
@@ -67,5 +68,31 @@ export const useTenantStore = create<TenantState>((set, get) => ({
     } finally {
       set({ isLoading: false });
     }
-  }
+  },
+
+  updateTenantName: async (tenantId, name) => {
+    try {
+      const slug = name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d").replace(/Đ/g, "D")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)+/g, "") || `shop-${Date.now()}`;
+
+      const updated = await tenantService.updateTenant(tenantId, { name, slug });
+
+      const currentTenants = get().tenants;
+      const activeTenant = get().activeTenant;
+
+      set({
+        tenants: currentTenants.map(t => t.id === tenantId ? updated : t),
+        activeTenant: activeTenant?.id === tenantId ? updated : activeTenant,
+      });
+      return true;
+    } catch (error) {
+      console.error("Lỗi cập nhật Tenant:", error);
+      return false;
+    }
+  },
 }));

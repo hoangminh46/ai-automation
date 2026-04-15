@@ -7,7 +7,6 @@ import {
   Store, 
   MessageSquare, 
   Database, 
-  Settings, 
   LogOut, 
   PanelLeft,
   ChevronDown
@@ -22,7 +21,6 @@ const MENU_ITEMS = [
   { name: "Binh đoàn Bot AI", href: "/dashboard/agents", icon: <Bot className="w-5 h-5" /> },
   { name: "Tri thức (RAG)", href: "/dashboard/knowledge", icon: <Database className="w-5 h-5" /> },
   { name: "Live Chat CRM", href: "/dashboard/chat", icon: <MessageSquare className="w-5 h-5" /> },
-  { name: "Cài đặt hệ thống", href: "/dashboard/settings", icon: <Settings className="w-5 h-5" /> },
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
