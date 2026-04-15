@@ -72,10 +72,7 @@
 ### Đã hoàn tất:
 - ✅ **SPRINT 1**: Foundation + Auth (100%)
 - ✅ **SPRINT 2**: Tenant Onboarding + Dashboard Layout + Đổi tên (100%)
-- ✅ **SPRINT 3 Phase 04A+04B**: Agent List + Config UI (100%)
-
-### Đang làm:
-- ⚡ **SPRINT 3 Phase 04C**: Data Binding — cần thêm "Thử Bot" test chat + validation
+- ✅ **SPRINT 3**: Agent CRUD + Config + Test Chat + Rate Limit (100%)
 
 ### Chưa bắt đầu:
 - ⬜ SPRINT 4: Knowledge RAG UI
@@ -84,12 +81,13 @@
 ### Thay đổi so với plan gốc:
 - **Model/Temperature/MaxTokens**: Ẩn khỏi user — platform controls AI model (business decision 2026-04-15)
 - **BE Phase 04 LLM**: Đã hoàn tất — Gemini 2.5 Flash, ConversationModule ready. API sẵn sàng cho Sprint 5.
-- **"Thử Bot"**: Thêm vào Phase 04C thay vì dựng Chat UI full — seller test persona trước khi deploy Facebook.
-- **Settings page**: Không tạo trang riêng — gộp inline edit đổi tên ngay trên Dashboard title. Bỏ menu "Cài đặt hệ thống" khỏi Sidebar.
+- **"Thử Bot"**: Thêm vào Phase 04C — seller test persona trước khi deploy Facebook.
+- **Test Chat endpoint riêng**: `POST /chat/test` — không lưu DB, rate limited (10 req/hour).
+- **Settings page**: Không tạo trang riêng — gộp inline edit đổi tên ngay trên Dashboard title.
 
 ### Thứ tự ưu tiên tiếp theo:
 ```
-Sprint 3 Phase 04C (Thử Bot + Validation)  ← ĐANG LÀM
-Sprint 4 (Knowledge RAG UI)                ← SAU ĐÓ
+Sprint 4 (Knowledge RAG UI)                ← TIẾP THEO
 Sprint 5 (CRM 3-cột + Facebook)            ← SAU NỮA
 ```
+
