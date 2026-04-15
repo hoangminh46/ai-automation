@@ -62,9 +62,44 @@
         "FE Sprint 4: Knowledge RAG UI — upload document, view chunks, liên kết với Agent",
         "FE Sprint 5: Live Chat UI — widget chat, kết nối agent + conversation API"
       ],
+      "open_questions": []
+    },
+    {
+      "id": "handoff-20260415-112000",
+      "saved_at": "2026-04-15T11:20:00+07:00",
+      "branch": "main",
+      "head_sha": "83eebc4",
+      "base_sha": "8fe2fdc",
+      "source": "commit",
+      "commit_range": "8fe2fdc..83eebc4",
+      "summary": "BE Phase 04 LLM Integration done (Gemini). Agent UX refactored: platform controls model, user focuses on persona. FE form/card simplified.",
+      "project_changes": [
+        "BE: ConversationModule — POST /chat, GET /conversations, GET /messages",
+        "BE: LlmModule + LlmService (Gemini 2.5 Flash via OpenAI SDK)",
+        "FE: Removed model/temperature/maxTokens from AgentFormModal and AgentCard",
+        "FE: Agent card shows persona preview instead of model chips",
+        "FE: CreateAgentPayload simplified to name/persona/greeting/isActive",
+        "BE: Prisma Agent default model changed to gemini-2.5-flash"
+      ],
+      "commits": [
+        "0480746",
+        "9190a57",
+        "83eebc4"
+      ],
+      "working_tree": {},
+      "decisions": [
+        "AI provider: Gemini 2.5 Flash (free tier, OpenAI-compat API)",
+        "Platform controls AI model — prevents cost mismatch with message billing",
+        "BE DTO keeps optional model/temp/maxTokens for admin override",
+        "Agent toggle rollback: simple refetch is sufficient for now"
+      ],
+      "next_steps": [
+        "FE Sprint 4: Chat UI (/dashboard/chat, agent selector, message list)",
+        "E2E test via Chat UI",
+        "BE Phase 05: Knowledge RAG"
+      ],
       "open_questions": [
-        "Agent toggle active có cần optimistic UI rollback khi BE lỗi không (hiện tại chỉ refetch)?",
-        "BE Phase 04 dùng OpenAI hay cho phép chọn provider (Gemini, Anthropic) từ đầu?"
+        "DB agents still have model='gpt-4o-mini' — need Supabase SQL update"
       ]
     }
   ]

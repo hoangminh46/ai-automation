@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-04-15T11:16:00+07:00",
+  "updated_at": "2026-04-15T11:20:00+07:00",
   "current_branch": "main",
   "active_handoff_id": "handoff-20260415-111600",
   "working_on": {
@@ -8,18 +8,18 @@
     "summary": "Phase 04 LLM Integration + model refactor committed. Next: build Chat UI in FE."
   },
   "git_snapshot": {
-    "head_sha": "cc2d9ffdab4ba7dbadf816b36d6f0569fd5f45ab",
-    "last_saved_head_sha": "cc2d9ffdab4ba7dbadf816b36d6f0569fd5f45ab",
-    "base_sha": "9190a574b77d1a20843112d3a5dd0240d9829607",
+    "head_sha": "83eebc4",
+    "last_saved_head_sha": "83eebc4",
+    "base_sha": "9190a57",
     "branch": "main",
     "has_uncommitted_changes": false,
     "changed_files": [],
     "staged_files": [],
     "unstaged_files": [],
     "untracked_files": [],
-    "commit_range": "9190a57..cc2d9ff",
+    "commit_range": "9190a57..83eebc4",
     "commits_since_last_save": [
-      { "sha": "cc2d9ff", "message": "refactor: hide LLM params from user, platform controls model" }
+      { "sha": "83eebc4", "message": "refactor: hide LLM params from user, platform controls model" }
     ]
   },
   "pending_tasks": [
@@ -28,9 +28,9 @@
     "E2E test via Chat UI"
   ],
   "recent_changes": [
-    "Hid model/temperature/maxTokens from FE Agent form + card",
+    "Phase 04: LLM Integration (Gemini 2.5 Flash + ConversationModule) — 9190a57",
+    "Refactor: hide model/temperature/maxTokens from user, platform controls — 83eebc4",
     "Simplified CreateAgentPayload to name/persona/greeting/isActive",
-    "Updated Prisma schema default model to gemini-2.5-flash",
     "Agent card now shows persona preview instead of model chips"
   ],
   "uncommitted_summary": {

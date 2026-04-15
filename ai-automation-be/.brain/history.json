@@ -71,10 +71,10 @@
       "id": "handoff-20260415-104500",
       "saved_at": "2026-04-15T10:45:00+07:00",
       "branch": "main",
-      "head_sha": "1020f0c",
-      "base_sha": "0480746756e28fb65e8a8ff28f6a7999a603b980",
+      "head_sha": "9190a57",
+      "base_sha": "0480746",
       "source": "commit",
-      "commit_range": "0480746..1020f0c",
+      "commit_range": "0480746..9190a57",
       "summary": "Phase 04 LLM Integration complete. Gemini 2.5 Flash connected via OpenAI-compatible API. ConversationModule with chat endpoint, conversation list, message history. TSC 0, ESLint 0.",
       "project_changes": [
         "Switched AI provider from OpenAI placeholder to Gemini 2.5 Flash (free tier)",
@@ -83,7 +83,9 @@
         "Chat flow: resolve customer → resolve conversation → save user msg → build context (persona+history) → call Gemini → save reply + token tracking",
         "Logic fixes: history desc+reverse, HUMAN_AGENT→assistant, LLM error handling with try/catch+Logger"
       ],
-      "commits": [],
+      "commits": [
+        { "sha": "9190a57", "message": "feat(be): Phase 04 - LLM Integration (Gemini 2.5 Flash + ConversationModule)" }
+      ],
       "working_tree": {
         "summary": "14 files changed (8 new, 6 modified), 481 insertions. All committed.",
         "key_files": [
@@ -117,10 +119,10 @@
       "id": "handoff-20260415-111600",
       "saved_at": "2026-04-15T11:16:00+07:00",
       "branch": "main",
-      "head_sha": "cc2d9ffdab4ba7dbadf816b36d6f0569fd5f45ab",
-      "base_sha": "9190a574b77d1a20843112d3a5dd0240d9829607",
+      "head_sha": "83eebc4",
+      "base_sha": "9190a57",
       "source": "commit",
-      "commit_range": "9190a57..cc2d9ff",
+      "commit_range": "9190a57..83eebc4",
       "summary": "Refactored Agent UX: platform controls AI model, user focuses on persona. FE form simplified, Agent card shows persona preview. Schema default updated to gemini-2.5-flash.",
       "project_changes": [
         "FE: Removed model/temperature/maxTokens from Agent form and card",
@@ -130,7 +132,7 @@
       ],
       "commits": [
         { "sha": "9190a57", "message": "feat(be): Phase 04 - LLM Integration (Gemini 2.5 Flash + ConversationModule)" },
-        { "sha": "cc2d9ff", "message": "refactor: hide LLM params from user, platform controls model" }
+        { "sha": "83eebc4", "message": "refactor: hide LLM params from user, platform controls model" }
       ],
       "working_tree": {
         "summary": "Clean. All changes committed.",
