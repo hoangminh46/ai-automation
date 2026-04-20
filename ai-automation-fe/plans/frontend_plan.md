@@ -48,12 +48,17 @@
   - [x] Fix sidebar `<a>` → `<Link>` (SPA client-side navigation).
   - [x] Fix loading flash: dùng `loadedForTenantId` + `tenantHasLoaded` gate.
 
-### 📚 SPRINT 4: Tri thức (Knowledge Base / RAG) ⬜
-- **Phase 05A: Upload Area & List UI**
-  - [ ] Component vùng kéo/thả File (Drag & Drop Zone).
-  - [ ] Bảng trạng thái tài liệu (Đang xử lý Vector, Lỗi, Xong).
-- **Phase 05B: API Integration**
-  - [ ] Đẩy file multipart/form-data sang NestJS Endpoint.
+### 📚 SPRINT 4: Tri thức (Knowledge Base / RAG) ✅
+- **Phase 05A: Upload Area & List UI** ✅
+  - [x] Component vùng kéo/thả File (Drag & Drop Zone) với visual feedback.
+  - [x] Bảng trạng thái tài liệu (PENDING/PROCESSING/READY/ERROR) với status badges.
+  - [x] Stats badges (số tài liệu sẵn sàng + tổng chunks).
+  - [x] Empty state hướng dẫn seller upload tài liệu đầu tiên.
+  - [x] Delete dialog xác nhận xoá tài liệu (cascade chunks).
+- **Phase 05B: API Integration** ✅
+  - [x] knowledge.service.ts — API layer (GET/POST/DELETE documents).
+  - [x] knowledge-store.ts — Zustand store (loadedForTenantId pattern).
+  - [x] Multipart/form-data upload qua axios.
 
 ### 💬 SPRINT 5: Tương tác (CRM & Channels) ⬜
 - **Phase 06A: CRM Layout 3 Cột (Chỉ vẽ UI)**
@@ -67,15 +72,15 @@
 
 ---
 
-## 🎯 Current Status (2026-04-15)
+## 🎯 Current Status (2026-04-20)
 
 ### Đã hoàn tất:
 - ✅ **SPRINT 1**: Foundation + Auth (100%)
 - ✅ **SPRINT 2**: Tenant Onboarding + Dashboard Layout + Đổi tên (100%)
 - ✅ **SPRINT 3**: Agent CRUD + Config + Test Chat + Rate Limit (100%)
+- ✅ **SPRINT 4**: Knowledge RAG UI — Upload Zone + Document Table + API Integration (100%)
 
 ### Chưa bắt đầu:
-- ⬜ SPRINT 4: Knowledge RAG UI
 - ⬜ SPRINT 5: CRM + Facebook Channels
 
 ### Thay đổi so với plan gốc:
@@ -84,10 +89,10 @@
 - **"Thử Bot"**: Thêm vào Phase 04C — seller test persona trước khi deploy Facebook.
 - **Test Chat endpoint riêng**: `POST /chat/test` — không lưu DB, rate limited (10 req/hour).
 - **Settings page**: Không tạo trang riêng — gộp inline edit đổi tên ngay trên Dashboard title.
+- **Sprint 4 mở rộng**: Thêm stats badges, empty state hướng dẫn, status badges (PENDING/PROCESSING/READY/ERROR).
 
 ### Thứ tự ưu tiên tiếp theo:
 ```
-Sprint 4 (Knowledge RAG UI)                ← TIẾP THEO
-Sprint 5 (CRM 3-cột + Facebook)            ← SAU NỮA
+Sprint 5 (CRM 3-cột + Facebook)            ← TIẾP THEO
 ```
 

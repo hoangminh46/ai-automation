@@ -1,0 +1,391 @@
+=============================================
+CỬA HÀNG THỜI TRANG AMELA FASHION
+Tri Thức Nội Bộ — Dành Cho Bot AI Tư Vấn Khách Hàng
+Phiên bản: 2026-04-20
+=============================================
+
+═══════════════════════════════════════
+1. GIỚI THIỆU CHUNG VỀ CỬA HÀNG
+═══════════════════════════════════════
+
+Amela Fashion là thương hiệu thời trang Việt Nam được thành lập năm 2022, chuyên cung cấp quần áo nam nữ phong cách trẻ trung, hiện đại cho độ tuổi 18-35. Chúng tôi cam kết mang đến sản phẩm chất lượng cao với giá cả hợp lý.
+
+Tầm nhìn: Trở thành thương hiệu thời trang online hàng đầu Việt Nam, nơi mỗi khách hàng đều tìm được phong cách riêng của mình.
+
+Sứ mệnh: Cung cấp thời trang đẹp, bền, giá tốt — không cần phải đắt mới đẹp.
+
+Slogan: "Đẹp mỗi ngày, tự tin mọi nơi"
+
+Địa chỉ showroom: 
+- Showroom 1: 123 Nguyễn Huệ, Quận 1, TP.HCM (Mở cửa 9:00 - 21:30)
+- Showroom 2: 456 Cầu Giấy, Hà Nội (Mở cửa 9:00 - 21:00)
+
+Kênh liên hệ:
+- Hotline: 1900 6868 99 (8:00 - 22:00 hàng ngày)
+- Zalo OA: Amela Fashion Official
+- Facebook: facebook.com/amelafashion.vn
+- Instagram: @amelafashion
+- Email: support@amelafashion.vn
+- Website: www.amelafashion.vn
+
+═══════════════════════════════════════
+2. DANH MỤC SẢN PHẨM
+═══════════════════════════════════════
+
+2.1. ÁO NAM
+-----------
+
+a) Áo Polo Classic (Mã: AM-POLO-01)
+   - Chất liệu: Cotton Pique 100%, dệt kim cao cấp
+   - Màu sắc: Đen, Trắng, Navy, Xám Đậm, Be, Xanh Rêu
+   - Size: S (48-55kg), M (55-62kg), L (62-70kg), XL (70-80kg), XXL (80-90kg)
+   - Giá bán: 289.000đ (Giá gốc: 450.000đ — Giảm 36%)
+   - Đặc điểm: Cổ bẻ dáng ôm vừa (slim fit), thêu logo ngực trái, bo tay co giãn nhẹ
+   - Giặt: Máy giặt ở 30°C, không dùng thuốc tẩy, phơi trong bóng râm
+   - Bảo hành: 30 ngày lỗi sản xuất (bung chỉ, phai màu bất thường)
+
+b) Áo Thun Basic Everyday (Mã: AM-TEE-02)
+   - Chất liệu: Cotton Compact 95% + Spandex 5%
+   - Màu sắc: 12 màu (Đen, Trắng, Xám Nhạt, Xám Đậm, Navy, Olive, Nâu, Be, Hồng Nhạt, Xanh Baby, Tím Nhạt, Cam Đất)
+   - Size: S, M, L, XL, XXL (tương tự bảng size Polo)
+   - Giá bán: 169.000đ (Mua 3 còn 139.000đ/cái)
+   - Đặc điểm: Cổ tròn, dáng regular fit, vải mềm mịn co giãn 4 chiều, không xù lông sau 50 lần giặt
+   - Giặt: Giặt máy bình thường, lộn trái trước khi giặt
+
+c) Áo Sơ Mi Oxford (Mã: AM-SHIRT-03)
+   - Chất liệu: Oxford Cotton 100%, dệt Oxford weave
+   - Màu sắc: Trắng, Xanh Nhạt, Hồng Nhạt, Kẻ Sọc Xanh-Trắng
+   - Size: S, M, L, XL, XXL
+   - Giá bán: 389.000đ
+   - Đặc điểm: Cổ button-down, túi ngực, vạt cong mặc bỏ ngoài hoặc bỏ trong đều đẹp. Phù hợp đi làm văn phòng hoặc đi chơi smart casual.
+   - Bảo hành: 30 ngày
+
+d) Áo Khoác Bomber Gió (Mã: AM-JACK-04)
+   - Chất liệu: Vỏ ngoài Polyester chống nước nhẹ, lót lưới thoáng khí
+   - Màu sắc: Đen, Navy, Xám, Olive
+   - Size: M, L, XL, XXL
+   - Giá bán: 459.000đ
+   - Đặc điểm: Chống nước cấp độ IPX2, 2 túi khoá kéo + 1 túi trong, bo gấu và tay áo co giãn
+   - Lưu ý: Không phải áo mưa chuyên dụng, chỉ chống nước nhẹ (mưa phùn, gió)
+
+2.2. ÁO NỮ
+-----------
+
+a) Áo Croptop Basic (Mã: AM-CROP-10)
+   - Chất liệu: Cotton Spandex co giãn cao
+   - Màu sắc: Đen, Trắng, Hồng Pastel, Xanh Mint, Lavender
+   - Size: S (40-48kg), M (48-55kg), L (55-62kg)
+   - Giá bán: 149.000đ
+   - Đặc điểm: Dáng croptop ôm body, viền cổ tròn mềm mại, dài 40cm từ vai
+
+b) Áo Blazer Nữ Công Sở (Mã: AM-BLAZ-11)
+   - Chất liệu: Polyester Twill cao cấp, có lót trong
+   - Màu sắc: Đen, Be, Nâu Đất, Xám
+   - Size: S, M, L, XL
+   - Giá bán: 549.000đ
+   - Đặc điểm: 1 nút cài, 2 túi giả trang trí, dáng suông H-line, tay dài có lót. Kết hợp với quần âu hoặc jeans đều phù hợp.
+   - Giặt: Chỉ giặt khô hoặc giặt tay nhẹ
+
+c) Áo Sơ Mi Lụa (Mã: AM-SILK-12)
+   - Chất liệu: Lụa tổng hợp Satin mềm rũ
+   - Màu sắc: Trắng Ngà, Đen, Hồng Nude, Xanh Dương Nhạt
+   - Size: S, M, L
+   - Giá bán: 349.000đ
+   - Đặc điểm: Cổ V thanh lịch, tay dài phồng nhẹ, phù hợp đi làm và đi tiệc
+
+2.3. QUẦN NAM
+--------------
+
+a) Quần Kaki Chinos (Mã: AM-CHI-20)
+   - Chất liệu: Cotton Twill 98% + Elastane 2%
+   - Màu sắc: Be, Đen, Navy, Olive, Nâu
+   - Size: 28 (65-70cm eo), 29, 30, 31, 32, 33, 34 (90-95cm eo)
+   - Giá bán: 359.000đ
+   - Đặc điểm: Dáng slim fit, ống đứng nhẹ taper, cạp chun sau co giãn nhẹ
+
+b) Quần Jeans Slim Fit (Mã: AM-JEAN-21)
+   - Chất liệu: Denim Cotton 99% + Lycra 1%, 12oz
+   - Màu sắc: Xanh Đậm (Dark Wash), Xanh Nhạt (Light Wash), Đen (Black Wash)
+   - Size: 28, 29, 30, 31, 32, 33, 34
+   - Giá bán: 429.000đ
+   - Đặc điểm: Ống slim fit, lưng vừa (mid rise), button fly 5 nút
+   - Lưu ý: Jeans mới nên giặt riêng 2-3 lần đầu để tránh ra màu
+
+c) Quần Short thể thao (Mã: AM-SHORT-22)
+   - Chất liệu: Polyester 100%, công nghệ DRI-COOL thấm hút mồ hôi
+   - Màu sắc: Đen, Navy, Xám
+   - Size: M, L, XL, XXL
+   - Giá bán: 219.000đ
+   - Đặc điểm: 2 túi zip, lưng chun có dây rút, xẻ bên 2 bên thoải mái vận động
+
+2.4. QUẦN NỮ
+--------------
+
+a) Quần Culottes (Mã: AM-CUL-30)
+   - Chất liệu: Linen blend, nhẹ thoáng
+   - Màu sắc: Be, Đen, Trắng Kem
+   - Size: S, M, L
+   - Giá bán: 329.000đ
+   - Đặc điểm: Ống rộng ngang bắp chân, cạp cao có khoá kéo + nút, phù hợp mùa hè
+
+b) Quần Legging Yoga (Mã: AM-LEG-31)
+   - Chất liệu: Nylon 80% + Spandex 20%, vải dày dặn không lộ da
+   - Màu sắc: Đen, Xám Đậm, Navy, Wine
+   - Size: S, M, L
+   - Giá bán: 279.000đ
+   - Đặc điểm: Cạp cao 10cm, túi ẩn 2 bên, co giãn 4 chiều, squat-proof
+
+2.5. PHỤ KIỆN
+--------------
+
+a) Nón Lưỡi Trai (Mã: AM-CAP-40)
+   - Chất liệu: Cotton Canvas
+   - Màu sắc: Đen, Trắng, Navy, Be
+   - Giá bán: 129.000đ
+   - Đặc điểm: Logo thêu chìm, khoá kim loại điều chỉnh, one size fits most
+
+b) Túi Tote Canvas (Mã: AM-TOTE-41)
+   - Chất liệu: Canvas 16oz dày dặn, quai da PU
+   - Màu sắc: Trắng Kem, Đen
+   - Giá bán: 199.000đ
+   - Đặc điểm: Kích thước 38x42cm, 1 ngăn chính + 1 túi trong zip, chịu tải 10kg
+
+c) Thắt Lưng Da (Mã: AM-BELT-42)
+   - Chất liệu: Da bò thật (genuine leather)
+   - Màu sắc: Đen, Nâu
+   - Size: 90cm (eo 70-80), 100cm (eo 80-90), 110cm (eo 90-100)
+   - Giá bán: 249.000đ
+   - Đặc điểm: Khoá kim loại mạ chrome, rộng 3.5cm, hộp quà tặng đi kèm
+
+═══════════════════════════════════════
+3. BẢNG SIZE CHI TIẾT
+═══════════════════════════════════════
+
+3.1. BẢNG SIZE ÁO NAM
+Size S:  Cân nặng 48-55kg, Cao 160-168cm, Ngực 88-92cm, Vai 40-42cm
+Size M:  Cân nặng 55-62kg, Cao 165-173cm, Ngực 92-96cm, Vai 42-44cm
+Size L:  Cân nặng 62-70kg, Cao 170-178cm, Ngực 96-100cm, Vai 44-46cm
+Size XL: Cân nặng 70-80kg, Cao 173-183cm, Ngực 100-106cm, Vai 46-48cm
+Size XXL: Cân nặng 80-90kg, Cao 178-188cm, Ngực 106-112cm, Vai 48-50cm
+
+3.2. BẢNG SIZE ÁO NỮ
+Size S:  Cân nặng 40-48kg, Cao 150-160cm, Ngực 80-84cm, Eo 62-66cm
+Size M:  Cân nặng 48-55kg, Cao 155-165cm, Ngực 84-88cm, Eo 66-70cm
+Size L:  Cân nặng 55-62kg, Cao 160-170cm, Ngực 88-92cm, Eo 70-76cm
+Size XL: Cân nặng 62-70kg, Cao 165-175cm, Ngực 92-98cm, Eo 76-82cm
+
+3.3. BẢNG SIZE QUẦN NAM (ĐƠN VỊ INCH)
+Size 28: Eo 70-72cm, Mông 90cm, Dài 100cm
+Size 29: Eo 73-75cm, Mông 92cm, Dài 101cm
+Size 30: Eo 76-78cm, Mông 94cm, Dài 102cm
+Size 31: Eo 79-81cm, Mông 96cm, Dài 103cm
+Size 32: Eo 82-84cm, Mông 98cm, Dài 104cm
+Size 33: Eo 85-88cm, Mông 100cm, Dài 105cm
+Size 34: Eo 89-92cm, Mông 102cm, Dài 106cm
+
+Lưu ý chọn size:
+- Nếu nằm giữa 2 size, khuyên chọn size LỚN HƠN để thoải mái.
+- Vải cotton có thể co nhẹ 2-3% sau lần giặt đầu tiên.
+- Khách có thể đo thông số cơ thể và so sánh với bảng size, hoặc inbox cho shop để được tư vấn.
+
+═══════════════════════════════════════
+4. CHÍNH SÁCH GIÁ & KHUYẾN MÃI
+═══════════════════════════════════════
+
+4.1. CHƯƠNG TRÌNH HIỆN TẠI (Tháng 4/2026)
+- FLASH SALE mỗi thứ 6: Giảm thêm 15% toàn bộ sản phẩm (áp dụng 18:00 - 23:59)
+- Combo tiết kiệm: Mua 3 áo thun AM-TEE-02 chỉ 417.000đ (tiết kiệm 90.000đ)
+- Miễn phí ship cho đơn từ 499.000đ (toàn quốc)
+- Tặng tất/vớ khi đơn hàng từ 799.000đ
+- Member VIP: Giảm thêm 5% trên giá đã sale + Freeship mọi đơn
+
+4.2. CHƯƠNG TRÌNH MEMBER VIP
+- Tích lũy mua hàng từ 2.000.000đ trở lên → Tự động nâng hạng VIP
+- Quyền lợi VIP:
+  + Giảm 5% mọi đơn hàng (cộng dồn với sale)
+  + Freeship không giới hạn
+  + Được mua sớm BST mới trước 3 ngày
+  + Quà sinh nhật: Voucher 100.000đ
+  + Ưu tiên đổi/trả hàng nhanh trong 24h
+
+4.3. MÃ GIẢM GIÁ PHỔ BIẾN
+- WELCOME10: Giảm 10% cho khách hàng mới (đơn đầu tiên)
+- AMELA50K: Giảm 50.000đ cho đơn từ 500.000đ
+- FREESHIP: Miễn phí vận chuyển (không yêu cầu giá trị tối thiểu)
+- Lưu ý: Mỗi đơn hàng chỉ áp dụng 1 mã giảm giá. Không cộng dồn.
+
+═══════════════════════════════════════
+5. CHÍNH SÁCH VẬN CHUYỂN
+═══════════════════════════════════════
+
+5.1. ĐỐI TÁC VẬN CHUYỂN
+- Giao Hàng Nhanh (GHN): Tiêu chuẩn
+- Giao Hàng Tiết Kiệm (GHTK): Tùy chọn giá rẻ
+- J&T Express: Khu vực ngoại thành
+- Grab Express / Be: Giao hỏa tốc nội thành TP.HCM và Hà Nội
+
+5.2. THỜI GIAN GIAO HÀNG
+- Nội thành TP.HCM, Hà Nội: 1-2 ngày làm việc
+- Các tỉnh lân cận: 2-3 ngày làm việc
+- Các tỉnh xa (Tây Bắc, Tây Nguyên, miền Tây): 3-5 ngày làm việc
+- Giao hỏa tốc: 1-3 giờ (chỉ áp dụng nội thành, phí 25.000đ - 40.000đ)
+
+5.3. PHÍ VẬN CHUYỂN
+- Đơn dưới 499.000đ: 25.000đ - 35.000đ (tùy khu vực)
+- Đơn từ 499.000đ: MIỄN PHÍ
+- Khách VIP: MIỄN PHÍ mọi đơn
+- Giao hỏa tốc: Tính theo Grab/Be, shop không hỗ trợ
+
+5.4. THEO DÕI ĐƠN HÀNG
+- Sau khi đặt hàng, khách nhận mã vận đơn qua SMS hoặc Zalo trong vòng 4-8 giờ (giờ hành chính).
+- Tra cứu tại: https://tracking.amelafashion.vn hoặc trực tiếp trên app của đơn vị vận chuyển.
+- Nếu quá 24h chưa nhận mã vận đơn, vui lòng liên hệ hotline 1900 6868 99.
+
+═══════════════════════════════════════
+6. CHÍNH SÁCH ĐỔI TRẢ & HOÀN TIỀN
+═══════════════════════════════════════
+
+6.1. ĐIỀU KIỆN ĐỔI TRẢ
+Amela Fashion hỗ trợ đổi/trả trong vòng 7 ngày kể từ ngày nhận hàng, với điều kiện:
+- Sản phẩm chưa qua sử dụng, chưa giặt, chưa cắt tag
+- Còn nguyên tem mác, bao bì đóng gói
+- Có hóa đơn mua hàng hoặc mã đơn hàng
+- Sản phẩm không thuộc danh mục không đổi trả (đồ lót, phụ kiện đã tháo seal)
+
+6.2. CÁC TRƯỜNG HỢP ĐƯỢC ĐỔI TRẢ
+- Sai size (đổi size khác, nếu còn hàng)
+- Sai màu so với đơn đặt hàng
+- Sản phẩm lỗi sản xuất (bung chỉ, rách, phai màu, in lỗi)
+- Giao nhầm sản phẩm
+
+6.3. QUY TRÌNH ĐỔI TRẢ
+Bước 1: Liên hệ hotline 1900 6868 99 hoặc nhắn tin Zalo/Facebook kèm ảnh sản phẩm + mã đơn hàng.
+Bước 2: Shop xác nhận và gửi mã trả hàng trong vòng 24h.
+Bước 3: Khách gửi hàng về showroom hoặc qua dịch vụ vận chuyển (shop chịu phí nếu lỗi từ shop).
+Bước 4: Shop kiểm tra và xử lý trong 2-3 ngày làm việc.
+Bước 5: Gửi sản phẩm thay thế hoặc hoàn tiền.
+
+6.4. HOÀN TIỀN
+- Hoàn qua tài khoản ngân hàng trong 3-5 ngày làm việc.
+- Hoàn qua ví MoMo/ZaloPay trong 1-2 ngày làm việc.
+- Nếu thanh toán COD → Hoàn qua chuyển khoản ngân hàng.
+
+6.5. TRƯỜNG HỢP KHÔNG ĐỔI TRẢ
+- Sản phẩm đã sử dụng, giặt, ủi, hoặc có mùi (nước hoa, thuốc lá...)
+- Sản phẩm bị hư hỏng do khách hàng (rách, bẩn, ố màu do sử dụng)
+- Quá thời hạn 7 ngày
+- Sản phẩm mua trong chương trình "Sale cuối mùa — không đổi trả" (sẽ ghi rõ trên banner)
+- Đồ lót, tất/vớ (vì lý do vệ sinh)
+
+═══════════════════════════════════════
+7. PHƯƠNG THỨC THANH TOÁN
+═══════════════════════════════════════
+
+Amela Fashion hỗ trợ các phương thức thanh toán sau:
+
+1. COD (Thanh toán khi nhận hàng)
+   - Phổ biến nhất, không phát sinh phí.
+   - Kiểm tra hàng trước khi thanh toán (chỉ được kiểm tra bên ngoài, không được thử).
+
+2. Chuyển khoản ngân hàng
+   - Ngân hàng: Vietcombank
+   - Số TK: 1234 5678 9999
+   - Chủ TK: CÔNG TY TNHH AMELA FASHION
+   - Nội dung CK: [Mã đơn hàng] + [SĐT]
+   - Xác nhận tự động trong 5 phút (ngân hàng nội địa)
+
+3. Ví điện tử
+   - MoMo, ZaloPay, ShopeePay, VNPay
+   - Quét mã QR khi thanh toán online
+   - Xử lý tức thì
+
+4. Thẻ tín dụng / Ghi nợ
+   - Visa, Mastercard, JCB
+   - Qua cổng thanh toán VNPay
+   - Hỗ trợ trả góp 0% qua thẻ tín dụng (đơn từ 1.000.000đ, kỳ hạn 3-6 tháng)
+
+═══════════════════════════════════════
+8. CÂU HỎI THƯỜNG GẶP (FAQ)
+═══════════════════════════════════════
+
+Q: Tôi muốn đặt hàng, cần làm gì?
+A: Anh/chị có thể đặt hàng qua website amelafashion.vn, inbox Facebook/Zalo, hoặc gọi hotline 1900 6868 99. Chỉ cần cho shop biết mã sản phẩm + size + màu + địa chỉ nhận hàng là được ạ.
+
+Q: Hàng có giống ảnh không?
+A: Shop cam kết sản phẩm thật giống 95-98% so với ảnh. Màu sắc có thể chênh nhẹ 2-5% do ánh sáng màn hình. Mỗi sản phẩm đều có ảnh thật do shop tự chụp, không dùng ảnh stock.
+
+Q: Tôi mặc 65kg cao 170 nên chọn size gì cho áo Polo?
+A: Với thông số 65kg/170cm, anh nên chọn size L (62-70kg, 170-178cm). Nếu anh thích mặc thoải mái hơn có thể chọn XL. Bạn có thể xem bảng size chi tiết ở mục 3 nhé.
+
+Q: Ship mất bao lâu?
+A: Nội thành TP.HCM và Hà Nội 1-2 ngày, tỉnh khác 2-5 ngày tùy khu vực. Nếu cần gấp, mình có dịch vụ giao hỏa tốc 1-3h (nội thành) nhé.
+
+Q: Tôi muốn đổi size, có mất phí không?
+A: Nếu sản phẩm chưa sử dụng và còn tag, anh/chị được đổi size MIỄN PHÍ trong 7 ngày. Shop chịu phí ship 1 chiều, khách chịu phí ship gửi trả (khoảng 15.000-25.000đ). Nếu lỗi từ shop thì freeship hoàn toàn.
+
+Q: Có nhận may đo theo yêu cầu không?
+A: Hiện tại shop chưa hỗ trợ may đo riêng. Nhưng nếu anh/chị cần tư vấn chọn size phù hợp nhất, cứ cho shop biết số đo (cân nặng, chiều cao, vòng ngực, vòng eo) để tư vấn chính xác nhé.
+
+Q: Hàng có bảo hành không?
+A: Có ạ! Tất cả sản phẩm được bảo hành 30 ngày lỗi sản xuất (bung chỉ, phai màu bất thường, lỗi in ấn). Khách chỉ cần chụp ảnh lỗi + gửi mã đơn hàng, shop sẽ xử lý ngay trong 24h.
+
+Q: Mua số lượng lớn (quà đồng phục, event) có giảm giá không?
+A: Có ạ! Đơn từ 20 sản phẩm trở lên được giảm thêm 10-20% tùy số lượng. Ngoài ra shop hỗ trợ in/thêu logo theo yêu cầu (phí thêm 30.000đ/sản phẩm). Liên hệ email b2b@amelafashion.vn hoặc hotline để được báo giá chi tiết.
+
+Q: Thanh toán chuyển khoản xong bao lâu thì ship?
+A: Sau khi xác nhận thanh toán (thường tự động trong 5 phút), shop sẽ đóng gói và giao cho đơn vị vận chuyển trong vòng 4-8 giờ (giờ hành chính). Thứ 7 và Chủ nhật vẫn ship bình thường.
+
+Q: Tôi ở nước ngoài, có ship quốc tế không?
+A: Hiện tại shop chưa hỗ trợ ship quốc tế trực tiếp. Tuy nhiên, anh/chị có thể sử dụng dịch vụ chuyển phát quốc tế (ví dụ: ViettelPost International, EMS) bằng cách đặt hàng về địa chỉ người thân tại Việt Nam, rồi gửi tiếp ra nước ngoài.
+
+Q: Vải có bị nhăn sau khi giặt không?
+A: Vải cotton có thể nhăn nhẹ sau giặt, đây là đặc tính tự nhiên. Khuyên anh/chị: (1) Phơi ngay sau giặt, kéo thẳng, (2) Ủi ở nhiệt độ trung bình nếu cần. Vải polyester blend thì hầu như không nhăn.
+
+═══════════════════════════════════════
+9. HƯỚNG DẪN BẢO QUẢN SẢN PHẨM
+═══════════════════════════════════════
+
+9.1. ÁO COTTON (Polo, Thun, Sơ Mi)
+- Giặt máy ở 30°C, lộn trái trước khi giặt
+- Không dùng thuốc tẩy có clo
+- Phơi trong bóng râm, tránh ánh nắng trực tiếp (tránh phai màu)
+- Ủi mặt trái ở nhiệt độ trung bình (150°C)
+- Không vắt xoắn, nên ép nhẹ cho ráo nước
+
+9.2. QUẦN JEANS
+- 2-3 lần giặt đầu nên giặt riêng (tránh ra màu sang quần áo khác)
+- Lộn trái, giặt nước lạnh
+- Không sấy máy (jeans sẽ co nhiều)
+- Phơi ngược (cạp quần lên trên) để giữ form dáng
+
+9.3. ÁO KHOÁC GIÓ
+- Giặt tay nhẹ hoặc giặt máy chế độ nhẹ
+- Không ngâm lâu
+- Phơi nơi thoáng mát, tránh vắt
+- Không ủi (vải polyester sẽ chảy)
+
+9.4. ĐỒ LỤA / SATIN
+- Chỉ giặt tay bằng nước lạnh hoặc giặt khô
+- Dùng nước giặt dành cho đồ delicate
+- Phơi ngang (không treo móc vì sẽ giãn vai)
+- Ủi mặt trái ở nhiệt độ thấp (110°C)
+
+═══════════════════════════════════════
+10. QUY TẮC ỨNG XỬ CỦA BOT TƯ VẤN
+═══════════════════════════════════════
+
+- Luôn xưng hô "mình/bạn" hoặc "em/anh-chị" một cách thân thiện, lịch sự.
+- Trả lời ngắn gọn, đi thẳng vào vấn đề. Không dài dòng.
+- Nếu không biết hoặc không chắc chắn, nói thật và hướng dẫn khách liên hệ hotline 1900 6868 99.
+- Không bịa thông tin về giá, chất liệu hoặc chính sách. Chỉ trả lời dựa trên tri thức đã được cung cấp.
+- Khi khách hỏi về sản phẩm, luôn gợi ý kèm mã sản phẩm để khách dễ đặt hàng.
+- Nếu khách chưa biết chọn size, chủ động hỏi cân nặng + chiều cao để tư vấn chính xác.
+- Kết thúc câu trả lời bằng câu hỏi mở (ví dụ: "Bạn muốn mình tư vấn thêm không?") để giữ cuộc trò chuyện.
+- Nếu khách phàn nàn hoặc không hài lòng, xin lỗi chân thành và hướng dẫn quy trình xử lý cụ thể.
+- Không tranh cãi với khách. Luôn giữ thái độ nhẹ nhàng và chuyên nghiệp.
+
+═══════════════════════════════════════
+HẾT TÀI LIỆU TRI THỨC
+Cập nhật lần cuối: 20/04/2026
+Người biên soạn: Đội vận hành Amela Fashion
+═══════════════════════════════════════
