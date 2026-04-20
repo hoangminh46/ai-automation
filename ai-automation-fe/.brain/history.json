@@ -101,6 +101,50 @@
       "open_questions": [
         "DB agents still have model='gpt-4o-mini' — need Supabase SQL update"
       ]
+    },
+    {
+      "id": "handoff-20260420-162500-fe",
+      "saved_at": "2026-04-20T16:25:00+07:00",
+      "branch": "main",
+      "head_sha": "6fc7cb5",
+      "base_sha": "d2c7598",
+      "source": "commit",
+      "commit_range": "d2c7598..6fc7cb5",
+      "summary": "Sprint 4 hoàn tất: Knowledge Upload UI + Playground Chat UI. RAG pipeline tested end-to-end thành công — bot trả lời dựa trên knowledge đã upload.",
+      "project_changes": [
+        "Knowledge Upload UI: UploadZone (drag & drop), DocumentTable (status badges PENDING/PROCESSING/READY/ERROR), DeleteDialog",
+        "Knowledge API layer: knowledge.service.ts + knowledge-store.ts (Zustand, loadedForTenantId pattern)",
+        "Playground Chat UI: Agent selector, message bubbles, token counter, typing indicator, keyboard shortcuts",
+        "Chat API layer: chat.service.ts (sendMessage, getConversations, getMessages)",
+        "Sidebar: thêm menu Playground (FlaskConical icon) giữa Knowledge và Live Chat",
+        "frontend_plan.md: Sprint 4 marked complete, Sprint 5 marked as next",
+        "Test data: shop-knowledge.txt (Amela Fashion — 10 sections, 15+ SKUs, FAQ, policies)"
+      ],
+      "commits": [
+        "6fc7cb5: feat(fe): Sprint 4 — Knowledge RAG UI + Playground chat (13 files, +1681 -11)"
+      ],
+      "working_tree": {
+        "status": "clean",
+        "files": []
+      },
+      "decisions": [
+        "Playground dùng POST /chat (real endpoint) thay vì /chat/test — để test RAG pipeline đầy đủ",
+        "Token usage display: hiện promptTokens↓ completionTokens↑ = totalTokens cho mỗi bot response",
+        "Knowledge upload validation client-side: .txt/.pdf only, max 10MB, trước khi gửi server",
+        "Playground không cần Zustand store riêng — local state đủ vì không share data cross-page",
+        "Upload zone dùng FormData native + axios multipart/form-data header override"
+      ],
+      "next_steps": [
+        "Sprint 5: CRM 3-cột layout (conversation list + chat + customer info)",
+        "Manual override: nhân viên cướp quyền chat từ bot",
+        "Facebook Messenger Channel integration",
+        "Tạo HNSW index trên knowledge_chunks.embedding (Supabase SQL)",
+        "Cân nhắc tối ưu RAG: giảm top-K, intent detection để skip knowledge cho câu chào"
+      ],
+      "open_questions": [
+        "Agents cũ trong DB vẫn model='gpt-4o-mini' — cần UPDATE thủ công sang 'gemini-2.5-flash'",
+        "RAG prompt tokens ~3500+ per request — có cần optimize sớm không? (Gemini free tier vẫn đủ)"
+      ]
     }
   ]
 }

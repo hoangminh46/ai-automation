@@ -17,7 +17,7 @@
     "POST /tenants/:tenantId/agents": "Tạo agent mới (name, persona, greeting only)",
     "PATCH /tenants/:tenantId/agents/:agentId": "Cập nhật agent",
     "DELETE /tenants/:tenantId/agents/:agentId": "Xóa agent",
-    "POST /tenants/:tenantId/chat": "Gửi tin nhắn và nhận reply từ AI bot",
+    "POST /tenants/:tenantId/chat": "Gửi tin nhắn và nhận reply từ AI bot (RAG pipeline)",
     "POST /tenants/:tenantId/chat/test": "Test chat (rate limited 5/min)",
     "GET /tenants/:tenantId/conversations": "Lấy danh sách conversations",
     "GET /tenants/:tenantId/conversations/:id/messages": "Lấy lịch sử tin nhắn",
@@ -32,10 +32,10 @@
     "Tenant Onboarding (Hoàn thành - Sprint 2)",
     "Agent CRUD UI (Hoàn thành - Sprint 3)",
     "Dark/Light/System Theme Mode (Hoàn thành - Sprint 3)",
+    "Knowledge Upload UI — Drag & Drop, Document Table, Status Badges (Hoàn thành - Sprint 4)",
+    "Playground — Chat UI test Bot AI với RAG pipeline thực tế (Hoàn thành - Sprint 4)",
     "BE Phase 01-08 done (LLM + Pipeline + Knowledge RAG)",
-    "Chat UI (Chưa bắt đầu - Sprint 4)",
-    "Knowledge Upload UI (Chưa bắt đầu)",
-    "Live Chat CRM UI (Chưa bắt đầu)"
+    "Live Chat CRM UI (Chưa bắt đầu - Sprint 5)"
   ],
   "business_rules": [
     "Mỗi Tenant có Slug đơn nhất. FE tự convert name → slug khi gọi API.",
@@ -45,12 +45,18 @@
     "AgentFormModal dùng key-based remount pattern (key=agent.id|'create') thay vì useEffect+setState (React 19 rule).",
     "ThemeProvider bọc ở root layout với suppressHydrationWarning trên <html>.",
     "Tailwind CSS v4 dark mode: @custom-variant dark (&:where(.dark, .dark *)) — class-based, không dùng media query.",
-    "Platform controls AI model — user chỉ cấu hình name/persona/greeting, không thấy model/temperature/maxTokens."
+    "Platform controls AI model — user chỉ cấu hình name/persona/greeting, không thấy model/temperature/maxTokens.",
+    "Knowledge upload: max 10MB, .txt/.pdf only, multipart/form-data qua axios.",
+    "Zustand store dùng loadedForTenantId pattern để gate loading và tránh refetch khi đã load cho tenant hiện tại.",
+    "Playground dùng POST /chat (real endpoint, RAG pipeline) — không phải /chat/test."
   ],
   "coding_conventions": [
     "useEffect+setState bị cấm bởi ESLint react-hooks/set-state-in-effect — thay bằng key remount hoặc useSyncExternalStore.",
     "Zustand store: dùng selector riêng lẻ (không destructure) trong layout để tránh re-render không cần thiết.",
     "Agent store có resetAgentStore() — gọi khi đổi activeTenant để flush cache cũ.",
-    "CreateAgentPayload chỉ có: name, persona?, greeting?, isActive? — không có model/temperature/maxTokens."
+    "CreateAgentPayload chỉ có: name, persona?, greeting?, isActive? — không có model/temperature/maxTokens.",
+    "Service layer pattern: src/lib/services/[feature].service.ts — export object với các async methods.",
+    "Store layer pattern: src/store/[feature]-store.ts — Zustand create() với loadedForTenantId gate.",
+    "Component folder pattern: src/components/[feature]/[component].tsx."
   ]
 }
