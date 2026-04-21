@@ -1,5 +1,10 @@
 import { api } from "../axios";
 
+// === Types aligned with BE API (ConversationService + Prisma) ===
+
+export type ConversationStatus = "BOT_HANDLING" | "OPEN" | "SNOOZED" | "RESOLVED";
+export type MessageRole = "CUSTOMER" | "ASSISTANT" | "SYSTEM" | "HUMAN_AGENT" | "TOOL";
+
 export interface SendMessagePayload {
   agentId: string;
   message: string;
@@ -20,22 +25,39 @@ export interface ChatResponse {
   };
 }
 
-export interface Conversation {
+export interface ConversationListItem {
   id: string;
   tenantId: string;
   agentId: string;
   customerId: string;
-  status: "BOT_HANDLING" | "HUMAN_HANDLING" | "RESOLVED";
+  assigneeId: string | null;
+  status: ConversationStatus;
+  channelConversationId: string | null;
+  channelType: string | null;
+  lastMessageAt: string | null;
   createdAt: string;
   updatedAt: string;
+  agent: { id: string; name: string };
+  customer: { id: string; name: string };
+  _count: { messages: number };
 }
 
-export interface Message {
+export interface MessageItem {
   id: string;
   conversationId: string;
-  role: "CUSTOMER" | "BOT" | "HUMAN_AGENT";
-  content: string;
+  role: MessageRole;
+  content: string | null;
+  attachments: unknown[];
+  promptTokens: number | null;
+  completionTokens: number | null;
+  feedbackScore: number | null;
+  metadata: Record<string, unknown>;
   createdAt: string;
+}
+
+export interface ConversationDetailResponse {
+  conversation: ConversationListItem;
+  messages: MessageItem[];
 }
 
 export const chatService = {
@@ -47,7 +69,9 @@ export const chatService = {
     return response.data;
   },
 
-  getConversations: async (tenantId: string): Promise<Conversation[]> => {
+  getConversations: async (
+    tenantId: string,
+  ): Promise<ConversationListItem[]> => {
     const response = await api.get(`/tenants/${tenantId}/conversations`);
     return response.data;
   },
@@ -55,10 +79,19 @@ export const chatService = {
   getMessages: async (
     tenantId: string,
     conversationId: string,
-  ): Promise<Message[]> => {
+  ): Promise<ConversationDetailResponse> => {
     const response = await api.get(
       `/tenants/${tenantId}/conversations/${conversationId}/messages`,
     );
     return response.data;
+  },
+
+  resolveConversation: async (
+    tenantId: string,
+    conversationId: string,
+  ): Promise<void> => {
+    await api.patch(
+      `/tenants/${tenantId}/conversations/${conversationId}/resolve`,
+    );
   },
 };

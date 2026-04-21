@@ -11,6 +11,7 @@ import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import { ConversationService } from './conversation.service.js';
 import { SendMessageDto } from './dto/send-message.dto.js';
 import { TestChatDto } from './dto/test-chat.dto.js';
+import { HumanReplyDto } from './dto/human-reply.dto.js';
 import { SupabaseAuthGuard } from '../../common/guards/auth.guard.js';
 import { TenantGuard } from '../../common/guards/tenant.guard.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
@@ -84,6 +85,22 @@ export class ConversationController {
       user.sellerId,
       tenantId,
       conversationId,
+    );
+  }
+
+  @ApiOperation({ summary: 'Nhân viên gửi tin nhắn trực tiếp (không qua LLM)' })
+  @Post('conversations/:conversationId/human-reply')
+  humanReply(
+    @CurrentUser() user: { sellerId: string },
+    @Param('tenantId') tenantId: string,
+    @Param('conversationId') conversationId: string,
+    @Body() dto: HumanReplyDto,
+  ) {
+    return this.conversationService.humanReply(
+      user.sellerId,
+      tenantId,
+      conversationId,
+      dto.content,
     );
   }
 }

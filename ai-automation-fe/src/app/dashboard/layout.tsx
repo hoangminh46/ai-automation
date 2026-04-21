@@ -144,11 +144,17 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         </header>
 
         {/* Content Area (Các trang con sẽ đổ vào đây) */}
-        <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900">
-          <div className="p-6 md:p-8 max-w-7xl mx-auto w-full">
+        {pathname.startsWith("/dashboard/chat") ? (
+          <div className="flex-1 overflow-hidden bg-slate-50 dark:bg-slate-900">
             {children}
           </div>
-        </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900">
+            <div className="p-6 md:p-8 max-w-7xl mx-auto w-full">
+              {children}
+            </div>
+          </div>
+        )}
 
       </main>
     </div>

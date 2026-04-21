@@ -78,6 +78,7 @@
     { "method": "GET", "path": "/tenants/:tenantId/conversations", "module": "conversation" },
     { "method": "GET", "path": "/tenants/:tenantId/conversations/:id/messages", "module": "conversation" },
     { "method": "PATCH", "path": "/tenants/:tenantId/conversations/:id/resolve", "module": "conversation", "description": "Mark conversation as RESOLVED" },
+    { "method": "POST", "path": "/tenants/:tenantId/conversations/:id/human-reply", "module": "conversation", "description": "Staff sends message directly (no LLM), auto-switches status to OPEN" },
     { "method": "POST", "path": "/tenants/:tenantId/knowledge/documents", "module": "knowledge", "description": "Upload document (multipart, .txt/.pdf, max 10MB)" },
     { "method": "GET", "path": "/tenants/:tenantId/knowledge/documents", "module": "knowledge", "description": "List documents with status" },
     { "method": "DELETE", "path": "/tenants/:tenantId/knowledge/documents/:docId", "module": "knowledge", "description": "Delete document (cascade chunks)" },

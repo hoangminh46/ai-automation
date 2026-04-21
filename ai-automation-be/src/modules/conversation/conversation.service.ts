@@ -270,6 +270,61 @@ export class ConversationService {
     });
   }
 
+  /**
+   * Nhân viên gửi tin nhắn trực tiếp (không qua LLM).
+   * Tự động chuyển status sang OPEN nếu đang là BOT_HANDLING.
+   */
+  async humanReply(
+    sellerId: string,
+    tenantId: string,
+    conversationId: string,
+    content: string,
+  ) {
+    await this.verifyTenantAccess(tenantId, sellerId);
+
+    const conversation = await this.prisma.conversation.findFirst({
+      where: { id: conversationId, tenantId },
+    });
+    if (!conversation) {
+      throw new NotFoundException('Không tìm thấy hội thoại');
+    }
+
+    // Step 1: Lưu tin nhắn với role HUMAN_AGENT
+    const message = await this.prisma.message.create({
+      data: {
+        conversationId,
+        role: 'HUMAN_AGENT',
+        content,
+      },
+    });
+
+    // Step 2: Chuyển status sang OPEN (nhân viên cướp quyền) + cập nhật lastMessageAt
+    const shouldTakeover =
+      conversation.status === 'BOT_HANDLING' ||
+      conversation.status === 'RESOLVED';
+    const newStatus = shouldTakeover ? 'OPEN' : conversation.status;
+
+    await this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: {
+        status: newStatus,
+        lastMessageAt: new Date(),
+      },
+    });
+
+    this.logger.log(
+      `[HumanReply] seller=${sellerId} conv=${conversationId} status=${conversation.status}->${newStatus}`,
+    );
+
+    return {
+      messageId: message.id,
+      conversationId,
+      content: message.content,
+      role: message.role,
+      createdAt: message.createdAt,
+    };
+  }
+
   // === Test Chat (no DB persistence) ===
 
   /**

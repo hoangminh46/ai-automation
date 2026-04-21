@@ -1,51 +1,53 @@
 {
-  "updated_at": "2026-04-15T17:15:00+07:00",
+  "updated_at": "2026-04-21T17:29:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260415-171500",
+  "active_handoff_id": "handoff-20260421-172900-be",
   "working_on": {
-    "phase": "Phase 08 complete. BE Phase 01-08 done (8/11).",
-    "status": "committed",
-    "summary": "Knowledge Upload + RAG Search pipeline fully integrated. Chat pipeline now has 8 stages including knowledge injection."
+    "phase": "Sprint 5 — CRM Phase 06C next. BE human-reply endpoint done.",
+    "status": "dirty",
+    "summary": "Added POST /conversations/:id/human-reply endpoint for Phase 06C manual override. BE Phase 01-08 + human-reply = ready."
   },
   "git_snapshot": {
-    "head_sha": "dfe8d15",
-    "last_saved_head_sha": "dfe8d15",
-    "base_sha": "83eebc4",
+    "head_sha": "831dee0",
+    "last_saved_head_sha": "831dee0",
+    "base_sha": "dfe8d15",
     "branch": "main",
-    "has_uncommitted_changes": false,
-    "changed_files": [],
+    "has_uncommitted_changes": true,
+    "changed_files": [
+      "src/modules/conversation/conversation.controller.ts",
+      "src/modules/conversation/conversation.service.ts",
+      "src/modules/conversation/dto/human-reply.dto.ts",
+      "src/modules/conversation/dto/index.ts"
+    ],
     "staged_files": [],
     "unstaged_files": [],
     "untracked_files": [],
-    "commit_range": "83eebc4..dfe8d15",
+    "commit_range": "831dee0..HEAD (uncommitted)",
     "commits_since_last_save": [
-      { "sha": "b4f99e3", "message": "feat: add POST /chat/test endpoint" },
-      { "sha": "dd556eb", "message": "feat(fe): Sprint 3 Phase 04C complete" },
-      { "sha": "b3bb9dd", "message": "feat(fe): Sprint 2 complete — inline rename" },
-      { "sha": "bb8ba7c", "message": "chore: fix brain files" },
-      { "sha": "d5e9f04", "message": "feat: test chat cost protection" },
-      { "sha": "79621c5", "message": "docs: update plans" },
-      { "sha": "3560291", "message": "feat(be): Phase 05+06 complete — pipeline metrics + quota" },
-      { "sha": "b2c1504", "message": "feat(be): Phase 07 — Knowledge Upload & Processing pipeline" },
-      { "sha": "dfe8d15", "message": "feat(be): Phase 08 — Knowledge Search & RAG pipeline integration" }
+      { "sha": "831dee0", "message": "chore(brain): save-brain Sprint 4 — Knowledge UI + Playground" }
     ]
   },
   "pending_tasks": [
+    "FE Phase 06C: Wire input → POST human-reply endpoint",
     "Phase 09: Facebook Messenger Channel (webhook, message handling)",
     "Phase 10: Self-serve API & Polish",
     "Phase 11: Testing & Hardening",
-    "Create HNSW index on knowledge_chunks.embedding (manual SQL on Supabase)",
-    "FE: Knowledge upload UI + Chat UI integration"
+    "Create HNSW index on knowledge_chunks.embedding (manual SQL on Supabase)"
   ],
   "recent_changes": [
-    "Phase 05+06: Pipeline metrics, quota tracking, resolve endpoint — 3560291",
-    "Phase 07: Knowledge upload pipeline (PDF/TXT → chunk → embed → pgvector) — b2c1504",
-    "Phase 08: Semantic search + RAG prompt injection (soft-lock) — dfe8d15",
-    "Chat pipeline now 8 stages: Context → Quota → Resolve → Save → History → Knowledge → LLM → Response"
+    "Added HumanReplyDto (content: string, max 5000 chars)",
+    "Added humanReply() service method — save HUMAN_AGENT message, auto-transition BOT_HANDLING/RESOLVED → OPEN",
+    "Added POST /conversations/:id/human-reply controller route with Auth + Tenant guards",
+    "All validated: tsc 0 errors, ESLint 0 errors"
   ],
   "uncommitted_summary": {
-    "status": "clean",
-    "summary": "All changes committed.",
-    "files": []
+    "status": "dirty",
+    "summary": "4 files changed: human-reply endpoint (DTO + service + controller + barrel export)",
+    "files": [
+      "src/modules/conversation/dto/human-reply.dto.ts (new)",
+      "src/modules/conversation/dto/index.ts (modified)",
+      "src/modules/conversation/conversation.service.ts (modified)",
+      "src/modules/conversation/conversation.controller.ts (modified)"
+    ]
   }
 }

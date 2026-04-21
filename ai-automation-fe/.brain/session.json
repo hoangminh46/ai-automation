@@ -1,42 +1,64 @@
 {
-  "updated_at": "2026-04-20T16:25:00+07:00",
+  "updated_at": "2026-04-21T17:29:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260420-162500-fe",
+  "active_handoff_id": "handoff-20260421-172900-fe",
   "working_on": {
-    "sprint": "Sprint 4 complete. Knowledge RAG UI + Playground done.",
-    "description": "Sprint 4 hoàn tất: Knowledge Upload UI (drag & drop, document table, delete) + Playground (chat UI test Bot AI với RAG pipeline). Cả 2 đã test thành công trên browser."
+    "sprint": "Sprint 5 — CRM Phase 06A+B done. Phase 06C next.",
+    "description": "Phase 06A: CRM 3-column layout (ConversationList, ChatWindow, CustomerPanel). Phase 06B: Data binding — conversation-store.ts (Zustand), chat.service.ts types aligned with BE, real API calls, loading/error states. Input disabled until Phase 06C (manual override)."
   },
   "git_snapshot": {
-    "head_sha": "6fc7cb5",
-    "last_saved_head_sha": "6fc7cb5",
-    "base_sha": "d2c7598",
+    "head_sha": "831dee0",
+    "last_saved_head_sha": "831dee0",
+    "base_sha": "6fc7cb5",
     "branch": "main",
-    "has_uncommitted_changes": false,
-    "changed_files": [],
+    "has_uncommitted_changes": true,
+    "changed_files": [
+      "src/app/dashboard/chat/loading.tsx",
+      "src/app/dashboard/chat/page.tsx",
+      "src/app/dashboard/layout.tsx",
+      "src/components/chat/ChatWindow.tsx",
+      "src/components/chat/ConversationList.tsx",
+      "src/components/chat/CustomerPanel.tsx",
+      "src/components/chat/types.ts",
+      "src/lib/services/chat.service.ts",
+      "src/store/conversation-store.ts"
+    ],
     "staged_files": [],
     "unstaged_files": [],
     "untracked_files": [],
-    "commit_range": "d2c7598..6fc7cb5",
-    "commits_since_last_save": []
+    "commit_range": "831dee0..HEAD (uncommitted)",
+    "commits_since_last_save": [
+      { "sha": "831dee0", "message": "chore(brain): save-brain Sprint 4 — Knowledge UI + Playground" }
+    ]
   },
   "pending_tasks": [
-    "Sprint 5: CRM 3-cột layout + Live Chat",
-    "Conversation list sidebar with resolve action",
-    "Manual override — nhân viên cướp quyền chat từ bot",
-    "Facebook Messenger Channel integration",
-    "Tạo HNSW index trên knowledge_chunks.embedding (manual SQL Supabase)"
+    "Phase 06C: Wire input → POST human-reply, enable staff messaging",
+    "Phase 06D: Facebook Messenger Channel integration (FE side)",
+    "E2E test CRM chat flow",
+    "Customer detail API (phone, email, tags — needs BE endpoint)"
   ],
   "recent_changes": [
-    "Sprint 4 Phase 05A: Knowledge Upload UI — UploadZone (drag & drop), DocumentTable (status badges), DeleteDialog (6fc7cb5)",
-    "Sprint 4 Phase 05B: Knowledge API Integration — knowledge.service.ts, knowledge-store.ts (6fc7cb5)",
-    "Playground: Chat UI test Bot AI — agent selector, message bubbles, token counter, typing indicator (6fc7cb5)",
-    "chat.service.ts — API layer cho POST /chat, GET /conversations, GET /messages (6fc7cb5)",
-    "Sidebar cập nhật: thêm menu Playground với icon FlaskConical (6fc7cb5)",
-    "Test data: shop-knowledge.txt (Amela Fashion shop knowledge) đã upload thành công"
+    "Phase 06A: CRM 3-column layout — ConversationList, ChatWindow, CustomerPanel, loading skeleton",
+    "Phase 06B: Data binding — conversation-store.ts, chat.service.ts types match BE Prisma schema exactly",
+    "Phase 06B: ConversationList uses API data (agent name, message count, status badges)",
+    "Phase 06B: ChatWindow supports 5 roles (CUSTOMER, ASSISTANT, HUMAN_AGENT, SYSTEM, TOOL), input disabled",
+    "Phase 06B: CustomerPanel shows limited data (name + conversation details), resolve with loading state",
+    "Layout: /dashboard/chat uses full-height overflow-hidden, other routes keep padded wrapper",
+    "Removed mock-data.ts (no longer needed with real API)"
   ],
   "uncommitted_summary": {
-    "status": "clean",
-    "summary": "All Sprint 4 changes committed.",
-    "files": []
+    "status": "dirty",
+    "summary": "9 files: CRM UI layout + data binding + types + store + layout change",
+    "files": [
+      "src/app/dashboard/chat/loading.tsx (new)",
+      "src/app/dashboard/chat/page.tsx (new)",
+      "src/app/dashboard/layout.tsx (modified)",
+      "src/components/chat/ChatWindow.tsx (new)",
+      "src/components/chat/ConversationList.tsx (new)",
+      "src/components/chat/CustomerPanel.tsx (new)",
+      "src/components/chat/types.ts (new)",
+      "src/lib/services/chat.service.ts (modified)",
+      "src/store/conversation-store.ts (new)"
+    ]
   }
 }
