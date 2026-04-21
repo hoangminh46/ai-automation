@@ -60,19 +60,27 @@
   - [x] knowledge-store.ts — Zustand store (loadedForTenantId pattern).
   - [x] Multipart/form-data upload qua axios.
 
-### 💬 SPRINT 5: Tương tác (CRM & Channels) ⬜
-- **Phase 06A: CRM Layout 3 Cột (Chỉ vẽ UI)**
-  - [ ] Vẽ bộ khung: Sidebar trái (List Box chat), Cột giữa (Bóng thoại Customer vs AI), Cột phải (Khách CRM metadata). Mockup dummy data thuần HTML/Tailwind.
-- **Phase 06B: Data Binding & Sockets/Polling**
-  - [ ] Gọi GET danh sách Conversation. Gọi GET list Messages. Đổ dữ liệu thật vào bong bóng chat.
-- **Phase 06C: Manual Override**
-  - [ ] Tool bar cho nhân viên tạm ngưng bot, "Cướp quyền", nhập Input gửi tin nhắn thủ công.
-- **Phase 06D: Tích hợp Kênh Dữ Liệu (Channels)**
+### 💬 SPRINT 5: Tương tác (CRM & Channels) 🟡
+- **Phase 06A: CRM Layout 3 Cột (Chỉ vẽ UI)** ✅
+  - [x] Vẽ bộ khung: Sidebar trái (ConversationList), Cột giữa (ChatWindow — bóng thoại 5 roles), Cột phải (CustomerPanel — metadata + resolve).
+  - [x] Loading skeleton 3 cột, dark/light mode, responsive (ẩn panel phải < xl).
+  - [x] types.ts (STATUS_CONFIG, helpers), full-height layout cho /dashboard/chat route.
+- **Phase 06B: Data Binding** ✅
+  - [x] conversation-store.ts — Zustand store (loadedForTenantId gate, optimistic resolve).
+  - [x] chat.service.ts — Types aligned với BE Prisma schema (ConversationListItem, MessageItem, 4 endpoints).
+  - [x] ConversationList → API data (agent name, message count, status badges, search+filter).
+  - [x] ChatWindow → Real messages (5 roles, token display, loading/empty states). Input disabled (Phase 06C).
+  - [x] CustomerPanel → Limited API data (name, conversation details, resolve button).
+  - [x] Error banners, refresh button, loading states throughout.
+- **Phase 06C: Manual Override** ⬜
+  - [ ] Wire input area → POST /conversations/:id/human-reply (BE endpoint đã sẵn sàng).
+  - [ ] Nhân viên gửi tin nhắn trực tiếp (HUMAN_AGENT role), auto-take over conversation.
+- **Phase 06D: Tích hợp Kênh Dữ Liệu (Channels)** ⬜
   - [ ] UI Cấu hình Webhook Facebook / QR token.
 
 ---
 
-## 🎯 Current Status (2026-04-20)
+## 🎯 Current Status (2026-04-21)
 
 ### Đã hoàn tất:
 - ✅ **SPRINT 1**: Foundation + Auth (100%)
@@ -80,8 +88,8 @@
 - ✅ **SPRINT 3**: Agent CRUD + Config + Test Chat + Rate Limit (100%)
 - ✅ **SPRINT 4**: Knowledge RAG UI — Upload Zone + Document Table + API Integration (100%)
 
-### Chưa bắt đầu:
-- ⬜ SPRINT 5: CRM + Facebook Channels
+### Đang làm:
+- 🟡 **SPRINT 5**: CRM + Channels (Phase 06A+06B done, 06C next)
 
 ### Thay đổi so với plan gốc:
 - **Model/Temperature/MaxTokens**: Ẩn khỏi user — platform controls AI model (business decision 2026-04-15)
@@ -90,9 +98,12 @@
 - **Test Chat endpoint riêng**: `POST /chat/test` — không lưu DB, rate limited (10 req/hour).
 - **Settings page**: Không tạo trang riêng — gộp inline edit đổi tên ngay trên Dashboard title.
 - **Sprint 4 mở rộng**: Thêm stats badges, empty state hướng dẫn, status badges (PENDING/PROCESSING/READY/ERROR).
+- **Sprint 5 Phase 06B**: Bỏ Sockets/Polling (chưa cần), thay bằng API fetch + manual refresh. Input disabled until 06C.
+- **BE human-reply endpoint**: Thêm `POST /conversations/:id/human-reply` — nhân viên gửi trực tiếp, không qua LLM (2026-04-21).
 
 ### Thứ tự ưu tiên tiếp theo:
 ```
-Sprint 5 (CRM 3-cột + Facebook)            ← TIẾP THEO
+Phase 06C: Manual Override (wire input → human-reply)   ← TIẾP THEO
+Phase 06D: Facebook Channel UI
 ```
 
