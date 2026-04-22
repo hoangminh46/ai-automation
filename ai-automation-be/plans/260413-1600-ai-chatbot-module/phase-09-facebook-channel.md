@@ -52,6 +52,7 @@ Implement Facebook Messenger channel: webhook, channel adapter pattern, page con
 - Cần Facebook App trên developers.facebook.com
 - Local dev dùng ngrok cho HTTPS webhook URL
 - FB yêu cầu respond trong 5s → respond 200 trước, xử lý async
+- **Real-time CRM:** Sau khi FB Channel hoạt động, FE cần cập nhật tin nhắn mới real-time (FE Phase 06E). Giải pháp MVP: FE polling. Nếu cần nâng cấp: BE thêm WebSocket Gateway hoặc SSE endpoint để push new messages/conversations xuống CRM dashboard.
 
 ---
 Next: Phase 10 - Self-serve API & Polish

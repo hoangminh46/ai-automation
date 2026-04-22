@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import {
   Bot,
   User,
@@ -9,7 +9,7 @@ import {
   Loader2,
   Zap,
   MessageSquare,
-  Lock,
+  Send,
 } from "lucide-react";
 import {
   ConversationListItem,
@@ -23,6 +23,8 @@ interface ChatWindowProps {
   conversation: ConversationListItem | null;
   messages: MessageItem[];
   isLoadingMessages: boolean;
+  onSendMessage?: (content: string) => Promise<void>;
+  sendError?: string | null;
 }
 
 function getRoleConfig(role: MessageItem["role"]) {
@@ -73,8 +75,19 @@ export function ChatWindow({
   conversation,
   messages,
   isLoadingMessages,
+  onSendMessage,
+  sendError,
 }: ChatWindowProps) {
+  const [inputValue, setInputValue] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Reset input when switching conversation
+  useEffect(() => {
+    setInputValue("");
+    setIsSending(false);
+  }, [conversation?.id]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -245,14 +258,73 @@ export function ChatWindow({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area — Disabled until Phase 06C (Manual Override) */}
+      {/* Input Area — Human Reply */}
       <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0">
-        <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-100 dark:bg-slate-900 rounded-xl">
-          <Lock className="w-4 h-4 text-slate-400 shrink-0" />
-          <p className="text-sm text-slate-400 dark:text-slate-500">
-            Tính năng gửi tin nhắn nhân viên sẽ có ở phiên bản tiếp theo
-          </p>
-        </div>
+        {/* Send error toast */}
+        {sendError && (
+          <div className="mb-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-xs text-red-700 dark:text-red-400 animate-in fade-in">
+            Gửi thất bại: {sendError}
+          </div>
+        )}
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const trimmed = inputValue.trim();
+            if (!trimmed || isSending || !onSendMessage) return;
+            setIsSending(true);
+            try {
+              await onSendMessage(trimmed);
+              setInputValue("");
+              // Reset textarea height
+              if (inputRef.current) inputRef.current.style.height = "auto";
+              inputRef.current?.focus();
+            } catch {
+              // Error handled by parent — keep input text so user can retry
+            } finally {
+              setIsSending(false);
+            }
+          }}
+          className="flex items-end gap-2"
+        >
+          <div className="flex-1 relative">
+            <textarea
+              ref={inputRef}
+              value={inputValue}
+              onChange={(e) => {
+                setInputValue(e.target.value);
+                // Auto-expand textarea
+                const el = e.target;
+                el.style.height = "auto";
+                el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  e.currentTarget.form?.requestSubmit();
+                }
+              }}
+              disabled={isSending}
+              placeholder="Gửi tin nhắn với tư cách nhân viên..."
+              rows={1}
+              className="w-full px-4 py-2.5 text-sm bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none transition-colors disabled:opacity-50"
+              style={{ minHeight: "42px", maxHeight: "120px" }}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={!inputValue.trim() || isSending}
+            className="shrink-0 p-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-emerald-600"
+          >
+            {isSending ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Send className="w-5 h-5" />
+            )}
+          </button>
+        </form>
+        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 px-1">
+          Tin nhắn sẽ gửi trực tiếp — không qua Bot AI
+        </p>
       </div>
     </div>
   );

@@ -15,6 +15,10 @@ interface ConversationState {
     tenantId: string,
     conversationId: string,
   ) => Promise<boolean>;
+  updateConversationLocally: (
+    conversationId: string,
+    updates: Partial<ConversationListItem>,
+  ) => void;
   resetConversationStore: () => void;
 }
 
@@ -36,11 +40,13 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
   fetchConversations: async (tenantId: string, force = false) => {
     if (!force && get().loadedForTenantId === tenantId) return;
 
+    // Silent refresh: keep existing data visible while loading new data
+    const isFirstLoad = get().loadedForTenantId !== tenantId;
     set({
-      conversations: [],
-      isLoading: true,
+      conversations: isFirstLoad ? [] : get().conversations,
+      isLoading: isFirstLoad,
       error: null,
-      loadedForTenantId: null,
+      loadedForTenantId: isFirstLoad ? null : tenantId,
     });
     try {
       const data = await chatService.getConversations(tenantId);
@@ -72,5 +78,16 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
       console.error("Lỗi resolve conversation:", error);
       return false;
     }
+  },
+
+  updateConversationLocally: (
+    conversationId: string,
+    updates: Partial<ConversationListItem>,
+  ) => {
+    set({
+      conversations: get().conversations.map((c) =>
+        c.id === conversationId ? { ...c, ...updates } : c,
+      ),
+    });
   },
 }));

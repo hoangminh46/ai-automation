@@ -94,4 +94,22 @@ export const chatService = {
       `/tenants/${tenantId}/conversations/${conversationId}/resolve`,
     );
   },
+
+  humanReply: async (
+    tenantId: string,
+    conversationId: string,
+    content: string,
+  ): Promise<{
+    messageId: string;
+    conversationId: string;
+    content: string;
+    role: MessageRole;
+    createdAt: string;
+  }> => {
+    const response = await api.post(
+      `/tenants/${tenantId}/conversations/${conversationId}/human-reply`,
+      { content },
+    );
+    return response.data;
+  },
 };

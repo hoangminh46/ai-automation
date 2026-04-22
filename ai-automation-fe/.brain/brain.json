@@ -36,7 +36,7 @@
     "Knowledge Upload UI — Drag & Drop, Document Table, Status Badges (Hoàn thành - Sprint 4)",
     "Playground — Chat UI test Bot AI với RAG pipeline thực tế (Hoàn thành - Sprint 4)",
     "BE Phase 01-08 done (LLM + Pipeline + Knowledge RAG)",
-    "Live Chat CRM UI — Phase 06A layout + Phase 06B data binding (Đang làm - Sprint 5)",
+    "Live Chat CRM UI — Phase 06A+B+C done (layout + data binding + human reply) (Sprint 5)",
     "BE human-reply endpoint (Hoàn thành - Sprint 5)"
   ],
   "business_rules": [
@@ -62,6 +62,8 @@
     "Service layer pattern: src/lib/services/[feature].service.ts — export object với các async methods.",
     "Store layer pattern: src/store/[feature]-store.ts — Zustand create() với loadedForTenantId gate.",
     "Component folder pattern: src/components/[feature]/[component].tsx.",
-    "CRM types: chat.service.ts là source of truth cho data types, components/chat/types.ts re-export + UI helpers (STATUS_CONFIG, formatTimeAgo, getAvatarColor)."
+    "CRM types: chat.service.ts là source of truth cho data types, components/chat/types.ts re-export + UI helpers (STATUS_CONFIG, formatTimeAgo, getAvatarColor).",
+    "Store silent refresh: force=true giữ data cũ visible (isFirstLoad pattern), chỉ clear khi đổi tenant.",
+    "Store optimistic update: dùng updateConversationLocally() thay vì force-fetch toàn bộ conversation list."
   ]
 }

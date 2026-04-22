@@ -20,11 +20,13 @@ export default function ChatCrmPage() {
   const conversationError = useConversationStore((state) => state.error);
   const fetchConversations = useConversationStore((state) => state.fetchConversations);
   const resolveConversation = useConversationStore((state) => state.resolveConversation);
+  const updateConversationLocally = useConversationStore((state) => state.updateConversationLocally);
 
   const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [messageError, setMessageError] = useState<string | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
   const [isResolving, setIsResolving] = useState(false);
 
   const tenantId = activeTenant?.id;
@@ -79,6 +81,50 @@ export default function ChatCrmPage() {
     setSelectedConvId(null);
     setMessages([]);
   }, [tenantId, fetchConversations]);
+
+  // Step 5: Human reply — staff sends message directly
+  const handleSendMessage = useCallback(
+    async (content: string) => {
+      if (!tenantId || !selectedConvId) return;
+      setSendError(null);
+
+      try {
+        const result = await chatService.humanReply(
+          tenantId,
+          selectedConvId,
+          content,
+        );
+
+        // Append sent message to local state for instant feedback
+        const newMessage: MessageItem = {
+          id: result.messageId,
+          conversationId: result.conversationId,
+          role: result.role,
+          content: result.content,
+          attachments: [],
+          promptTokens: null,
+          completionTokens: null,
+          feedbackScore: null,
+          metadata: {},
+          createdAt: result.createdAt,
+        };
+        setMessages((prev) => [...prev, newMessage]);
+
+        // Optimistic update: status → OPEN + update timestamp (no reload)
+        updateConversationLocally(selectedConvId, {
+          status: "OPEN",
+          lastMessageAt: result.createdAt,
+        });
+      } catch (err) {
+        const msg =
+          err instanceof Error ? err.message : "Không thể gửi tin nhắn";
+        setSendError(msg);
+        setTimeout(() => setSendError(null), 4000);
+        throw err;
+      }
+    },
+    [tenantId, selectedConvId, updateConversationLocally],
+  );
 
   if (!tenantHasLoaded) {
     return <LoadingScreen text="Đang tải..." />;
@@ -144,6 +190,8 @@ export default function ChatCrmPage() {
           conversation={selectedConv}
           messages={messages}
           isLoadingMessages={isLoadingMessages}
+          onSendMessage={handleSendMessage}
+          sendError={sendError}
         />
       </div>
 

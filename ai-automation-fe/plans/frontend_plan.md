@@ -72,15 +72,22 @@
   - [x] ChatWindow → Real messages (5 roles, token display, loading/empty states). Input disabled (Phase 06C).
   - [x] CustomerPanel → Limited API data (name, conversation details, resolve button).
   - [x] Error banners, refresh button, loading states throughout.
-- **Phase 06C: Manual Override** ⬜
-  - [ ] Wire input area → POST /conversations/:id/human-reply (BE endpoint đã sẵn sàng).
-  - [ ] Nhân viên gửi tin nhắn trực tiếp (HUMAN_AGENT role), auto-take over conversation.
+- **Phase 06C: Manual Override** ✅
+  - [x] Wire input area → POST /conversations/:id/human-reply.
+  - [x] Nhân viên gửi tin nhắn trực tiếp (HUMAN_AGENT role), auto-take over conversation.
+  - [x] Error toast (auto-dismiss 4s), giữ nội dung khi lỗi, auto-expand textarea.
+  - [x] Silent refresh store (không flash UI), optimistic status update (OPEN + lastMessageAt).
+  - [x] Reset input khi đổi conversation.
 - **Phase 06D: Tích hợp Kênh Dữ Liệu (Channels)** ⬜
   - [ ] UI Cấu hình Webhook Facebook / QR token.
+- **Phase 06E: Real-time CRM Updates** ⬜
+  - [ ] Polling messages mỗi 5-10s khi đang xem conversation (hoặc WebSocket nếu cần).
+  - [ ] Hiển thị tin nhắn mới từ Customer/Bot mà không cần refresh thủ công.
+  - [ ] *Ưu tiên: làm SAU khi Facebook Channel hoạt động — cần dữ liệu thật để test.*
 
 ---
 
-## 🎯 Current Status (2026-04-21)
+## 🎯 Current Status (2026-04-22)
 
 ### Đã hoàn tất:
 - ✅ **SPRINT 1**: Foundation + Auth (100%)
@@ -89,7 +96,7 @@
 - ✅ **SPRINT 4**: Knowledge RAG UI — Upload Zone + Document Table + API Integration (100%)
 
 ### Đang làm:
-- 🟡 **SPRINT 5**: CRM + Channels (Phase 06A+06B done, 06C next)
+- 🟡 **SPRINT 5**: CRM + Channels (Phase 06A+B+C done, 06D next)
 
 ### Thay đổi so với plan gốc:
 - **Model/Temperature/MaxTokens**: Ẩn khỏi user — platform controls AI model (business decision 2026-04-15)
@@ -98,12 +105,14 @@
 - **Test Chat endpoint riêng**: `POST /chat/test` — không lưu DB, rate limited (10 req/hour).
 - **Settings page**: Không tạo trang riêng — gộp inline edit đổi tên ngay trên Dashboard title.
 - **Sprint 4 mở rộng**: Thêm stats badges, empty state hướng dẫn, status badges (PENDING/PROCESSING/READY/ERROR).
-- **Sprint 5 Phase 06B**: Bỏ Sockets/Polling (chưa cần), thay bằng API fetch + manual refresh. Input disabled until 06C.
+- **Sprint 5 Phase 06B**: Bỏ Sockets/Polling (chưa cần), thay bằng API fetch + manual refresh.
 - **BE human-reply endpoint**: Thêm `POST /conversations/:id/human-reply` — nhân viên gửi trực tiếp, không qua LLM (2026-04-21).
+- **Phase 06C polish**: Error toast, auto-expand textarea, silent refresh store, optimistic update (2026-04-22).
+- **Phase 06E**: Thêm phase Real-time CRM Updates (polling/WS) — làm sau khi Facebook Channel hoạt động.
 
 ### Thứ tự ưu tiên tiếp theo:
 ```
-Phase 06C: Manual Override (wire input → human-reply)   ← TIẾP THEO
-Phase 06D: Facebook Channel UI
+Phase 06D: Facebook Channel UI                          ← TIẾP THEO
+BE Phase 09: Facebook Messenger webhook
+Phase 06E: Real-time CRM Updates (polling/WebSocket)    ← SAU Facebook
 ```
-
