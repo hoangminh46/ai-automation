@@ -34,6 +34,8 @@ Module AI Chatbot backend độc lập (NestJS), AI Agent Pipeline lấy cảm h
 | 07 | Knowledge Upload & Processing | 6 | ✅ |
 | 08 | Knowledge Search & RAG | 5 | ✅ |
 | 09 | Facebook Messenger Channel | 10 | ✅ |
+| 06E-1 | WebSocket Gateway Foundation | 5 | ⬜ |
+| 06E-2 | WS Event Emission from Services | 5 | ⬜ |
 | 10 | Self-serve API & Polish | 7 | ⬜ |
 | 11 | Testing & Hardening | 7 | ⬜ |
 
@@ -46,6 +48,8 @@ Module AI Chatbot backend độc lập (NestJS), AI Agent Pipeline lấy cảm h
 - [x] Duplicate webhook → không xử lý 2 lần
 
 ## Quick Commands
-- `/code phase-10` → Bắt đầu code
+- `/code 06E-1` → WebSocket Gateway Foundation
+- `/code 06E-2` → WS Event Emission
+- `/code phase-10` → Self-serve API
 - `/next` → Xem tiến độ
 - `/save-brain` → Lưu context

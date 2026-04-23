@@ -85,10 +85,30 @@
   - [x] Sidebar: thêm menu "Kênh liên kết" (Radio icon).
   - [x] Error handling: extract BE error message (axios response.data.message).
   - [x] DB alignment: externalName nullable khớp Prisma schema.
-- **Phase 06E: Real-time CRM Updates** ⬜
-  - [ ] Polling messages mỗi 5-10s khi đang xem conversation (hoặc WebSocket nếu cần).
-  - [ ] Hiển thị tin nhắn mới từ Customer/Bot mà không cần refresh thủ công.
-  - [ ] *Ưu tiên: làm SAU khi Facebook Channel hoạt động — cần dữ liệu thật để test.*
+- **Phase 06E: Real-time CRM via WebSocket (Socket.IO)** ⬜
+  - **06E-1 (BE)**: WebSocket Gateway Foundation ⬜
+    - [ ] Cài `@nestjs/websockets` + `@nestjs/platform-socket.io`.
+    - [ ] `ChatGateway` skeleton: handleConnection, handleDisconnect.
+    - [ ] JWT verify trong handshake (reuse Supabase auth logic).
+    - [ ] Client join room `tenant:{tenantId}` sau auth thành công.
+    - [ ] Test: wscat connect → confirm auth + room join qua log.
+  - **06E-2 (BE)**: Event Emission từ Services ⬜
+    - [ ] Inject ChatGateway vào ConversationService + ChannelService.
+    - [ ] Emit `new_message` khi save message (customer/bot/human_agent).
+    - [ ] Emit `conversation_updated` khi status thay đổi (resolve/handover/open).
+    - [ ] Emit `new_conversation` khi conversation mới được tạo (first FB message).
+    - [ ] Test: Gửi tin FB Messenger → check event emit qua log/wscat.
+  - **06E-3 (FE)**: Socket Client + Hook ⬜
+    - [ ] Cài `socket.io-client`.
+    - [ ] `useSocket` hook: connect, auth (JWT), join room, auto-reconnect.
+    - [ ] Connection status indicator trên CRM page (🟢/🔴).
+    - [ ] Test: Mở dashboard → thấy 🟢 Connected.
+  - **06E-4 (FE)**: Wire Events → UI Real-time ⬜
+    - [ ] Listen `new_message` → append vào messages state (conversation đang xem).
+    - [ ] Listen `conversation_updated` → update status/lastMessageAt trong store.
+    - [ ] Listen `new_conversation` → prepend vào conversation list.
+    - [ ] Visual/sound notification khi có tin mới (conversation không đang xem).
+    - [ ] Test: E2E — nhắn FB → tin nhắn hiện trên CRM tức thì, không refresh.
 
 ---
 
@@ -116,10 +136,13 @@
 - **Phase 06E**: Thêm phase Real-time CRM Updates (polling/WS) — làm sau khi Facebook Channel hoạt động.
 - **Handover to Bot**: Thêm nút "Bàn giao cho Bot" trong CustomerPanel + API `PATCH .../handover-bot` (2026-04-23).
 - **BE Phase 09 done**: Facebook Channel hoàn thành (webhook, adapter, routing, reply, handover) — 9/11 phases.
-- **Phase 06D done**: Channel management page Enterprise (connect/disconnect FB, setup guide, webhook copy) (2026-04-23).
+- **Phase 06E split**: Chia thành 4 sub-phases (06E-1→4) vì scope lớn. WebSocket (Socket.IO) thay Polling — production-grade real-time (2026-04-23).
 
 ### Thứ tự ưu tiên tiếp theo:
 ```
-Phase 06E: Real-time CRM Updates (polling/WebSocket)  ← TIẾP THEO
-Phase 10: Self-serve API & Polish                     ← SAU
+Phase 06E-1 (BE): WebSocket Gateway Foundation         ← TIẾP THEO
+Phase 06E-2 (BE): Event Emission từ Services           ← SAU
+Phase 06E-3 (FE): Socket Client + Hook                 ← SAU
+Phase 06E-4 (FE): Wire Events → UI Real-time           ← SAU
+Phase 10: Self-serve API & Polish                      ← SAU CÙNG
 ```
