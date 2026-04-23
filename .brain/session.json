@@ -1,0 +1,57 @@
+{
+  "updated_at": "2026-04-23T16:07:00+07:00",
+  "current_branch": "main",
+  "active_handoff_id": "handoff-20260423-160700",
+
+  "working_on": {
+    "title": "Phase 09 — Facebook Messenger Channel (DONE)",
+    "description": "Hoàn thành toàn bộ Facebook Messenger integration: webhook, adapter, routing, human reply → FB, handover to bot",
+    "phase": "09",
+    "status": "done"
+  },
+
+  "git_snapshot": {
+    "head_sha": "074f3d88a8a61375f688570170a91a063883b4eb",
+    "last_saved_head_sha": "711d6cb7874af5732067102807c44f403c5634ad",
+    "base_sha": "711d6cb7874af5732067102807c44f403c5634ad",
+    "branch": "main",
+    "has_uncommitted_changes": false,
+    "changed_files": [],
+    "staged_files": [],
+    "unstaged_files": [],
+    "untracked_files": [],
+    "commit_range": "711d6cb..074f3d8",
+    "commits_since_last_save": [
+      {
+        "sha": "4042b40",
+        "message": "feat: Phase 09 — Facebook Channel + security fixes + handover-to-bot"
+      },
+      {
+        "sha": "074f3d8",
+        "message": "docs: update plans — Phase 09 Facebook Channel done, 9/11 phases complete"
+      }
+    ]
+  },
+
+  "pending_tasks": [
+    "Phase 10: Self-serve API & Polish (encrypt FB access token AES-256, rate limiting, error messages)",
+    "Phase 11: Testing & Hardening",
+    "FE: Real-time message updates (polling or WebSocket) cho CRM dashboard",
+    "Scale: chuyển in-memory dedup Map → Redis SET khi multi-instance"
+  ],
+
+  "recent_changes": [
+    "BE: Channel module (adapter, webhook, service, controller) — 7 new files",
+    "BE: Security — timingSafeEqual, Bearer auth, OnModuleDestroy cleanup",
+    "BE: sendHumanReplyToChannel — nhân viên reply → FB Messenger",
+    "BE: handoverToBot endpoint — OPEN → BOT_HANDLING + SYSTEM audit message",
+    "BE: Prisma datasource url = env(DATABASE_URL)",
+    "FE: handoverToBot API + Zustand action + CustomerPanel button + page wiring"
+  ],
+
+  "uncommitted_summary": {
+    "status": "clean",
+    "summary": "No uncommitted changes",
+    "files": []
+  }
+}

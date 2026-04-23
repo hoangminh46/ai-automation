@@ -1,0 +1,64 @@
+{
+  "entries": [
+    {
+      "id": "handoff-20260423-160700",
+      "saved_at": "2026-04-23T16:07:00+07:00",
+      "branch": "main",
+      "head_sha": "074f3d88a8a61375f688570170a91a063883b4eb",
+      "base_sha": "711d6cb7874af5732067102807c44f403c5634ad",
+      "source": "commit",
+      "commit_range": "711d6cb..074f3d8",
+      "summary": "Phase 09 Facebook Messenger Channel hoàn thành. Toàn bộ luồng end-to-end hoạt động: khách nhắn FB → webhook → AI reply → gửi lại FB. Nhân viên có thể reply trực tiếp qua CMS và bàn giao lại cho bot.",
+
+      "project_changes": [
+        "BE: Channel module mới (7 files) — adapter pattern, webhook, service, controller",
+        "BE: Facebook adapter — normalize incoming + sendReply via Graph API (Bearer auth)",
+        "BE: Webhook controller — HMAC-SHA256 + timingSafeEqual verification",
+        "BE: Message routing — page_id → tenant → agent → pipeline → reply",
+        "BE: sendHumanReplyToChannel — forward human agent messages to Facebook Messenger",
+        "BE: handoverToBot endpoint + SYSTEM audit message",
+        "BE: OnModuleDestroy for dedup interval cleanup",
+        "BE: Prisma datasource url = env(DATABASE_URL)",
+        "FE: handoverToBot API + store action + CustomerPanel button + page handler"
+      ],
+
+      "commits": [
+        {
+          "sha": "4042b40",
+          "message": "feat: Phase 09 — Facebook Channel + security fixes + handover-to-bot",
+          "files_changed": 22
+        },
+        {
+          "sha": "074f3d8",
+          "message": "docs: update plans — Phase 09 Facebook Channel done, 9/11 phases complete",
+          "files_changed": 2
+        }
+      ],
+
+      "working_tree": {
+        "status": "clean",
+        "files": []
+      },
+
+      "decisions": [
+        "In-memory Map for dedup (MVP) — sẽ cần Redis khi multi-instance",
+        "FB access token lưu plain text (MVP) — encrypt AES-256 ở Phase 10",
+        "Fire-and-forget pattern cho sendHumanReplyToChannel (không block response)",
+        "SYSTEM message audit trail khi handover to bot"
+      ],
+
+      "next_steps": [
+        "Phase 10: Self-serve API & Polish — encrypt tokens, rate limiting, error UX",
+        "FE: Real-time updates cho CRM (polling MVP hoặc WebSocket)",
+        "Test thêm edge cases: quota hết, LLM lỗi, FB token expired",
+        "Phase 11: Testing & Hardening"
+      ],
+
+      "open_questions": [
+        "Cần encrypt FB access token khi nào? Phase 10 hay sớm hơn?",
+        "Real-time CRM: polling hay WebSocket/SSE?",
+        "Có cần FE trang quản lý Channel connections không?"
+      ]
+    }
+  ]
+}
