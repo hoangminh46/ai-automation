@@ -11,7 +11,8 @@ import {
   LogOut, 
   PanelLeft,
   ChevronDown,
-  FlaskConical
+  FlaskConical,
+  Radio
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useTenantStore } from "@/store/tenant-store";
@@ -23,6 +24,7 @@ const MENU_ITEMS = [
   { name: "Binh đoàn Bot AI", href: "/dashboard/agents", icon: <Bot className="w-5 h-5" /> },
   { name: "Tri thức (RAG)", href: "/dashboard/knowledge", icon: <Database className="w-5 h-5" /> },
   { name: "Playground", href: "/dashboard/playground", icon: <FlaskConical className="w-5 h-5" /> },
+  { name: "Kênh liên kết", href: "/dashboard/channels", icon: <Radio className="w-5 h-5" /> },
   { name: "Live Chat CRM", href: "/dashboard/chat", icon: <MessageSquare className="w-5 h-5" /> },
 ];
 

@@ -78,8 +78,13 @@
   - [x] Error toast (auto-dismiss 4s), giữ nội dung khi lỗi, auto-expand textarea.
   - [x] Silent refresh store (không flash UI), optimistic status update (OPEN + lastMessageAt).
   - [x] Reset input khi đổi conversation.
-- **Phase 06D: Tích hợp Kênh Dữ Liệu (Channels)** ⬜
-  - [ ] UI Cấu hình Webhook Facebook / QR token.
+- **Phase 06D: Tích hợp Kênh Dữ Liệu (Channels)** ✅
+  - [x] Channel service API layer (list, connect, disconnect).
+  - [x] /dashboard/channels page — Enterprise UI: form kết nối FB, trạng thái kết nối, ngắt kết nối + confirm dialog.
+  - [x] Hướng dẫn thiết lập 5 bước, webhook URL copy, lưu ý quan trọng.
+  - [x] Sidebar: thêm menu "Kênh liên kết" (Radio icon).
+  - [x] Error handling: extract BE error message (axios response.data.message).
+  - [x] DB alignment: externalName nullable khớp Prisma schema.
 - **Phase 06E: Real-time CRM Updates** ⬜
   - [ ] Polling messages mỗi 5-10s khi đang xem conversation (hoặc WebSocket nếu cần).
   - [ ] Hiển thị tin nhắn mới từ Customer/Bot mà không cần refresh thủ công.
@@ -96,7 +101,7 @@
 - ✅ **SPRINT 4**: Knowledge RAG UI — Upload Zone + Document Table + API Integration (100%)
 
 ### Đang làm:
-- 🟡 **SPRINT 5**: CRM + Channels (Phase 06A+B+C done + Handover to Bot, 06D next)
+- 🟡 **SPRINT 5**: CRM + Channels (Phase 06A+B+C+D done + Handover to Bot, 06E next)
 
 ### Thay đổi so với plan gốc:
 - **Model/Temperature/MaxTokens**: Ẩn khỏi user — platform controls AI model (business decision 2026-04-15)
@@ -111,9 +116,10 @@
 - **Phase 06E**: Thêm phase Real-time CRM Updates (polling/WS) — làm sau khi Facebook Channel hoạt động.
 - **Handover to Bot**: Thêm nút "Bàn giao cho Bot" trong CustomerPanel + API `PATCH .../handover-bot` (2026-04-23).
 - **BE Phase 09 done**: Facebook Channel hoàn thành (webhook, adapter, routing, reply, handover) — 9/11 phases.
+- **Phase 06D done**: Channel management page Enterprise (connect/disconnect FB, setup guide, webhook copy) (2026-04-23).
 
 ### Thứ tự ưu tiên tiếp theo:
 ```
-Phase 06D: Facebook Channel UI (config webhook, connect page) ← TIẾP THEO
-Phase 06E: Real-time CRM Updates (polling/WebSocket)          ← SAU
+Phase 06E: Real-time CRM Updates (polling/WebSocket)  ← TIẾP THEO
+Phase 10: Self-serve API & Polish                     ← SAU
 ```

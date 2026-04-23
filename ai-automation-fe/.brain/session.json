@@ -1,39 +1,36 @@
 {
-  "updated_at": "2026-04-23T16:10:00+07:00",
+  "updated_at": "2026-04-23T16:45:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260423-161000-fe",
+  "active_handoff_id": "handoff-20260423-164300-fe",
   "working_on": {
-    "sprint": "Sprint 5 — Phase 06C done + Handover to Bot. Phase 06D next.",
-    "description": "Thêm handoverToBot API call, Zustand action, CustomerPanel button. Nhân viên có thể bàn giao hội thoại cho Bot."
+    "sprint": "Sprint 5 — Phase 06D done. Phase 06E next.",
+    "description": "Phase 06D complete: Channel management page (Enterprise). Kết nối/ngắt kết nối Facebook Page, hướng dẫn thiết lập, webhook URL copy."
   },
   "git_snapshot": {
-    "head_sha": "074f3d8",
-    "last_saved_head_sha": "566c947",
-    "base_sha": "566c947",
+    "head_sha": "db13084",
+    "last_saved_head_sha": "db13084",
+    "base_sha": "38520b6",
     "branch": "main",
     "has_uncommitted_changes": false,
     "changed_files": [],
     "staged_files": [],
     "unstaged_files": [],
     "untracked_files": [],
-    "commit_range": "566c947..074f3d8",
+    "commit_range": "38520b6..db13084",
     "commits_since_last_save": [
-      { "sha": "711d6cb", "message": "feat(fe): Phase 06C — human reply + polish + store upgrade" },
-      { "sha": "4042b40", "message": "feat: Phase 09 — Facebook Channel + security fixes + handover-to-bot" },
-      { "sha": "074f3d8", "message": "docs: update plans — Phase 09 Facebook Channel done, 9/11 phases complete" }
+      { "sha": "db13084", "message": "feat(fe): Phase 06D — Channel management page (Enterprise) + save-brain" }
     ]
   },
   "pending_tasks": [
-    "Phase 06D: Facebook Channel UI (config webhook, connect page)",
-    "Phase 06E: Real-time CRM Updates (polling/WebSocket) — sau Facebook",
-    "E2E test CRM chat flow",
-    "Customer detail API (phone, email, tags — needs BE endpoint)"
+    "Phase 06E: Real-time CRM Updates (polling/WebSocket)",
+    "Phase 10: Self-serve API & Polish",
+    "E2E test CRM + Channel flow"
   ],
   "recent_changes": [
-    "chat.service.ts: +handoverToBot API call",
-    "conversation-store.ts: +handoverToBot Zustand action with optimistic update",
-    "CustomerPanel.tsx: 'Bàn giao cho Bot' button (blue, OPEN/SNOOZED only)",
-    "page.tsx: wire handleHandoverToBot handler + isHandingOver state"
+    "channel.service.ts: API layer (list, connect, disconnect) with typed ChannelConnection",
+    "channels/page.tsx: Enterprise UI — connect form, connected state, disconnect confirm, setup guide",
+    "layout.tsx: +Radio icon, +Kênh liên kết sidebar menu",
+    "Bugfix: axios error extraction, webhook URL pointing to BE, externalName nullable"
   ],
   "uncommitted_summary": {
     "status": "clean",

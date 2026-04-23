@@ -183,6 +183,42 @@
         "Phase 06D cần UI gì? Settings page cho FB webhook hay inline config?",
         "Real-time: polling hay WebSocket/SSE?"
       ]
+    },
+    {
+      "id": "handoff-20260423-164300-fe",
+      "saved_at": "2026-04-23T16:43:00+07:00",
+      "branch": "main",
+      "head_sha": "db13084",
+      "base_sha": "38520b6",
+      "source": "commit",
+      "commit_range": "38520b6..db13084",
+      "summary": "Phase 06D Channel Management page hoàn thành (Enterprise). Connect/Disconnect FB Page, setup guide 5 bước, webhook URL copy. 3 bugs fix: axios error, webhook URL, nullable externalName.",
+      "project_changes": [
+        "channel.service.ts: API layer — listChannels, connectFacebook, disconnectFacebook",
+        "channels/page.tsx: Enterprise UI — form kết nối, trạng thái connected, disconnect confirm, setup guide",
+        "layout.tsx: +Radio icon, +Kênh liên kết sidebar menu item",
+        "frontend_plan.md: Phase 06D ✅ Done (6 tasks), priority → Phase 06E",
+        "Bugfix: extract BE error message from axios response.data.message",
+        "Bugfix: webhook URL trỏ đúng BE server (NEXT_PUBLIC_API_URL)",
+        "Bugfix: externalName string|null khớp Prisma schema"
+      ],
+      "commits": [
+        "db13084: feat(fe): Phase 06D — Channel management page (Enterprise) + save-brain"
+      ],
+      "working_tree": { "status": "dirty", "files": ["channels/page.tsx", "channel.service.ts", "layout.tsx", "frontend_plan.md"] },
+      "decisions": [
+        "Không dùng Zustand store — local state đủ cho 1-page channel management",
+        "Enterprise: form validation, token masking, disconnect confirm, 5-step guide",
+        "FacebookIcon dùng inline SVG vì lucide-react không có icon Facebook"
+      ],
+      "next_steps": [
+        "Phase 06E: Real-time CRM Updates (polling/WebSocket)",
+        "Phase 10: Self-serve API & Polish"
+      ],
+      "open_questions": [
+        "Real-time: polling hay WebSocket/SSE?",
+        "Cần thêm loading.tsx cho /dashboard/channels?"
+      ]
     }
   ]
 }

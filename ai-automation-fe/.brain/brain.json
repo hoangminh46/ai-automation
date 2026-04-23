@@ -38,6 +38,7 @@
     "Playground — Chat UI test Bot AI với RAG pipeline thực tế (Hoàn thành - Sprint 4)",
     "Live Chat CRM UI — Phase 06A+B+C done (layout + data binding + human reply) (Sprint 5)",
     "Handover to Bot — button in CustomerPanel, OPEN/SNOOZED → BOT_HANDLING (Sprint 5)",
+    "Channel Management — Connect/Disconnect FB Page, setup guide, webhook URL copy (Sprint 5)",
     "BE Phase 01-09 done (LLM + Pipeline + Knowledge RAG + Facebook Channel)"
   ],
   "business_rules": [
