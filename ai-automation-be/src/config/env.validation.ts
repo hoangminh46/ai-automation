@@ -24,6 +24,7 @@ export const envValidationSchema = Joi.object({
   FB_APP_ID: Joi.string().optional(),
   FB_APP_SECRET: Joi.string().optional(),
   FB_VERIFY_TOKEN: Joi.string().optional(),
+  FB_PAGE_ACCESS_TOKEN: Joi.string().optional(),
 
   // Security
   ENCRYPTION_KEY: Joi.string().min(32).optional(),

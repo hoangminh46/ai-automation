@@ -112,4 +112,14 @@ export const chatService = {
     );
     return response.data;
   },
+
+  handoverToBot: async (
+    tenantId: string,
+    conversationId: string,
+  ): Promise<{ conversationId: string; status: ConversationStatus }> => {
+    const response = await api.patch(
+      `/tenants/${tenantId}/conversations/${conversationId}/handover-bot`,
+    );
+    return response.data;
+  },
 };

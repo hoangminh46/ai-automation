@@ -13,6 +13,7 @@ import { KnowledgeSearchService } from '../knowledge/services/knowledge-search.s
 import { SendMessageDto } from './dto/send-message.dto.js';
 import { TestChatDto } from './dto/test-chat.dto.js';
 import { ChatResponseDto } from './dto/chat-response.dto.js';
+import { ChannelService } from '../channel/channel.service.js';
 import type OpenAI from 'openai';
 
 const HISTORY_LIMIT = 20;
@@ -25,6 +26,7 @@ export class ConversationService {
     private readonly prisma: PrismaService,
     private readonly llm: LlmService,
     private readonly knowledgeSearch: KnowledgeSearchService,
+    private readonly channelService: ChannelService,
   ) {}
 
   private async verifyTenantAccess(tenantId: string, sellerId: string) {
@@ -316,6 +318,15 @@ export class ConversationService {
       `[HumanReply] seller=${sellerId} conv=${conversationId} status=${conversation.status}->${newStatus}`,
     );
 
+    // Step 3: Gửi tin nhắn qua Facebook Messenger (fire-and-forget)
+    this.channelService
+      .sendHumanReplyToChannel(conversationId, content)
+      .catch((err) => {
+        this.logger.error(
+          `[HumanReply] Failed to send to channel: ${err instanceof Error ? err.message : err}`,
+        );
+      });
+
     return {
       messageId: message.id,
       conversationId,
@@ -323,6 +334,49 @@ export class ConversationService {
       role: message.role,
       createdAt: message.createdAt,
     };
+  }
+
+  /**
+   * Nhân viên bàn giao hội thoại cho Bot xử lý tự động.
+   * Chuyển status → BOT_HANDLING để bot tiếp tục trả lời tin nhắn mới.
+   */
+  async handoverToBot(
+    sellerId: string,
+    tenantId: string,
+    conversationId: string,
+  ) {
+    await this.verifyTenantAccess(tenantId, sellerId);
+
+    const conversation = await this.prisma.conversation.findFirst({
+      where: { id: conversationId, tenantId },
+    });
+    if (!conversation) {
+      throw new NotFoundException('Không tìm thấy hội thoại');
+    }
+
+    if (conversation.status === 'BOT_HANDLING') {
+      return { conversationId, status: conversation.status };
+    }
+
+    const updated = await this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: { status: 'BOT_HANDLING' },
+    });
+
+    // Ghi log hệ thống để nhân viên biết ai đã bàn giao
+    await this.prisma.message.create({
+      data: {
+        conversationId,
+        role: 'SYSTEM',
+        content: 'Hội thoại đã được bàn giao cho Bot xử lý tự động.',
+      },
+    });
+
+    this.logger.log(
+      `[Handover] seller=${sellerId} conv=${conversationId} ${conversation.status}->BOT_HANDLING`,
+    );
+
+    return { conversationId, status: updated.status };
   }
 
   // === Test Chat (no DB persistence) ===

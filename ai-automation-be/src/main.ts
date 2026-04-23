@@ -5,7 +5,10 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    // rawBody cần cho Facebook webhook signature verification (X-Hub-Signature-256)
+    rawBody: true,
+  });
   const configService = app.get(ConfigService);
   const port = configService.get<number>('app.port', 3001);
   const nodeEnv = configService.get<string>('app.nodeEnv', 'development');

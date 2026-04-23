@@ -15,6 +15,7 @@ import { TenantModule } from './modules/tenant/tenant.module.js';
 import { AgentModule } from './modules/agent/agent.module.js';
 import { ConversationModule } from './modules/conversation/conversation.module.js';
 import { KnowledgeModule } from './modules/knowledge/knowledge.module.js';
+import { ChannelModule } from './modules/channel/channel.module.js';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { KnowledgeModule } from './modules/knowledge/knowledge.module.js';
     AgentModule,
     ConversationModule,
     KnowledgeModule,
+    ChannelModule,
   ],
 })
 export class AppModule {}

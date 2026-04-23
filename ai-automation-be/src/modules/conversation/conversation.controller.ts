@@ -88,7 +88,9 @@ export class ConversationController {
     );
   }
 
-  @ApiOperation({ summary: 'Nhân viên gửi tin nhắn trực tiếp (không qua LLM)' })
+  @ApiOperation({
+    summary: 'Nhân viên gửi tin nhắn trực tiếp (không qua LLM)',
+  })
   @Post('conversations/:conversationId/human-reply')
   humanReply(
     @CurrentUser() user: { sellerId: string },
@@ -101,6 +103,22 @@ export class ConversationController {
       tenantId,
       conversationId,
       dto.content,
+    );
+  }
+
+  @ApiOperation({
+    summary: 'Bàn giao hội thoại cho Bot xử lý tự động',
+  })
+  @Patch('conversations/:conversationId/handover-bot')
+  handoverToBot(
+    @CurrentUser() user: { sellerId: string },
+    @Param('tenantId') tenantId: string,
+    @Param('conversationId') conversationId: string,
+  ) {
+    return this.conversationService.handoverToBot(
+      user.sellerId,
+      tenantId,
+      conversationId,
     );
   }
 }

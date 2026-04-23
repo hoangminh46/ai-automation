@@ -15,6 +15,10 @@ interface ConversationState {
     tenantId: string,
     conversationId: string,
   ) => Promise<boolean>;
+  handoverToBot: (
+    tenantId: string,
+    conversationId: string,
+  ) => Promise<boolean>;
   updateConversationLocally: (
     conversationId: string,
     updates: Partial<ConversationListItem>,
@@ -76,6 +80,23 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
       return true;
     } catch (error) {
       console.error("Lỗi resolve conversation:", error);
+      return false;
+    }
+  },
+
+  handoverToBot: async (tenantId: string, conversationId: string) => {
+    try {
+      await chatService.handoverToBot(tenantId, conversationId);
+      set({
+        conversations: get().conversations.map((c) =>
+          c.id === conversationId
+            ? { ...c, status: "BOT_HANDLING" as const }
+            : c,
+        ),
+      });
+      return true;
+    } catch (error) {
+      console.error("Lỗi handover to bot:", error);
       return false;
     }
   },

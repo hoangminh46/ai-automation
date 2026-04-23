@@ -19,12 +19,16 @@ interface CustomerPanelProps {
   conversation: ConversationListItem | null;
   onResolve: () => void;
   isResolving: boolean;
+  onHandoverToBot: () => void;
+  isHandingOver: boolean;
 }
 
 export function CustomerPanel({
   conversation,
   onResolve,
   isResolving,
+  onHandoverToBot,
+  isHandingOver,
 }: CustomerPanelProps) {
   if (!conversation) {
     return (
@@ -39,6 +43,8 @@ export function CustomerPanel({
 
   const avatarColor = getAvatarColor(conversation.customer.name);
   const status = STATUS_CONFIG[conversation.status];
+  const canHandoverToBot =
+    conversation.status === "OPEN" || conversation.status === "SNOOZED";
 
   return (
     <div className="h-full overflow-y-auto">
@@ -130,6 +136,49 @@ export function CustomerPanel({
         <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
           Thao tác
         </h4>
+
+        {/* Bàn giao cho Bot — chỉ hiện khi OPEN hoặc SNOOZED */}
+        {canHandoverToBot && (
+          <button
+            onClick={onHandoverToBot}
+            disabled={isHandingOver}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isHandingOver ? (
+              <>
+                <svg
+                  className="w-4 h-4 animate-spin"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    className="opacity-25"
+                  />
+                  <path
+                    d="M4 12a8 8 0 018-8"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    className="opacity-75"
+                  />
+                </svg>
+                Đang bàn giao...
+              </>
+            ) : (
+              <>
+                <Bot className="w-4 h-4" />
+                Bàn giao cho Bot
+              </>
+            )}
+          </button>
+        )}
+
+        {/* Đánh dấu đã xử lý */}
         {conversation.status !== "RESOLVED" ? (
           <button
             onClick={onResolve}
@@ -138,9 +187,26 @@ export function CustomerPanel({
           >
             {isResolving ? (
               <>
-                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
-                  <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="4" strokeLinecap="round" className="opacity-75" />
+                <svg
+                  className="w-4 h-4 animate-spin"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    className="opacity-25"
+                  />
+                  <path
+                    d="M4 12a8 8 0 018-8"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    className="opacity-75"
+                  />
                 </svg>
                 Đang xử lý...
               </>

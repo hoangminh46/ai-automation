@@ -20,6 +20,7 @@ export default function ChatCrmPage() {
   const conversationError = useConversationStore((state) => state.error);
   const fetchConversations = useConversationStore((state) => state.fetchConversations);
   const resolveConversation = useConversationStore((state) => state.resolveConversation);
+  const handoverToBot = useConversationStore((state) => state.handoverToBot);
   const updateConversationLocally = useConversationStore((state) => state.updateConversationLocally);
 
   const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
@@ -28,6 +29,7 @@ export default function ChatCrmPage() {
   const [messageError, setMessageError] = useState<string | null>(null);
   const [sendError, setSendError] = useState<string | null>(null);
   const [isResolving, setIsResolving] = useState(false);
+  const [isHandingOver, setIsHandingOver] = useState(false);
 
   const tenantId = activeTenant?.id;
 
@@ -73,6 +75,14 @@ export default function ChatCrmPage() {
     await resolveConversation(tenantId, selectedConvId);
     setIsResolving(false);
   }, [tenantId, selectedConvId, resolveConversation]);
+
+  // Step 3b: Handover to Bot
+  const handleHandoverToBot = useCallback(async () => {
+    if (!tenantId || !selectedConvId) return;
+    setIsHandingOver(true);
+    await handoverToBot(tenantId, selectedConvId);
+    setIsHandingOver(false);
+  }, [tenantId, selectedConvId, handoverToBot]);
 
   // Step 4: Refresh conversation list
   const handleRefresh = useCallback(() => {
@@ -201,6 +211,8 @@ export default function ChatCrmPage() {
           conversation={selectedConv}
           onResolve={handleResolve}
           isResolving={isResolving}
+          onHandoverToBot={handleHandoverToBot}
+          isHandingOver={isHandingOver}
         />
       </div>
     </div>
