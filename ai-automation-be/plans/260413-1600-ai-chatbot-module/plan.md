@@ -33,19 +33,19 @@ Module AI Chatbot backend độc lập (NestJS), AI Agent Pipeline lấy cảm h
 | 06 | Conversation & Memory | 6 | ✅ |
 | 07 | Knowledge Upload & Processing | 6 | ✅ |
 | 08 | Knowledge Search & RAG | 5 | ✅ |
-| 09 | Facebook Messenger Channel | 8 | ⬜ |
+| 09 | Facebook Messenger Channel | 10 | ✅ |
 | 10 | Self-serve API & Polish | 7 | ⬜ |
 | 11 | Testing & Hardening | 7 | ⬜ |
 
 ## Acceptance Criteria
-- [ ] Seller đăng ký → upload knowledge → kết nối FB → chatbot trả lời khách
-- [ ] AI trả lời chính xác dựa trên knowledge base
-- [ ] Multi-tenant isolation
+- [x] Seller đăng ký → upload knowledge → kết nối FB → chatbot trả lời khách
+- [x] AI trả lời chính xác dựa trên knowledge base
+- [x] Multi-tenant isolation
 - [ ] Hết quota → fallback message
 - [ ] OpenAI lỗi → fallback message
-- [ ] Duplicate webhook → không xử lý 2 lần
+- [x] Duplicate webhook → không xử lý 2 lần
 
 ## Quick Commands
-- `/code phase-01` → Bắt đầu code
+- `/code phase-10` → Bắt đầu code
 - `/next` → Xem tiến độ
 - `/save-brain` → Lưu context
