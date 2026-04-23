@@ -145,6 +145,44 @@
         "Agents cũ trong DB vẫn model='gpt-4o-mini' — cần UPDATE thủ công sang 'gemini-2.5-flash'",
         "RAG prompt tokens ~3500+ per request — có cần optimize sớm không? (Gemini free tier vẫn đủ)"
       ]
+    },
+    {
+      "id": "handoff-20260423-161000-fe",
+      "saved_at": "2026-04-23T16:10:00+07:00",
+      "branch": "main",
+      "head_sha": "074f3d8",
+      "base_sha": "566c947",
+      "source": "commit",
+      "commit_range": "566c947..074f3d8",
+      "summary": "Sprint 5 Phase 06C complete + Handover to Bot. CRM: nhân viên reply → FB Messenger, bàn giao lại cho bot. 4 files FE thay đổi.",
+      "project_changes": [
+        "chat.service.ts: +handoverToBot API (PATCH .../handover-bot)",
+        "conversation-store.ts: +handoverToBot Zustand action + optimistic update BOT_HANDLING",
+        "CustomerPanel.tsx: 'Bàn giao cho Bot' button (blue, OPEN/SNOOZED only) + loading spinner",
+        "page.tsx: wire handleHandoverToBot handler + isHandingOver state",
+        "Phase 06C human reply: gửi tin nhắn → POST /human-reply → forward FB Messenger",
+        "Phase 06C polish: error toast, auto-expand textarea, silent refresh, optimistic status update"
+      ],
+      "commits": [
+        "711d6cb: feat(fe): Phase 06C — human reply + polish + store upgrade",
+        "4042b40: feat: Phase 09 — Facebook Channel + security fixes + handover-to-bot",
+        "074f3d8: docs: update plans — Phase 09 Facebook Channel done"
+      ],
+      "working_tree": { "status": "clean", "files": [] },
+      "decisions": [
+        "Handover button blue (#2563EB) — phân biệt với Resolve button green",
+        "canHandoverToBot chỉ khi status OPEN hoặc SNOOZED",
+        "Optimistic update store khi handover thành công (không force-fetch)"
+      ],
+      "next_steps": [
+        "Phase 06D: Facebook Channel UI (config webhook, connect page)",
+        "Phase 06E: Real-time CRM Updates (polling/WebSocket)",
+        "E2E test CRM flow"
+      ],
+      "open_questions": [
+        "Phase 06D cần UI gì? Settings page cho FB webhook hay inline config?",
+        "Real-time: polling hay WebSocket/SSE?"
+      ]
     }
   ]
 }

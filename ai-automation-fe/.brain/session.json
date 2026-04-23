@@ -1,57 +1,43 @@
 {
-  "updated_at": "2026-04-22T10:22:00+07:00",
+  "updated_at": "2026-04-23T16:10:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260422-102200-fe",
+  "active_handoff_id": "handoff-20260423-161000-fe",
   "working_on": {
-    "sprint": "Sprint 5 — CRM Phase 06A+B+C done. Phase 06D next.",
-    "description": "Phase 06C complete: Human reply input wired to POST /human-reply. Error handling, auto-expand textarea, silent refresh (no flash), optimistic status update. Store upgraded with updateConversationLocally() and silent refresh pattern."
+    "sprint": "Sprint 5 — Phase 06C done + Handover to Bot. Phase 06D next.",
+    "description": "Thêm handoverToBot API call, Zustand action, CustomerPanel button. Nhân viên có thể bàn giao hội thoại cho Bot."
   },
   "git_snapshot": {
-    "head_sha": "566c947",
+    "head_sha": "074f3d8",
     "last_saved_head_sha": "566c947",
-    "base_sha": "12f3867",
+    "base_sha": "566c947",
     "branch": "main",
-    "has_uncommitted_changes": true,
-    "changed_files": [
-      "src/app/dashboard/chat/page.tsx",
-      "src/components/chat/ChatWindow.tsx",
-      "src/lib/services/chat.service.ts",
-      "src/store/conversation-store.ts",
-      "plans/frontend_plan.md"
-    ],
+    "has_uncommitted_changes": false,
+    "changed_files": [],
     "staged_files": [],
     "unstaged_files": [],
     "untracked_files": [],
-    "commit_range": "566c947..HEAD (uncommitted)",
+    "commit_range": "566c947..074f3d8",
     "commits_since_last_save": [
-      { "sha": "566c947", "message": "docs: update plans — Sprint 5 Phase 06A+B done, BE Phase 06 complete" },
-      { "sha": "12f3867", "message": "feat: Sprint 5 — CRM layout + data binding + human-reply endpoint" }
+      { "sha": "711d6cb", "message": "feat(fe): Phase 06C — human reply + polish + store upgrade" },
+      { "sha": "4042b40", "message": "feat: Phase 09 — Facebook Channel + security fixes + handover-to-bot" },
+      { "sha": "074f3d8", "message": "docs: update plans — Phase 09 Facebook Channel done, 9/11 phases complete" }
     ]
   },
   "pending_tasks": [
     "Phase 06D: Facebook Channel UI (config webhook, connect page)",
-    "BE Phase 09: Facebook Messenger webhook + channel adapter",
     "Phase 06E: Real-time CRM Updates (polling/WebSocket) — sau Facebook",
     "E2E test CRM chat flow",
     "Customer detail API (phone, email, tags — needs BE endpoint)"
   ],
   "recent_changes": [
-    "Phase 06C: Wire input → POST human-reply, optimistic message append",
-    "Phase 06C polish: error toast (4s auto-dismiss), keep input on error, auto-expand textarea",
-    "Store: silent refresh (no flash on force=true), updateConversationLocally() for optimistic updates",
-    "Store: isFirstLoad pattern — only show loading/clear data on tenant switch, not force refresh",
-    "Page: optimistic status OPEN + lastMessageAt update instead of force-fetching conversation list",
-    "Reset input state when switching conversation"
+    "chat.service.ts: +handoverToBot API call",
+    "conversation-store.ts: +handoverToBot Zustand action with optimistic update",
+    "CustomerPanel.tsx: 'Bàn giao cho Bot' button (blue, OPEN/SNOOZED only)",
+    "page.tsx: wire handleHandoverToBot handler + isHandingOver state"
   ],
   "uncommitted_summary": {
-    "status": "dirty",
-    "summary": "5 files: Phase 06C human reply + polish + store upgrade + plan update",
-    "files": [
-      "src/app/dashboard/chat/page.tsx (modified — handleSendMessage + optimistic update)",
-      "src/components/chat/ChatWindow.tsx (modified — real input + error toast + auto-expand)",
-      "src/lib/services/chat.service.ts (modified — +humanReply method)",
-      "src/store/conversation-store.ts (modified — silent refresh + updateConversationLocally)",
-      "plans/frontend_plan.md (modified — Phase 06C done, 06E added)"
-    ]
+    "status": "clean",
+    "summary": "No uncommitted changes",
+    "files": []
   }
 }

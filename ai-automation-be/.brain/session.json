@@ -1,45 +1,46 @@
 {
-  "updated_at": "2026-04-22T10:22:00+07:00",
+  "updated_at": "2026-04-23T16:10:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260422-102200-be",
+  "active_handoff_id": "handoff-20260423-161000-be",
   "working_on": {
-    "phase": "Sprint 5 — BE human-reply done. Phase 09 Facebook next.",
-    "status": "dirty",
-    "summary": "BE Phase 01-08 + human-reply endpoint complete. Next: Phase 09 Facebook Messenger Channel."
+    "phase": "Phase 09 — Facebook Channel DONE. Phase 10 next.",
+    "status": "clean",
+    "summary": "Phase 09 complete: Channel module, webhook, FB adapter, human reply→FB, handover-to-bot. All 10 tasks done."
   },
   "git_snapshot": {
-    "head_sha": "566c947",
+    "head_sha": "074f3d8",
     "last_saved_head_sha": "566c947",
-    "base_sha": "12f3867",
+    "base_sha": "566c947",
     "branch": "main",
-    "has_uncommitted_changes": true,
-    "changed_files": [
-      "plans/260413-1600-ai-chatbot-module/phase-09-facebook-channel.md"
-    ],
+    "has_uncommitted_changes": false,
+    "changed_files": [],
     "staged_files": [],
     "unstaged_files": [],
     "untracked_files": [],
-    "commit_range": "566c947..HEAD (uncommitted)",
+    "commit_range": "566c947..074f3d8",
     "commits_since_last_save": [
-      { "sha": "566c947", "message": "docs: update plans — Sprint 5 Phase 06A+B done, BE Phase 06 complete" },
-      { "sha": "12f3867", "message": "feat: Sprint 5 — CRM layout + data binding + human-reply endpoint" }
+      { "sha": "711d6cb", "message": "feat(fe): Phase 06C — human reply + polish + store upgrade" },
+      { "sha": "4042b40", "message": "feat: Phase 09 — Facebook Channel + security fixes + handover-to-bot" },
+      { "sha": "074f3d8", "message": "docs: update plans — Phase 09 Facebook Channel done, 9/11 phases complete" }
     ]
   },
   "pending_tasks": [
-    "Phase 09: Facebook Messenger Channel (webhook, channel adapter, page connection)",
-    "Phase 10: Self-serve API & Polish",
+    "Phase 10: Self-serve API & Polish (encrypt FB token AES-256, rate limiting, error UX)",
     "Phase 11: Testing & Hardening",
-    "Create HNSW index on knowledge_chunks.embedding (manual SQL on Supabase)"
+    "Create HNSW index on knowledge_chunks.embedding (manual SQL on Supabase)",
+    "Scale: chuyển in-memory dedup Map → Redis SET khi multi-instance"
   ],
   "recent_changes": [
-    "Added note to phase-09 plan about Real-time CRM (FE Phase 06E) as future concern",
-    "BE code unchanged — only plan file modified"
+    "Channel module: 7 new files (adapter, webhook, service, controller, DTO, interface, module)",
+    "Security: timingSafeEqual, Bearer auth header, OnModuleDestroy cleanup",
+    "sendHumanReplyToChannel: forward nhân viên reply → FB Messenger",
+    "handoverToBot: OPEN → BOT_HANDLING + SYSTEM audit message",
+    "Prisma datasource: explicit url = env(DATABASE_URL)",
+    "Plan: Phase 09 ✅ Done (10 tasks), master plan 9/11 complete"
   ],
   "uncommitted_summary": {
-    "status": "dirty",
-    "summary": "1 file: plan note about real-time CRM after Facebook",
-    "files": [
-      "plans/260413-1600-ai-chatbot-module/phase-09-facebook-channel.md (modified — real-time note)"
-    ]
+    "status": "clean",
+    "summary": "No uncommitted changes",
+    "files": []
   }
 }

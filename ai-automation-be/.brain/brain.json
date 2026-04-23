@@ -24,9 +24,9 @@
     "pdf_parsing": "pdf-parse",
     "validation": "class-validator (DTO) + Joi (env)",
     "api_docs": "Swagger (@nestjs/swagger)",
-    "security": "Helmet, CORS",
+    "security": "Helmet, CORS, timingSafeEqual (webhook HMAC)",
     "dependencies_source": "package.json",
-    "last_verified_sha": "dfe8d15"
+    "last_verified_sha": "4042b40"
   },
   "database_schema": {
     "tables": [
@@ -35,21 +35,22 @@
       "customers", "conversations", "messages"
     ],
     "enums": ["TenantRole", "ChannelType", "DocumentStatus", "MessageRole", "ConversationStatus"],
+    "conversation_statuses": ["BOT_HANDLING", "OPEN", "SNOOZED", "RESOLVED"],
+    "message_roles": ["CUSTOMER", "ASSISTANT", "SYSTEM", "HUMAN_AGENT", "TOOL"],
+    "channel_types": ["FACEBOOK"],
     "key_relations": {
       "Seller -> Tenant": "1:N (seller_id FK, owner who created)",
       "Seller -> TenantMember": "1:N (RBAC membership)",
       "Tenant -> TenantMember": "1:N (staff of shop)",
       "Tenant -> Agent": "1:N (AI bots per shop)",
-      "Agent -> AgentTool": "1:N (function calling tools)",
+      "Tenant -> ChannelConnection": "1:N (FB pages per shop)",
       "Tenant -> Conversation": "1:N",
       "Agent -> Conversation": "1:N",
       "Customer -> Conversation": "1:N",
-      "Conversation -> Message": "1:N",
-      "Tenant -> KnowledgeDocument": "1:N",
-      "KnowledgeDocument -> KnowledgeChunk": "1:N (with pgvector embedding vector(1536))"
+      "Conversation -> Message": "1:N"
     },
     "source_file": "prisma/schema.prisma",
-    "last_verified_sha": "dfe8d15"
+    "last_verified_sha": "4042b40"
   },
   "auth_flow": {
     "strategy": "SupabaseAuthGuard (Native SDK)",
@@ -78,22 +79,28 @@
     { "method": "GET", "path": "/tenants/:tenantId/conversations", "module": "conversation" },
     { "method": "GET", "path": "/tenants/:tenantId/conversations/:id/messages", "module": "conversation" },
     { "method": "PATCH", "path": "/tenants/:tenantId/conversations/:id/resolve", "module": "conversation", "description": "Mark conversation as RESOLVED" },
-    { "method": "POST", "path": "/tenants/:tenantId/conversations/:id/human-reply", "module": "conversation", "description": "Staff sends message directly (no LLM), auto-switches status to OPEN" },
+    { "method": "POST", "path": "/tenants/:tenantId/conversations/:id/human-reply", "module": "conversation", "description": "Staff sends message directly (no LLM), auto-switches status to OPEN, sends to FB Messenger" },
+    { "method": "PATCH", "path": "/tenants/:tenantId/conversations/:id/handover-bot", "module": "conversation", "description": "Hand conversation back to bot (OPEN → BOT_HANDLING), SYSTEM audit message" },
     { "method": "POST", "path": "/tenants/:tenantId/knowledge/documents", "module": "knowledge", "description": "Upload document (multipart, .txt/.pdf, max 10MB)" },
     { "method": "GET", "path": "/tenants/:tenantId/knowledge/documents", "module": "knowledge", "description": "List documents with status" },
     { "method": "DELETE", "path": "/tenants/:tenantId/knowledge/documents/:docId", "module": "knowledge", "description": "Delete document (cascade chunks)" },
-    { "method": "POST", "path": "/tenants/:tenantId/knowledge/search", "module": "knowledge", "description": "Semantic search knowledge chunks" }
+    { "method": "POST", "path": "/tenants/:tenantId/knowledge/search", "module": "knowledge", "description": "Semantic search knowledge chunks" },
+    { "method": "POST", "path": "/tenants/:tenantId/channels/facebook/connect", "module": "channel", "description": "Connect Facebook Page" },
+    { "method": "GET", "path": "/tenants/:tenantId/channels", "module": "channel", "description": "List channel connections" },
+    { "method": "DELETE", "path": "/tenants/:tenantId/channels/facebook/disconnect", "module": "channel", "description": "Disconnect Facebook Page" },
+    { "method": "GET", "path": "/webhook/facebook", "module": "webhook", "description": "FB webhook verification" },
+    { "method": "POST", "path": "/webhook/facebook", "module": "webhook", "description": "FB webhook events" }
   ],
   "features": {
     "phase_01_project_init": { "status": "done", "last_changed_sha": "750efb7" },
     "phase_02_db_auth": { "status": "done", "last_changed_sha": "b96af61" },
     "phase_03_tenant_agent_crud": { "status": "done", "last_changed_sha": "421a13d" },
     "phase_04_llm_integration": { "status": "done", "last_changed_sha": "cc2d9ff" },
-    "phase_05_agent_pipeline": { "status": "done", "last_changed_sha": "3560291", "notes": "Pipeline metrics logging, quota tracking" },
-    "phase_06_conversation_memory": { "status": "done", "last_changed_sha": "3560291", "notes": "Resolve endpoint, cost protection" },
-    "phase_07_knowledge_upload": { "status": "done", "last_changed_sha": "b2c1504", "notes": "PDF/TXT extract, chunking, Gemini embedding, pgvector store" },
-    "phase_08_knowledge_rag": { "status": "done", "last_changed_sha": "dfe8d15", "notes": "Semantic search, RAG pipeline injection, soft-lock prompt" },
-    "phase_09_facebook_messenger": { "status": "not_started" },
+    "phase_05_agent_pipeline": { "status": "done", "last_changed_sha": "3560291" },
+    "phase_06_conversation_memory": { "status": "done", "last_changed_sha": "3560291" },
+    "phase_07_knowledge_upload": { "status": "done", "last_changed_sha": "b2c1504" },
+    "phase_08_knowledge_rag": { "status": "done", "last_changed_sha": "dfe8d15" },
+    "phase_09_facebook_messenger": { "status": "done", "last_changed_sha": "4042b40", "notes": "Channel adapter, webhook, routing, human reply→FB, handover-to-bot" },
     "phase_10_selfserve_polish": { "status": "not_started" },
     "phase_11_testing": { "status": "not_started" }
   },
@@ -101,22 +108,22 @@
     "Tao Tenant -> auto-create OWNER TenantMember + default Agent (transaction)",
     "Slug unique, lowercase+numbers+hyphens only",
     "RBAC: OWNER > ADMIN > AGENT",
-    "AGENT role cannot create/edit/delete bots",
-    "Only OWNER/ADMIN can delete bots",
-    "Only OWNER/ADMIN can edit tenant info",
     "TenantGuard checks isActive on TenantMember",
-    "ValidationPipe: whitelist=true, forbidNonWhitelisted=true",
-    "Supabase port 6543 (pooler) for runtime, 5432 (direct) for migrations",
-    "Chat: auto-create Customer if customerId not provided (name fallback: Khách vãng lai)",
-    "Chat: auto-create Conversation if conversationId not provided (status: BOT_HANDLING)",
-    "Chat: history context uses LAST 20 messages (not oldest 20)",
+    "Chat: auto-create Customer if customerId not provided",
+    "Chat: history context uses LAST 20 messages",
     "Chat: HUMAN_AGENT messages map to 'assistant' role for LLM context",
     "Platform controls AI model — user only configures name/persona/greeting",
     "Quota: check messageUsed < messageQuota before LLM call, increment after success",
-    "Knowledge upload: max 10MB, .txt/.pdf only, sync processing",
-    "Knowledge chunking: recursive split 1500 chars, 200 overlap",
+    "Knowledge: max 10MB, .txt/.pdf only, recursive split 1500 chars/200 overlap",
     "RAG: soft-lock prompt — prioritize knowledge but allow general answers",
-    "RAG: similarity threshold 0.3, top-K=5, graceful fallback on search failure"
+    "RAG: similarity threshold 0.3, top-K=5, graceful fallback on search failure",
+    "Conversation status OPEN = nhân viên đang xử lý, bot không reply",
+    "Human agent reply → auto status OPEN + forward to Facebook Messenger",
+    "Handover-to-bot → status BOT_HANDLING + SYSTEM audit message",
+    "FB webhook: respond 200 trong 5s, xử lý async",
+    "Message dedup: in-memory Map (TTL 5 phút) — cần Redis khi multi-instance",
+    "Webhook HMAC: timingSafeEqual (anti timing attack)",
+    "FB Graph API: Bearer auth header (không dùng query param)"
   ],
   "coding_conventions": [
     "Import paths use .js extension (ESM compat)",
@@ -124,17 +131,17 @@
     "Services receive sellerId as first param",
     "Nested resources: /tenants/:tenantId/agents",
     "DTOs use class-validator decorators + @nestjs/swagger ApiProperty",
-    "UpdateDto extends PartialType(CreateDto)",
     "PrismaService is @Global() via CommonModule",
     "LlmService is @Global() via CommonModule > LlmModule",
-    "LLM calls must be wrapped in try/catch with Logger + InternalServerErrorException",
-    "pgvector operations use $queryRawUnsafe with parameterized queries ($1, $2...)",
-    "Knowledge chunks inserted via raw SQL (Prisma doesn't support vector type natively)"
+    "LLM calls must be wrapped in try/catch with Logger",
+    "pgvector operations use $queryRawUnsafe with parameterized queries",
+    "Fire-and-forget pattern for sendHumanReplyToChannel (.catch log, no await block)"
   ],
   "known_issues": [
     "src/tenant/ and src/agent/ (root level) are empty scaffolding dirs, real code is in src/modules/",
     "Tenant.settings column exists in DB but no DTO exposes it yet",
     "HNSW vector index on knowledge_chunks.embedding not yet created (needs manual SQL)",
-    "E2E test for /chat not yet run (needs JWT from Supabase login)"
+    "FB access token stored plain text (encrypt AES-256 in Phase 10)",
+    "In-memory dedup Map needs Redis when scaling to multiple instances"
   ]
 }

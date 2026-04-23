@@ -22,7 +22,8 @@
     "GET /tenants/:tenantId/conversations": "Lấy danh sách conversations",
     "GET /tenants/:tenantId/conversations/:id/messages": "Lấy lịch sử tin nhắn",
     "PATCH /tenants/:tenantId/conversations/:id/resolve": "Đánh dấu conversation đã giải quyết",
-    "POST /tenants/:tenantId/conversations/:id/human-reply": "Nhân viên gửi tin nhắn trực tiếp (không qua LLM)",
+    "POST /tenants/:tenantId/conversations/:id/human-reply": "Nhân viên gửi tin nhắn trực tiếp (không qua LLM), gửi qua FB Messenger",
+    "PATCH /tenants/:tenantId/conversations/:id/handover-bot": "Bàn giao hội thoại cho Bot xử lý tự động",
     "POST /tenants/:tenantId/knowledge/documents": "Upload tài liệu (multipart, .txt/.pdf, max 10MB)",
     "GET /tenants/:tenantId/knowledge/documents": "Danh sách tài liệu đã upload",
     "DELETE /tenants/:tenantId/knowledge/documents/:docId": "Xoá tài liệu (cascade)",
@@ -35,35 +36,33 @@
     "Dark/Light/System Theme Mode (Hoàn thành - Sprint 3)",
     "Knowledge Upload UI — Drag & Drop, Document Table, Status Badges (Hoàn thành - Sprint 4)",
     "Playground — Chat UI test Bot AI với RAG pipeline thực tế (Hoàn thành - Sprint 4)",
-    "BE Phase 01-08 done (LLM + Pipeline + Knowledge RAG)",
     "Live Chat CRM UI — Phase 06A+B+C done (layout + data binding + human reply) (Sprint 5)",
-    "BE human-reply endpoint (Hoàn thành - Sprint 5)"
+    "Handover to Bot — button in CustomerPanel, OPEN/SNOOZED → BOT_HANDLING (Sprint 5)",
+    "BE Phase 01-09 done (LLM + Pipeline + Knowledge RAG + Facebook Channel)"
   ],
   "business_rules": [
     "Mỗi Tenant có Slug đơn nhất. FE tự convert name → slug khi gọi API.",
     "FE dùng Zustand selectors (không destructure) để layout re-render ổn định với SSR.",
     "Route Dashboard bảo vệ bằng middleware.ts gọi createServerClient.",
-    "fetchTenants() phải được gọi ở dashboard/layout.tsx (không chỉ ở page con) để mọi sub-route đều có activeTenant.",
-    "AgentFormModal dùng key-based remount pattern (key=agent.id|'create') thay vì useEffect+setState (React 19 rule).",
+    "fetchTenants() phải được gọi ở dashboard/layout.tsx (không chỉ ở page con).",
+    "AgentFormModal dùng key-based remount pattern thay vì useEffect+setState.",
     "ThemeProvider bọc ở root layout với suppressHydrationWarning trên <html>.",
-    "Tailwind CSS v4 dark mode: @custom-variant dark (&:where(.dark, .dark *)) — class-based, không dùng media query.",
-    "Platform controls AI model — user chỉ cấu hình name/persona/greeting, không thấy model/temperature/maxTokens.",
+    "Tailwind CSS v4 dark mode: @custom-variant dark.",
+    "Platform controls AI model — user chỉ cấu hình name/persona/greeting.",
     "Knowledge upload: max 10MB, .txt/.pdf only, multipart/form-data qua axios.",
-    "Zustand store dùng loadedForTenantId pattern để gate loading và tránh refetch khi đã load cho tenant hiện tại.",
-    "Playground dùng POST /chat (real endpoint, RAG pipeline) — không phải /chat/test.",
-    "CRM /dashboard/chat route dùng full-height layout (overflow-hidden, no padding wrapper) — khác với các route dashboard khác.",
-    "CRM conversation list: dữ liệu từ store (loadedForTenantId gate), messages fetch trực tiếp qua service (local state)."
+    "Zustand store dùng loadedForTenantId pattern để gate loading.",
+    "CRM /dashboard/chat route dùng full-height layout (overflow-hidden).",
+    "CRM conversation list: dữ liệu từ store, messages fetch trực tiếp qua service.",
+    "Handover to Bot: chỉ hiện nút khi status OPEN/SNOOZED, optimistic update store."
   ],
   "coding_conventions": [
-    "useEffect+setState bị cấm bởi ESLint react-hooks/set-state-in-effect — thay bằng key remount hoặc useSyncExternalStore.",
-    "Zustand store: dùng selector riêng lẻ (không destructure) trong layout để tránh re-render không cần thiết.",
-    "Agent store có resetAgentStore() — gọi khi đổi activeTenant để flush cache cũ.",
-    "CreateAgentPayload chỉ có: name, persona?, greeting?, isActive? — không có model/temperature/maxTokens.",
-    "Service layer pattern: src/lib/services/[feature].service.ts — export object với các async methods.",
-    "Store layer pattern: src/store/[feature]-store.ts — Zustand create() với loadedForTenantId gate.",
+    "useEffect+setState bị cấm — thay bằng key remount hoặc useSyncExternalStore.",
+    "Zustand store: dùng selector riêng lẻ (không destructure).",
+    "Service layer pattern: src/lib/services/[feature].service.ts.",
+    "Store layer pattern: src/store/[feature]-store.ts.",
     "Component folder pattern: src/components/[feature]/[component].tsx.",
-    "CRM types: chat.service.ts là source of truth cho data types, components/chat/types.ts re-export + UI helpers (STATUS_CONFIG, formatTimeAgo, getAvatarColor).",
-    "Store silent refresh: force=true giữ data cũ visible (isFirstLoad pattern), chỉ clear khi đổi tenant.",
-    "Store optimistic update: dùng updateConversationLocally() thay vì force-fetch toàn bộ conversation list."
+    "CRM types: chat.service.ts là source of truth, types.ts re-export + UI helpers.",
+    "Store silent refresh: force=true giữ data cũ visible.",
+    "Store optimistic update: updateConversationLocally() thay vì force-fetch."
   ]
 }

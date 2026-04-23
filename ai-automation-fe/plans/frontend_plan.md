@@ -87,7 +87,7 @@
 
 ---
 
-## 🎯 Current Status (2026-04-22)
+## 🎯 Current Status (2026-04-23)
 
 ### Đã hoàn tất:
 - ✅ **SPRINT 1**: Foundation + Auth (100%)
@@ -96,7 +96,7 @@
 - ✅ **SPRINT 4**: Knowledge RAG UI — Upload Zone + Document Table + API Integration (100%)
 
 ### Đang làm:
-- 🟡 **SPRINT 5**: CRM + Channels (Phase 06A+B+C done, 06D next)
+- 🟡 **SPRINT 5**: CRM + Channels (Phase 06A+B+C done + Handover to Bot, 06D next)
 
 ### Thay đổi so với plan gốc:
 - **Model/Temperature/MaxTokens**: Ẩn khỏi user — platform controls AI model (business decision 2026-04-15)
@@ -109,10 +109,11 @@
 - **BE human-reply endpoint**: Thêm `POST /conversations/:id/human-reply` — nhân viên gửi trực tiếp, không qua LLM (2026-04-21).
 - **Phase 06C polish**: Error toast, auto-expand textarea, silent refresh store, optimistic update (2026-04-22).
 - **Phase 06E**: Thêm phase Real-time CRM Updates (polling/WS) — làm sau khi Facebook Channel hoạt động.
+- **Handover to Bot**: Thêm nút "Bàn giao cho Bot" trong CustomerPanel + API `PATCH .../handover-bot` (2026-04-23).
+- **BE Phase 09 done**: Facebook Channel hoàn thành (webhook, adapter, routing, reply, handover) — 9/11 phases.
 
 ### Thứ tự ưu tiên tiếp theo:
 ```
-Phase 06D: Facebook Channel UI                          ← TIẾP THEO
-BE Phase 09: Facebook Messenger webhook
-Phase 06E: Real-time CRM Updates (polling/WebSocket)    ← SAU Facebook
+Phase 06D: Facebook Channel UI (config webhook, connect page) ← TIẾP THEO
+Phase 06E: Real-time CRM Updates (polling/WebSocket)          ← SAU
 ```

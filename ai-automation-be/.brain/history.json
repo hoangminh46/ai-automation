@@ -194,6 +194,46 @@
         "HNSW index needs manual SQL on Supabase (prisma db push doesn't support)",
         "Facebook App Review process timing"
       ]
+    },
+    {
+      "id": "handoff-20260423-161000-be",
+      "saved_at": "2026-04-23T16:10:00+07:00",
+      "branch": "main",
+      "head_sha": "074f3d8",
+      "base_sha": "566c947",
+      "source": "commit",
+      "commit_range": "566c947..074f3d8",
+      "summary": "Phase 09 Facebook Messenger Channel hoàn thành. End-to-end: khách nhắn FB → webhook → AI reply → gửi lại FB. Nhân viên reply qua CMS → gửi FB. Bàn giao lại cho bot hoạt động.",
+      "project_changes": [
+        "Channel module mới (7 files): adapter pattern, webhook, service, controller",
+        "Facebook adapter: normalize incoming + sendReply via Graph API (Bearer auth)",
+        "Webhook: HMAC-SHA256 + timingSafeEqual verification",
+        "Message routing: page_id → tenant → agent → pipeline → reply",
+        "sendHumanReplyToChannel: forward human agent messages to FB Messenger",
+        "handoverToBot endpoint: OPEN → BOT_HANDLING + SYSTEM audit message",
+        "OnModuleDestroy for dedup interval cleanup",
+        "Prisma datasource: url = env(DATABASE_URL)"
+      ],
+      "commits": [
+        { "sha": "4042b40", "message": "feat: Phase 09 — Facebook Channel + security fixes + handover-to-bot" },
+        { "sha": "074f3d8", "message": "docs: update plans — Phase 09 Facebook Channel done, 9/11 phases complete" }
+      ],
+      "working_tree": { "summary": "Clean", "key_files": [] },
+      "decisions": [
+        "In-memory Map for dedup (MVP) — Redis khi multi-instance",
+        "FB access token plain text (MVP) — encrypt AES-256 Phase 10",
+        "Fire-and-forget for sendHumanReplyToChannel",
+        "SYSTEM message audit trail khi handover to bot"
+      ],
+      "next_steps": [
+        "Phase 10: Self-serve API & Polish — encrypt tokens, rate limiting",
+        "Phase 11: Testing & Hardening",
+        "Create HNSW index on knowledge_chunks.embedding"
+      ],
+      "open_questions": [
+        "Encrypt FB access token khi nào? Phase 10 hay sớm hơn?",
+        "Real-time CRM: polling hay WebSocket/SSE?"
+      ]
     }
   ]
 }
