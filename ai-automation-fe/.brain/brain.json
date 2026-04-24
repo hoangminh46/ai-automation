@@ -4,7 +4,8 @@
     "frontend": "Next.js 16 (App Router), React 19, Tailwind CSS v4, Zustand, Supabase SSR",
     "theme": "next-themes (class-based dark mode, system preference support)",
     "icons": "lucide-react",
-    "http": "axios (configured with Supabase auth interceptor)"
+    "http": "axios (configured with Supabase auth interceptor)",
+    "realtime": "socket.io-client (Socket.IO WebSocket client)"
   },
   "database_schema": {
     "tenant": "Cửa hàng độc lập thuộc về seller",
@@ -39,7 +40,8 @@
     "Live Chat CRM UI — Phase 06A+B+C done (layout + data binding + human reply) (Sprint 5)",
     "Handover to Bot — button in CustomerPanel, OPEN/SNOOZED → BOT_HANDLING (Sprint 5)",
     "Channel Management — Connect/Disconnect FB Page, setup guide, webhook URL copy (Sprint 5)",
-    "BE Phase 01-09 done (LLM + Pipeline + Knowledge RAG + Facebook Channel)"
+    "Real-time CRM — Socket.IO WebSocket, useSocket hook, reconnect resync, dedup, error boundaries (Sprint 5)",
+    "BE Phase 01-09 + 06E done (LLM + Pipeline + Knowledge RAG + Facebook Channel + WebSocket)"
   ],
   "business_rules": [
     "Mỗi Tenant có Slug đơn nhất. FE tự convert name → slug khi gọi API.",
@@ -54,7 +56,10 @@
     "Zustand store dùng loadedForTenantId pattern để gate loading.",
     "CRM /dashboard/chat route dùng full-height layout (overflow-hidden).",
     "CRM conversation list: dữ liệu từ store, messages fetch trực tiếp qua service.",
-    "Handover to Bot: chỉ hiện nút khi status OPEN/SNOOZED, optimistic update store."
+    "Handover to Bot: chỉ hiện nút khi status OPEN/SNOOZED, optimistic update store.",
+    "WebSocket: useSocket hook quản lý connection lifecycle, reconnectCount signal resync.",
+    "WebSocket dedup: cả optimistic update (handleSendMessage) và WS handler đều check message.id.",
+    "WebSocket reconnect: re-fetch conversations (force) + messages cho conversation đang mở."
   ],
   "coding_conventions": [
     "useEffect+setState bị cấm — thay bằng key remount hoặc useSyncExternalStore.",
@@ -64,6 +69,9 @@
     "Component folder pattern: src/components/[feature]/[component].tsx.",
     "CRM types: chat.service.ts là source of truth, types.ts re-export + UI helpers.",
     "Store silent refresh: force=true giữ data cũ visible.",
-    "Store optimistic update: updateConversationLocally() thay vì force-fetch."
+    "Store optimistic update: updateConversationLocally() thay vì force-fetch.",
+    "Socket hook pattern: src/hooks/useSocket.ts — returns { status, socket, reconnectCount }.",
+    "WS event handlers: payload typed as unknown + try-catch boundary + early return on invalid.",
+    "Stale closure prevention: useRef cho selectedConvId trong socket callbacks."
   ]
 }

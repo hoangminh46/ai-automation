@@ -25,8 +25,9 @@
     "validation": "class-validator (DTO) + Joi (env)",
     "api_docs": "Swagger (@nestjs/swagger)",
     "security": "Helmet, CORS, timingSafeEqual (webhook HMAC)",
+    "realtime": "Socket.IO (@nestjs/websockets + @nestjs/platform-socket.io) + @nestjs/event-emitter (EventEmitter2)",
     "dependencies_source": "package.json",
-    "last_verified_sha": "4042b40"
+    "last_verified_sha": "a0f6ab0"
   },
   "database_schema": {
     "tables": [
@@ -101,6 +102,7 @@
     "phase_07_knowledge_upload": { "status": "done", "last_changed_sha": "b2c1504" },
     "phase_08_knowledge_rag": { "status": "done", "last_changed_sha": "dfe8d15" },
     "phase_09_facebook_messenger": { "status": "done", "last_changed_sha": "4042b40", "notes": "Channel adapter, webhook, routing, human reply→FB, handover-to-bot" },
+    "phase_06E_websocket_realtime": { "status": "done", "last_changed_sha": "a0f6ab0", "notes": "ChatGateway (JWT auth, tenant rooms, CORS env), EventEmitter2 decoupling, ws-events types, reconnect resync, dedup, error boundaries" },
     "phase_10_selfserve_polish": { "status": "not_started" },
     "phase_11_testing": { "status": "not_started" }
   },
@@ -135,13 +137,19 @@
     "LlmService is @Global() via CommonModule > LlmModule",
     "LLM calls must be wrapped in try/catch with Logger",
     "pgvector operations use $queryRawUnsafe with parameterized queries",
-    "Fire-and-forget pattern for sendHumanReplyToChannel (.catch log, no await block)"
+    "Fire-and-forget pattern for sendHumanReplyToChannel (.catch log, no await block)",
+    "WS events: EventEmitter2 decoupled (Service emits → Gateway broadcasts to Socket.IO rooms)",
+    "WS room naming: tenant:{tenantId} — multi-tenant isolation",
+    "WS timestamp consistency: shared const now = new Date() for DB update + WS emit",
+    "WS CORS: dev mở hết, production restrict theo CORS_ORIGINS env"
   ],
   "known_issues": [
     "src/tenant/ and src/agent/ (root level) are empty scaffolding dirs, real code is in src/modules/",
     "Tenant.settings column exists in DB but no DTO exposes it yet",
     "HNSW vector index on knowledge_chunks.embedding not yet created (needs manual SQL)",
     "FB access token stored plain text (encrypt AES-256 in Phase 10)",
-    "In-memory dedup Map needs Redis when scaling to multiple instances"
+    "In-memory dedup Map needs Redis when scaling to multiple instances",
+    "Socket.IO single-instance only — needs @socket.io/redis-adapter for horizontal scaling",
+    "WS CORS: currently open in dev, production restricts via CORS_ORIGINS env"
   ]
 }

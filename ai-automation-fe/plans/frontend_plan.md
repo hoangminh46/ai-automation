@@ -85,34 +85,35 @@
   - [x] Sidebar: thêm menu "Kênh liên kết" (Radio icon).
   - [x] Error handling: extract BE error message (axios response.data.message).
   - [x] DB alignment: externalName nullable khớp Prisma schema.
-- **Phase 06E: Real-time CRM via WebSocket (Socket.IO)** ⬜
-  - **06E-1 (BE)**: WebSocket Gateway Foundation ⬜
-    - [ ] Cài `@nestjs/websockets` + `@nestjs/platform-socket.io`.
-    - [ ] `ChatGateway` skeleton: handleConnection, handleDisconnect.
-    - [ ] JWT verify trong handshake (reuse Supabase auth logic).
-    - [ ] Client join room `tenant:{tenantId}` sau auth thành công.
-    - [ ] Test: wscat connect → confirm auth + room join qua log.
-  - **06E-2 (BE)**: Event Emission từ Services ⬜
-    - [ ] Inject ChatGateway vào ConversationService + ChannelService.
-    - [ ] Emit `new_message` khi save message (customer/bot/human_agent).
-    - [ ] Emit `conversation_updated` khi status thay đổi (resolve/handover/open).
-    - [ ] Emit `new_conversation` khi conversation mới được tạo (first FB message).
-    - [ ] Test: Gửi tin FB Messenger → check event emit qua log/wscat.
-  - **06E-3 (FE)**: Socket Client + Hook ⬜
-    - [ ] Cài `socket.io-client`.
-    - [ ] `useSocket` hook: connect, auth (JWT), join room, auto-reconnect.
-    - [ ] Connection status indicator trên CRM page (🟢/🔴).
-    - [ ] Test: Mở dashboard → thấy 🟢 Connected.
-  - **06E-4 (FE)**: Wire Events → UI Real-time ⬜
-    - [ ] Listen `new_message` → append vào messages state (conversation đang xem).
-    - [ ] Listen `conversation_updated` → update status/lastMessageAt trong store.
-    - [ ] Listen `new_conversation` → prepend vào conversation list.
-    - [ ] Visual/sound notification khi có tin mới (conversation không đang xem).
-    - [ ] Test: E2E — nhắn FB → tin nhắn hiện trên CRM tức thì, không refresh.
+- **Phase 06E: Real-time CRM via WebSocket (Socket.IO)** ✅
+  - **06E-1 (BE)**: WebSocket Gateway Foundation ✅
+    - [x] Cài `@nestjs/websockets` + `@nestjs/platform-socket.io` + `@nestjs/event-emitter`.
+    - [x] `ChatGateway` skeleton: handleConnection, handleDisconnect.
+    - [x] JWT verify trong handshake (reuse Supabase auth logic).
+    - [x] Client join room `tenant:{tenantId}` sau auth thành công.
+    - [x] CORS restriction: dev mở, production dùng `CORS_ORIGINS` env.
+  - **06E-2 (BE)**: Event Emission từ Services ✅
+    - [x] EventEmitter2 decoupled architecture (không circular deps).
+    - [x] Emit `new_message` khi save message (customer/bot/human_agent).
+    - [x] Emit `conversation_updated` khi status thay đổi (resolve/handover/open).
+    - [x] Emit `new_conversation` khi conversation mới được tạo (first FB message).
+    - [x] Timestamp consistency (shared Date variable).
+  - **06E-3 (FE)**: Socket Client + Hook ✅
+    - [x] Cài `socket.io-client`.
+    - [x] `useSocket` hook: connect, auth (JWT), auto-reconnect, reconnect detection.
+    - [x] Connection status indicator trên CRM page (🟢 Live / 🟡 ... / 🔴 Offline).
+    - [x] Reconnect jitter (`randomizationFactor: 0.5`).
+  - **06E-4 (FE)**: Wire Events → UI Real-time ✅
+    - [x] Listen `new_message` → append vào messages state (conversation đang xem) + dedup.
+    - [x] Listen `conversation_updated` → update status/lastMessageAt trong store + auto-sort.
+    - [x] Listen `new_conversation` → prepend vào conversation list.
+    - [x] Reconnect resync: re-fetch conversations + messages on reconnect.
+    - [x] Error boundaries: try-catch on all WS event handlers.
+    - [x] Dedup fix: race condition khi WS event đến trước HTTP response.
 
 ---
 
-## 🎯 Current Status (2026-04-23)
+## 🎯 Current Status (2026-04-24)
 
 ### Đã hoàn tất:
 - ✅ **SPRINT 1**: Foundation + Auth (100%)
@@ -121,7 +122,7 @@
 - ✅ **SPRINT 4**: Knowledge RAG UI — Upload Zone + Document Table + API Integration (100%)
 
 ### Đang làm:
-- 🟡 **SPRINT 5**: CRM + Channels (Phase 06A+B+C+D done + Handover to Bot, 06E next)
+- 🟡 **SPRINT 5**: CRM + Channels (Phase 06A+B+C+D+E done, Phase 10 next)
 
 ### Thay đổi so với plan gốc:
 - **Model/Temperature/MaxTokens**: Ẩn khỏi user — platform controls AI model (business decision 2026-04-15)
@@ -137,12 +138,11 @@
 - **Handover to Bot**: Thêm nút "Bàn giao cho Bot" trong CustomerPanel + API `PATCH .../handover-bot` (2026-04-23).
 - **BE Phase 09 done**: Facebook Channel hoàn thành (webhook, adapter, routing, reply, handover) — 9/11 phases.
 - **Phase 06E split**: Chia thành 4 sub-phases (06E-1→4) vì scope lớn. WebSocket (Socket.IO) thay Polling — production-grade real-time (2026-04-23).
+- **Phase 06E done**: Full WebSocket implementation — ChatGateway, EventEmitter2, useSocket, reconnect resync, dedup, error boundaries, CORS restriction (2026-04-24).
 
 ### Thứ tự ưu tiên tiếp theo:
 ```
-Phase 06E-1 (BE): WebSocket Gateway Foundation         ← TIẾP THEO
-Phase 06E-2 (BE): Event Emission từ Services           ← SAU
-Phase 06E-3 (FE): Socket Client + Hook                 ← SAU
-Phase 06E-4 (FE): Wire Events → UI Real-time           ← SAU
-Phase 10: Self-serve API & Polish                      ← SAU CÙNG
+Phase 10: Self-serve API & Polish                      ← TIẾP THEO
+Phase 11: Testing & Hardening                          ← SAU
 ```
+

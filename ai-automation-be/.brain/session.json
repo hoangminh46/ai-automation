@@ -1,42 +1,43 @@
 {
-  "updated_at": "2026-04-23T16:10:00+07:00",
+  "updated_at": "2026-04-24T09:10:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260423-161000-be",
+  "active_handoff_id": "handoff-20260424-091000-be",
   "working_on": {
-    "phase": "Phase 09 — Facebook Channel DONE. Phase 10 next.",
+    "phase": "Phase 06E — WebSocket Real-time CRM DONE. Phase 10 next.",
     "status": "clean",
-    "summary": "Phase 09 complete: Channel module, webhook, FB adapter, human reply→FB, handover-to-bot. All 10 tasks done."
+    "summary": "Phase 06E complete: ChatGateway (JWT auth, tenant rooms), EventEmitter2 decoupling, ws-events types, CORS env restriction. BE 11/11 phases for WS done."
   },
   "git_snapshot": {
-    "head_sha": "074f3d8",
-    "last_saved_head_sha": "566c947",
-    "base_sha": "566c947",
+    "head_sha": "a0f6ab0",
+    "last_saved_head_sha": "074f3d8",
+    "base_sha": "074f3d8",
     "branch": "main",
     "has_uncommitted_changes": false,
     "changed_files": [],
     "staged_files": [],
     "unstaged_files": [],
     "untracked_files": [],
-    "commit_range": "566c947..074f3d8",
+    "commit_range": "074f3d8..a0f6ab0",
     "commits_since_last_save": [
-      { "sha": "711d6cb", "message": "feat(fe): Phase 06C — human reply + polish + store upgrade" },
-      { "sha": "4042b40", "message": "feat: Phase 09 — Facebook Channel + security fixes + handover-to-bot" },
-      { "sha": "074f3d8", "message": "docs: update plans — Phase 09 Facebook Channel done, 9/11 phases complete" }
+      { "sha": "0b1496f", "message": "docs(plan): split Phase 06E into 4 sub-phases — WebSocket real-time CRM" },
+      { "sha": "a0f6ab0", "message": "feat: Phase 06E — WebSocket real-time CRM (Socket.IO)" }
     ]
   },
   "pending_tasks": [
     "Phase 10: Self-serve API & Polish (encrypt FB token AES-256, rate limiting, error UX)",
     "Phase 11: Testing & Hardening",
     "Create HNSW index on knowledge_chunks.embedding (manual SQL on Supabase)",
-    "Scale: chuyển in-memory dedup Map → Redis SET khi multi-instance"
+    "Scale: chuyển in-memory dedup Map → Redis SET khi multi-instance",
+    "Scale: @socket.io/redis-adapter khi multi-instance"
   ],
   "recent_changes": [
-    "Channel module: 7 new files (adapter, webhook, service, controller, DTO, interface, module)",
-    "Security: timingSafeEqual, Bearer auth header, OnModuleDestroy cleanup",
-    "sendHumanReplyToChannel: forward nhân viên reply → FB Messenger",
-    "handoverToBot: OPEN → BOT_HANDLING + SYSTEM audit message",
-    "Prisma datasource: explicit url = env(DATABASE_URL)",
-    "Plan: Phase 09 ✅ Done (10 tasks), master plan 9/11 complete"
+    "ChatGateway: JWT auth on connect, tenant room isolation, CORS env-based restriction",
+    "ws-events.ts: typed event constants (NEW_MESSAGE, CONVERSATION_UPDATED, NEW_CONVERSATION)",
+    "ConversationService: emit events on resolve, humanReply, handoverToBot",
+    "ChannelService: emit events on new message, new conversation, bot reply",
+    "EventEmitter2 decoupled architecture (Service → Gateway, no circular deps)",
+    "Timestamp consistency: shared Date variable for DB update + WS emit",
+    "Plan: Phase 06E ✅ Done (all 4 sub-phases)"
   ],
   "uncommitted_summary": {
     "status": "clean",

@@ -219,6 +219,44 @@
         "Real-time: polling hay WebSocket/SSE?",
         "Cần thêm loading.tsx cho /dashboard/channels?"
       ]
+    },
+    {
+      "id": "handoff-20260424-091000-fe",
+      "saved_at": "2026-04-24T09:10:00+07:00",
+      "branch": "main",
+      "head_sha": "a0f6ab0",
+      "base_sha": "db13084",
+      "source": "commit",
+      "commit_range": "db13084..a0f6ab0",
+      "summary": "Phase 06E — Real-time CRM WebSocket complete. useSocket hook with reconnect detection, 3 socket event handlers with dedup + error boundaries, reconnect data resync, conversation store addConversation + auto-sort.",
+      "project_changes": [
+        "useSocket.ts: Socket.IO connection hook (JWT auth, reconnect detection via reconnectCount, jitter)",
+        "conversation-store.ts: addConversation + updateConversationLocally with auto-sort by lastMessageAt",
+        "page.tsx: wire 3 socket events (new_message, conversation_updated, new_conversation)",
+        "page.tsx: reconnect resync effect (re-fetch conversations + messages)",
+        "page.tsx: error boundaries (try-catch) on all WS event handlers",
+        "page.tsx: dedup fix for race condition (WS event vs HTTP response)",
+        "socket.io-client added to package.json"
+      ],
+      "commits": [
+        { "sha": "0b1496f", "message": "docs(plan): split Phase 06E into 4 sub-phases" },
+        { "sha": "a0f6ab0", "message": "feat: Phase 06E — WebSocket real-time CRM (Socket.IO)" }
+      ],
+      "working_tree": { "status": "clean" },
+      "decisions": [
+        "reconnectCount pattern — hook signals reconnect, page decides what to refetch",
+        "Error boundaries — all WS handlers wrap try-catch to prevent silent crashes",
+        "Dedup in both optimistic update AND WS handler — prevents race condition",
+        "Stale closure prevention via useRef for selectedConvId in socket callbacks"
+      ],
+      "next_steps": [
+        "Phase 10: Self-serve API & Polish",
+        "Phase 11: Testing & Hardening"
+      ],
+      "open_questions": [
+        "Sound/visual notification cho messages ở conversation không đang xem?",
+        "SocketProvider context nếu cần WS ở nhiều routes?"
+      ]
     }
   ]
 }

@@ -1,36 +1,38 @@
 {
-  "updated_at": "2026-04-23T16:45:00+07:00",
+  "updated_at": "2026-04-24T09:10:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260423-164300-fe",
+  "active_handoff_id": "handoff-20260424-091000-fe",
   "working_on": {
-    "sprint": "Sprint 5 — Phase 06D done. Phase 06E next.",
-    "description": "Phase 06D complete: Channel management page (Enterprise). Kết nối/ngắt kết nối Facebook Page, hướng dẫn thiết lập, webhook URL copy."
+    "sprint": "Sprint 5 — Phase 06E done. Phase 10 next.",
+    "description": "Phase 06E complete: useSocket hook (reconnect detection), socket event wiring (dedup + error boundaries), conversation-store (addConversation + auto-sort), reconnect resync."
   },
   "git_snapshot": {
-    "head_sha": "db13084",
+    "head_sha": "a0f6ab0",
     "last_saved_head_sha": "db13084",
-    "base_sha": "38520b6",
+    "base_sha": "db13084",
     "branch": "main",
     "has_uncommitted_changes": false,
     "changed_files": [],
     "staged_files": [],
     "unstaged_files": [],
     "untracked_files": [],
-    "commit_range": "38520b6..db13084",
+    "commit_range": "db13084..a0f6ab0",
     "commits_since_last_save": [
-      { "sha": "db13084", "message": "feat(fe): Phase 06D — Channel management page (Enterprise) + save-brain" }
+      { "sha": "0b1496f", "message": "docs(plan): split Phase 06E into 4 sub-phases" },
+      { "sha": "a0f6ab0", "message": "feat: Phase 06E — WebSocket real-time CRM (Socket.IO)" }
     ]
   },
   "pending_tasks": [
-    "Phase 06E: Real-time CRM Updates (polling/WebSocket)",
     "Phase 10: Self-serve API & Polish",
-    "E2E test CRM + Channel flow"
+    "Phase 11: Testing & Hardening",
+    "E2E test CRM + Channel + WebSocket flow"
   ],
   "recent_changes": [
-    "channel.service.ts: API layer (list, connect, disconnect) with typed ChannelConnection",
-    "channels/page.tsx: Enterprise UI — connect form, connected state, disconnect confirm, setup guide",
-    "layout.tsx: +Radio icon, +Kênh liên kết sidebar menu",
-    "Bugfix: axios error extraction, webhook URL pointing to BE, externalName nullable"
+    "useSocket hook: auto-connect, JWT auth, reconnect detection (reconnectCount), jitter",
+    "conversation-store: addConversation + updateConversationLocally with auto-sort",
+    "page.tsx: wire 3 socket events with dedup + error boundaries + reconnect resync",
+    "Dedup fix: race condition when WS event arrives before HTTP response",
+    "socket.io-client dependency added"
   ],
   "uncommitted_summary": {
     "status": "clean",

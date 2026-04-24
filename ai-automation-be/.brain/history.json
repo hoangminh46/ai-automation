@@ -234,6 +234,43 @@
         "Encrypt FB access token khi nào? Phase 10 hay sớm hơn?",
         "Real-time CRM: polling hay WebSocket/SSE?"
       ]
+    },
+    {
+      "id": "handoff-20260424-091000-be",
+      "saved_at": "2026-04-24T09:10:00+07:00",
+      "branch": "main",
+      "head_sha": "a0f6ab0",
+      "base_sha": "074f3d8",
+      "source": "commit",
+      "commit_range": "074f3d8..a0f6ab0",
+      "summary": "Phase 06E — WebSocket real-time CRM complete. ChatGateway with JWT auth + tenant rooms, EventEmitter2 decoupling, CORS env restriction, timestamp consistency.",
+      "project_changes": [
+        "ws-events.ts: typed event constants + payload interfaces (3 events)",
+        "ChatGateway: JWT auth on connect, tenant room join, CORS restriction",
+        "ConversationService: emit events on resolve, humanReply, handoverToBot",
+        "ChannelService: emit events on new message, new conversation, bot reply",
+        "EventEmitterModule.forRoot() registered globally in AppModule",
+        "conversation.module: register ChatGateway as provider"
+      ],
+      "commits": [
+        { "sha": "0b1496f", "message": "docs(plan): split Phase 06E into 4 sub-phases" },
+        { "sha": "a0f6ab0", "message": "feat: Phase 06E — WebSocket real-time CRM (Socket.IO)" }
+      ],
+      "working_tree": { "status": "clean" },
+      "decisions": [
+        "Socket.IO over raw WebSocket — built-in reconnect, rooms, fallback to polling",
+        "EventEmitter2 decoupling — avoid circular deps, easy swap to Redis Pub/Sub",
+        "Tenant-level rooms (not conversation-level) — correct for CRM agent dashboard",
+        "CORS: dev open, production restrict via CORS_ORIGINS env — same as main.ts"
+      ],
+      "next_steps": [
+        "Phase 10: Self-serve API & Polish",
+        "Phase 11: Testing & Hardening"
+      ],
+      "open_questions": [
+        "Redis adapter khi scale horizontal?",
+        "Token refresh handling cho long-lived socket connections?"
+      ]
     }
   ]
 }
