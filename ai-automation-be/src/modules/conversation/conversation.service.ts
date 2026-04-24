@@ -14,6 +14,8 @@ import { SendMessageDto } from './dto/send-message.dto.js';
 import { TestChatDto } from './dto/test-chat.dto.js';
 import { ChatResponseDto } from './dto/chat-response.dto.js';
 import { ChannelService } from '../channel/channel.service.js';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { WS_EVENTS } from '../../common/ws-events.js';
 import type OpenAI from 'openai';
 
 const HISTORY_LIMIT = 20;
@@ -27,6 +29,7 @@ export class ConversationService {
     private readonly llm: LlmService,
     private readonly knowledgeSearch: KnowledgeSearchService,
     private readonly channelService: ChannelService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   private async verifyTenantAccess(tenantId: string, sellerId: string) {
@@ -266,10 +269,19 @@ export class ConversationService {
       throw new NotFoundException('Không tìm thấy hội thoại');
     }
 
-    return this.prisma.conversation.update({
+    const updated = await this.prisma.conversation.update({
       where: { id: conversationId },
       data: { status: 'RESOLVED' },
     });
+
+    this.eventEmitter.emit(WS_EVENTS.CONVERSATION_UPDATED, {
+      tenantId,
+      conversationId,
+      status: 'RESOLVED',
+      lastMessageAt: updated.lastMessageAt,
+    });
+
+    return updated;
   }
 
   /**
@@ -305,12 +317,13 @@ export class ConversationService {
       conversation.status === 'BOT_HANDLING' ||
       conversation.status === 'RESOLVED';
     const newStatus = shouldTakeover ? 'OPEN' : conversation.status;
+    const lastMessageAt = new Date();
 
     await this.prisma.conversation.update({
       where: { id: conversationId },
       data: {
         status: newStatus,
-        lastMessageAt: new Date(),
+        lastMessageAt,
       },
     });
 
@@ -327,6 +340,15 @@ export class ConversationService {
         );
       });
 
+    // Emit WS events (fire-and-forget, không block response)
+    this.emitHumanReplyEvents(
+      tenantId,
+      conversationId,
+      message,
+      newStatus,
+      lastMessageAt,
+    );
+
     return {
       messageId: message.id,
       conversationId,
@@ -334,6 +356,42 @@ export class ConversationService {
       role: message.role,
       createdAt: message.createdAt,
     };
+  }
+
+  /**
+   * Emit WS events cho humanReply (message + status update).
+   * Tách ra method riêng để không làm chậm response trả về client.
+   */
+  private emitHumanReplyEvents(
+    tenantId: string,
+    conversationId: string,
+    message: {
+      id: string;
+      role: string;
+      content: string | null;
+      createdAt: Date;
+    },
+    newStatus: string,
+    lastMessageAt: Date,
+  ) {
+    this.eventEmitter.emit(WS_EVENTS.NEW_MESSAGE, {
+      tenantId,
+      conversationId,
+      message: {
+        id: message.id,
+        conversationId,
+        role: message.role,
+        content: message.content,
+        createdAt: message.createdAt,
+      },
+    });
+
+    this.eventEmitter.emit(WS_EVENTS.CONVERSATION_UPDATED, {
+      tenantId,
+      conversationId,
+      status: newStatus,
+      lastMessageAt,
+    });
   }
 
   /**
@@ -364,7 +422,7 @@ export class ConversationService {
     });
 
     // Ghi log hệ thống để nhân viên biết ai đã bàn giao
-    await this.prisma.message.create({
+    const systemMsg = await this.prisma.message.create({
       data: {
         conversationId,
         role: 'SYSTEM',
@@ -375,6 +433,26 @@ export class ConversationService {
     this.logger.log(
       `[Handover] seller=${sellerId} conv=${conversationId} ${conversation.status}->BOT_HANDLING`,
     );
+
+    // Emit WS events
+    this.eventEmitter.emit(WS_EVENTS.CONVERSATION_UPDATED, {
+      tenantId,
+      conversationId,
+      status: 'BOT_HANDLING',
+      lastMessageAt: updated.lastMessageAt,
+    });
+
+    this.eventEmitter.emit(WS_EVENTS.NEW_MESSAGE, {
+      tenantId,
+      conversationId,
+      message: {
+        id: systemMsg.id,
+        conversationId,
+        role: systemMsg.role,
+        content: systemMsg.content,
+        createdAt: systemMsg.createdAt,
+      },
+    });
 
     return { conversationId, status: updated.status };
   }

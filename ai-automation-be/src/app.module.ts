@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import {
   envValidationSchema,
   appConfig,
@@ -38,6 +39,7 @@ import { ChannelModule } from './modules/channel/channel.module.js';
       { name: 'short', ttl: 60000, limit: 10 },
       { name: 'long', ttl: 3600000, limit: 100 },
     ]),
+    EventEmitterModule.forRoot(),
     CommonModule,
     AuthModule,
     TenantModule,

@@ -23,6 +23,7 @@ interface ConversationState {
     conversationId: string,
     updates: Partial<ConversationListItem>,
   ) => void;
+  addConversation: (conversation: ConversationListItem) => void;
   resetConversationStore: () => void;
 }
 
@@ -106,9 +107,27 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
     updates: Partial<ConversationListItem>,
   ) => {
     set({
-      conversations: get().conversations.map((c) =>
-        c.id === conversationId ? { ...c, ...updates } : c,
-      ),
+      conversations: get()
+        .conversations.map((c) =>
+          c.id === conversationId ? { ...c, ...updates } : c,
+        )
+        .sort((a, b) => {
+          const aTime = a.lastMessageAt
+            ? new Date(a.lastMessageAt).getTime()
+            : 0;
+          const bTime = b.lastMessageAt
+            ? new Date(b.lastMessageAt).getTime()
+            : 0;
+          return bTime - aTime;
+        }),
     });
+  },
+
+  addConversation: (conversation: ConversationListItem) => {
+    const exists = get().conversations.some(
+      (c) => c.id === conversation.id,
+    );
+    if (exists) return;
+    set({ conversations: [conversation, ...get().conversations] });
   },
 }));

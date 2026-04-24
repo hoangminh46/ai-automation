@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useTenantStore } from "@/store/tenant-store";
 import { useConversationStore } from "@/store/conversation-store";
 import { chatService } from "@/lib/services/chat.service";
+import type { ConversationListItem } from "@/lib/services/chat.service";
+import { useSocket } from "@/hooks/useSocket";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { AlertCircle, RefreshCcw } from "lucide-react";
 import { ConversationList } from "@/components/chat/ConversationList";
@@ -22,6 +24,7 @@ export default function ChatCrmPage() {
   const resolveConversation = useConversationStore((state) => state.resolveConversation);
   const handoverToBot = useConversationStore((state) => state.handoverToBot);
   const updateConversationLocally = useConversationStore((state) => state.updateConversationLocally);
+  const addConversation = useConversationStore((state) => state.addConversation);
 
   const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
   const [messages, setMessages] = useState<MessageItem[]>([]);
@@ -33,11 +36,165 @@ export default function ChatCrmPage() {
 
   const tenantId = activeTenant?.id;
 
+  // WebSocket connection
+  const { status: socketStatus, socket, reconnectCount } = useSocket({ tenantId });
+
+  // Ref để track selectedConvId hiện tại trong socket callbacks (tránh stale closure)
+  const selectedConvIdRef = useRef(selectedConvId);
+  selectedConvIdRef.current = selectedConvId;
+
   // Step 1: Fetch conversation list when tenant is available
   useEffect(() => {
     if (!tenantId) return;
     fetchConversations(tenantId);
   }, [tenantId, fetchConversations]);
+
+  // Step 1a: Resync data khi socket reconnect (tránh mất messages trong lúc disconnect)
+  useEffect(() => {
+    if (reconnectCount === 0 || !tenantId) return;
+    console.log("[WS] Resync after reconnect #", reconnectCount);
+    fetchConversations(tenantId, true);
+
+    // Re-fetch messages cho conversation đang mở
+    const currentConvId = selectedConvIdRef.current;
+    if (currentConvId) {
+      chatService
+        .getMessages(tenantId, currentConvId)
+        .then((data) => setMessages(data.messages))
+        .catch((err) =>
+          console.error("[WS] Resync messages failed:", err),
+        );
+    }
+  }, [reconnectCount, tenantId, fetchConversations]);
+
+  // Step 1b: Wire socket events → UI
+  useEffect(() => {
+    if (!socket) return;
+
+    // new_message: append tin nhắn vào conversation đang mở
+    const handleNewMessage = (payload: unknown) => {
+      try {
+        const p = payload as {
+          tenantId: string;
+          conversationId: string;
+          message: {
+            id: string;
+            conversationId: string;
+            role: string;
+            content: string | null;
+            createdAt: string;
+          };
+        };
+        if (!p?.conversationId || !p?.message?.id) return;
+
+        // Chỉ append nếu đang xem đúng conversation
+        if (p.conversationId === selectedConvIdRef.current) {
+          setMessages((prev) => {
+            // Dedup: kiểm tra message đã tồn tại chưa (optimistic update)
+            if (prev.some((m) => m.id === p.message.id)) return prev;
+            return [
+              ...prev,
+              {
+                id: p.message.id,
+                conversationId: p.message.conversationId,
+                role: p.message.role as MessageItem["role"],
+                content: p.message.content,
+                attachments: [],
+                promptTokens: null,
+                completionTokens: null,
+                feedbackScore: null,
+                metadata: {},
+                createdAt: p.message.createdAt,
+              },
+            ];
+          });
+        }
+
+        // Update lastMessageAt trong conversation list
+        updateConversationLocally(p.conversationId, {
+          lastMessageAt: p.message.createdAt,
+        });
+      } catch {
+        console.warn("[WS] Invalid new_message payload");
+      }
+    };
+
+    // conversation_updated: cập nhật status trong store
+    const handleConversationUpdated = (payload: unknown) => {
+      try {
+        const p = payload as {
+          tenantId: string;
+          conversationId: string;
+          status: string | null;
+          lastMessageAt: string | null;
+        };
+        if (!p?.conversationId) return;
+
+        const updates: Partial<ConversationListItem> = {};
+        if (p.status) {
+          updates.status = p.status as ConversationListItem["status"];
+        }
+        if (p.lastMessageAt) {
+          updates.lastMessageAt = p.lastMessageAt;
+        }
+        if (Object.keys(updates).length > 0) {
+          updateConversationLocally(p.conversationId, updates);
+        }
+      } catch {
+        console.warn("[WS] Invalid conversation_updated payload");
+      }
+    };
+
+    // new_conversation: thêm conversation mới vào list
+    const handleNewConversation = (payload: unknown) => {
+      try {
+        const p = payload as {
+          tenantId: string;
+          conversation: {
+            id: string;
+            tenantId: string;
+            agentId: string;
+            customerId: string;
+            status: string;
+            channelType: string | null;
+            lastMessageAt: string | null;
+            createdAt: string;
+          };
+        };
+        if (!p?.conversation?.id) return;
+
+        const conv = p.conversation;
+        addConversation({
+          id: conv.id,
+          tenantId: conv.tenantId,
+          agentId: conv.agentId,
+          customerId: conv.customerId,
+          assigneeId: null,
+          status: conv.status as ConversationListItem["status"],
+          channelConversationId: null,
+          channelType: conv.channelType,
+          lastMessageAt: conv.lastMessageAt,
+          createdAt: conv.createdAt,
+          updatedAt: conv.createdAt,
+          agent: { id: conv.agentId, name: "Bot" },
+          customer: { id: conv.customerId, name: "Khách mới" },
+          _count: { messages: 0 },
+        });
+      } catch {
+        console.warn("[WS] Invalid new_conversation payload");
+      }
+    };
+
+    socket.on("new_message", handleNewMessage);
+    socket.on("conversation_updated", handleConversationUpdated);
+    socket.on("new_conversation", handleNewConversation);
+
+    return () => {
+      socket.off("new_message", handleNewMessage);
+      socket.off("conversation_updated", handleConversationUpdated);
+      socket.off("new_conversation", handleNewConversation);
+    };
+  }, [socket, updateConversationLocally, addConversation]);
 
   const selectedConv =
     conversations.find((c) => c.id === selectedConvId) || null;
@@ -105,7 +262,7 @@ export default function ChatCrmPage() {
           content,
         );
 
-        // Append sent message to local state for instant feedback
+        // Append sent message to local state for instant feedback (dedup: WS event có thể đến trước HTTP response)
         const newMessage: MessageItem = {
           id: result.messageId,
           conversationId: result.conversationId,
@@ -118,7 +275,10 @@ export default function ChatCrmPage() {
           metadata: {},
           createdAt: result.createdAt,
         };
-        setMessages((prev) => [...prev, newMessage]);
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === newMessage.id)) return prev;
+          return [...prev, newMessage];
+        });
 
         // Optimistic update: status → OPEN + update timestamp (no reload)
         updateConversationLocally(selectedConvId, {
@@ -158,8 +318,35 @@ export default function ChatCrmPage() {
     <div className="flex h-full">
       {/* Left: Conversation List */}
       <div className="w-80 shrink-0 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-col">
-        {/* Refresh button */}
-        <div className="flex items-center justify-end px-4 pt-3 shrink-0">
+        {/* Header: connection status + refresh */}
+        <div className="flex items-center justify-between px-4 pt-3 shrink-0">
+          {/* Socket status indicator */}
+          <div className="flex items-center gap-1.5">
+            <span
+              className={`w-2 h-2 rounded-full ${
+                socketStatus === "connected"
+                  ? "bg-emerald-500"
+                  : socketStatus === "connecting"
+                    ? "bg-amber-400 animate-pulse"
+                    : "bg-red-400"
+              }`}
+              title={
+                socketStatus === "connected"
+                  ? "Real-time: Đang kết nối"
+                  : socketStatus === "connecting"
+                    ? "Đang kết nối..."
+                    : "Mất kết nối real-time"
+              }
+            />
+            <span className="text-[10px] text-slate-400 dark:text-slate-500">
+              {socketStatus === "connected"
+                ? "Live"
+                : socketStatus === "connecting"
+                  ? "..."
+                  : "Offline"}
+            </span>
+          </div>
+
           <button
             onClick={handleRefresh}
             disabled={isLoadingConversations}

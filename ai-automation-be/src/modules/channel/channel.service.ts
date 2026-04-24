@@ -10,6 +10,8 @@ import { PrismaService } from '../../common/prisma.service.js';
 import { LlmService } from '../../common/llm/llm.service.js';
 import { KnowledgeSearchService } from '../knowledge/services/knowledge-search.service.js';
 import { FacebookAdapter } from './adapters/facebook.adapter.js';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { WS_EVENTS } from '../../common/ws-events.js';
 import type { IncomingMessage } from './adapters/channel-adapter.interface.js';
 import type OpenAI from 'openai';
 
@@ -40,6 +42,7 @@ export class ChannelService implements OnModuleDestroy {
     private readonly knowledgeSearch: KnowledgeSearchService,
     private readonly configService: ConfigService,
     private readonly facebookAdapter: FacebookAdapter,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     this.cleanupInterval = setInterval(() => this.cleanupDedupMap(), 60_000);
   }
@@ -277,12 +280,12 @@ export class ChannelService implements OnModuleDestroy {
       this.logger.log(
         `[Routing] Conversation ${conversation.id} is OPEN (human handling), skip bot reply`,
       );
-      await this.saveCustomerMessage(conversation.id, incoming);
+      await this.saveCustomerMessage(tenantId, conversation.id, incoming);
       return;
     }
 
     // Step 6: Lưu tin nhắn khách
-    await this.saveCustomerMessage(conversation.id, incoming);
+    await this.saveCustomerMessage(tenantId, conversation.id, incoming);
 
     // Step 7: Nếu không có text (sticker, ảnh...) → không gọi LLM
     if (!incoming.text) {
@@ -308,7 +311,7 @@ export class ChannelService implements OnModuleDestroy {
     );
 
     // Step 10: Lưu reply vào DB
-    await this.prisma.message.create({
+    const botMessage = await this.prisma.message.create({
       data: {
         conversationId: conversation.id,
         role: 'ASSISTANT',
@@ -327,6 +330,19 @@ export class ChannelService implements OnModuleDestroy {
         data: { messageUsed: { increment: 1 } },
       }),
     ]);
+
+    // Emit WS: bot reply
+    this.eventEmitter.emit(WS_EVENTS.NEW_MESSAGE, {
+      tenantId,
+      conversationId: conversation.id,
+      message: {
+        id: botMessage.id,
+        conversationId: conversation.id,
+        role: botMessage.role,
+        content: botMessage.content,
+        createdAt: botMessage.createdAt,
+      },
+    });
 
     const totalMs = Date.now() - pipelineStart;
     this.logger.log(
@@ -432,7 +448,7 @@ export class ChannelService implements OnModuleDestroy {
 
     if (existing) return existing;
 
-    return this.prisma.conversation.create({
+    const newConversation = await this.prisma.conversation.create({
       data: {
         tenantId,
         agentId,
@@ -443,13 +459,33 @@ export class ChannelService implements OnModuleDestroy {
         lastMessageAt: new Date(),
       },
     });
+
+    // Emit WS: new conversation
+    this.eventEmitter.emit(WS_EVENTS.NEW_CONVERSATION, {
+      tenantId,
+      conversation: {
+        id: newConversation.id,
+        tenantId: newConversation.tenantId,
+        agentId: newConversation.agentId,
+        customerId: newConversation.customerId,
+        status: newConversation.status,
+        channelType: newConversation.channelType,
+        lastMessageAt: newConversation.lastMessageAt,
+        createdAt: newConversation.createdAt,
+      },
+    });
+
+    return newConversation;
   }
 
   private async saveCustomerMessage(
+    tenantId: string,
     conversationId: string,
     incoming: IncomingMessage,
   ) {
-    await this.prisma.message.create({
+    const now = new Date();
+
+    const customerMsg = await this.prisma.message.create({
       data: {
         conversationId,
         role: 'CUSTOMER',
@@ -459,7 +495,28 @@ export class ChannelService implements OnModuleDestroy {
 
     await this.prisma.conversation.update({
       where: { id: conversationId },
-      data: { lastMessageAt: new Date() },
+      data: { lastMessageAt: now },
+    });
+
+    // Emit WS: customer message
+    this.eventEmitter.emit(WS_EVENTS.NEW_MESSAGE, {
+      tenantId,
+      conversationId,
+      message: {
+        id: customerMsg.id,
+        conversationId,
+        role: customerMsg.role,
+        content: customerMsg.content,
+        createdAt: customerMsg.createdAt,
+      },
+    });
+
+    // Emit WS: lastMessageAt updated
+    this.eventEmitter.emit(WS_EVENTS.CONVERSATION_UPDATED, {
+      tenantId,
+      conversationId,
+      status: null,
+      lastMessageAt: now,
     });
   }
 
