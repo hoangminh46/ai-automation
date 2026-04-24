@@ -69,20 +69,20 @@ Vào service → **Environment** → thêm từng biến:
 | `FB_APP_SECRET` | (copy từ .env) |
 | `FB_VERIFY_TOKEN` | `chatbot-verify-2026` |
 | `FB_PAGE_ACCESS_TOKEN` | `EAAS...` (copy từ .env) |
-| `CORS_ORIGINS` | `https://your-app.vercel.app` (sẽ cập nhật sau khi có domain FE) |
+| `CORS_ORIGINS` | `https://ai-automation-fe.vercel.app` (cập nhật sau khi deploy FE) |
 
 5. Bấm **Save Changes** → Render tự redeploy
 
 ### Bước 5: Verify Backend
 
-Sau khi deploy xong (3-5 phút), Render cho URL dạng:
+Sau khi deploy xong (3-5 phút), Render cho URL:
 ```
-https://ai-chatbot-api.onrender.com
+https://ai-chatbot-api-3w53.onrender.com  ← ĐÃ DEPLOY THÀNH CÔNG ✅
 ```
 
 Test:
 ```bash
-curl https://ai-chatbot-api.onrender.com/api/v1/tenants
+curl https://ai-chatbot-api-3w53.onrender.com/api/v1/tenants
 # Phải trả về: {"success":false,"error":{"statusCode":401,...}}
 # → 401 = server OK, chỉ thiếu auth
 ```
@@ -94,7 +94,7 @@ Render Free ngủ sau 15 phút. Dùng UptimeRobot (miễn phí) để ping:
 1. Truy cập: https://uptimerobot.com/ (đăng ký free)
 2. **Add New Monitor:**
    - Type: `HTTP(s)`
-   - URL: `https://ai-chatbot-api.onrender.com/api/v1/tenants`
+   - URL: `https://ai-chatbot-api-3w53.onrender.com/api/v1/tenants`
    - Interval: `5 minutes`
 3. Server sẽ **luôn thức** (Render cho phép điều này ở free tier)
 
@@ -124,18 +124,18 @@ Render Free ngủ sau 15 phút. Dùng UptimeRobot (miễn phí) để ping:
 |-----|-------|
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://vmoewpsjqoeybbyrwyun.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJhbGci...` (anon key) |
-| `NEXT_PUBLIC_API_URL` | `https://ai-chatbot-api.onrender.com` |
+| `NEXT_PUBLIC_API_URL` | `https://ai-chatbot-api-3w53.onrender.com` |
 
 ### Bước 3: Deploy
 
 - Bấm **Deploy** → Vercel build tự động
-- Sau khi xong → domain: `your-app.vercel.app`
+- Sau khi xong → Vercel cho domain dạng: `ai-automation-fe-xxx.vercel.app`
 
 ### Bước 4: Cập nhật CORS trên BE
 
 Quay lại Render Dashboard → Environment:
 ```
-CORS_ORIGINS=https://your-app.vercel.app
+CORS_ORIGINS=https://ai-automation-fe.vercel.app
 ```
 Bấm **Save Changes** → auto redeploy
 
@@ -146,7 +146,7 @@ Bấm **Save Changes** → auto redeploy
 1. Vào **Meta Developers** → App
 2. **Messenger → Settings → Webhooks**
 3. **Edit Callback URL:**
-   - URL: `https://ai-chatbot-api.onrender.com/webhook/facebook`
+   - URL: `https://ai-chatbot-api-3w53.onrender.com/webhook/facebook`
    - Verify Token: `chatbot-verify-2026`
 4. Bấm **Verify and Save**
 
@@ -156,9 +156,9 @@ Bấm **Save Changes** → auto redeploy
 
 ## PHẦN 4: DOMAIN TÙY CHỈNH (Tùy chọn)
 
-### Không mua domain (miễn phí):
-- FE: `your-app.vercel.app`
-- BE: `ai-chatbot-api.onrender.com`
+### Không mua domain (miễn phí) — đang dùng:
+- FE: `ai-automation-fe.vercel.app` (cập nhật sau khi deploy Vercel)
+- BE: `ai-chatbot-api-3w53.onrender.com` ✅
 
 ### Mua domain (~$12/năm):
 - FE: `app.yourapp.com` → Vercel Custom Domain
