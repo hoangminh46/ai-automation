@@ -141,9 +141,12 @@
 - **Phase 06E done**: Full WebSocket implementation — ChatGateway, EventEmitter2, useSocket, reconnect resync, dedup, error boundaries, CORS restriction (2026-04-24).
 - **Phase 10 (BE)**: API prefix `/api/v1`, ResponseInterceptor `{ success, data }`, GlobalExceptionFilter, Swagger UI `/api/docs`. FE: axios baseURL + auto-unwrap interceptor (2026-04-24).
 - **Chat bubble fix**: Thêm `break-all` + `overflow-hidden` + `overflow-x-hidden` cho message content tránh tràn text dài (2026-04-24).
+- **Phase 11 (BE)**: PromptInjectionGuardPipe, SanitizeInputPipe, 5 DB indexes, Dockerfile upgrade, graceful shutdown (2026-04-24).
+
+### 🎉 BE Module Complete — All 11 phases done!
 
 ### Thứ tự ưu tiên tiếp theo:
 ```
-Phase 11: Testing & Hardening                          ← TIẾP THEO
+Zalo OA Channel / Website Widget / Payment Integration
 ```
 

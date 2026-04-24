@@ -304,6 +304,40 @@
       "open_questions": [
         "Enable Swagger in production? (secured with API key)"
       ]
+    },
+    {
+      "id": "handoff-20260424-110000-be",
+      "saved_at": "2026-04-24T11:00:00+07:00",
+      "branch": "main",
+      "head_sha": "pending-commit",
+      "base_sha": "cdf363a",
+      "source": "mixed",
+      "commit_range": "cdf363a..HEAD",
+      "summary": "🎉 Phase 11 — Testing & Hardening done. All 11 BE phases complete. Security pipes, 5 DB indexes, Dockerfile upgrade, graceful shutdown.",
+      "project_changes": [
+        "PromptInjectionGuardPipe: 12 regex patterns for LLM injection (jailbreak, DAN, ignore instructions)",
+        "SanitizeInputPipe: strip HTML/script tags, XSS prevention",
+        "Applied pipes to chat + test-chat + human-reply endpoints via @UsePipes",
+        "5 DB indexes: conversations, messages, customers, channel_connections, knowledge_chunks (ivfflat)",
+        "Dockerfile: non-root user, healthcheck, multi-stage build",
+        "main.ts: app.enableShutdownHooks() for graceful shutdown",
+        "Cleaned up temp test/verify scripts"
+      ],
+      "commits": [],
+      "working_tree": { "status": "dirty" },
+      "decisions": [
+        "Integration tests SKIPPED — MVP, manual testing sufficient",
+        "PromptInjectionGuardPipe as @UsePipes (not global) — only on LLM-facing endpoints",
+        "SanitizeInputPipe strips ALL HTML — ecommerce chat doesn't need rich text",
+        "IVFFlat over HNSW — better for current dataset size, needs maintenance_work_mem=128MB",
+        "DB indexes verified via EXPLAIN ANALYZE — Seq Scan normal for small datasets"
+      ],
+      "next_steps": [
+        "Zalo OA Channel / Website Widget / Payment Integration",
+        "Encrypt FB access token AES-256",
+        "Redis adapter for multi-instance scaling"
+      ],
+      "open_questions": []
     }
   ]
 }

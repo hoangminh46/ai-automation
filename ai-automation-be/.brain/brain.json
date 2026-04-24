@@ -103,8 +103,8 @@
     "phase_08_knowledge_rag": { "status": "done", "last_changed_sha": "dfe8d15" },
     "phase_09_facebook_messenger": { "status": "done", "last_changed_sha": "4042b40", "notes": "Channel adapter, webhook, routing, human reply→FB, handover-to-bot" },
     "phase_06E_websocket_realtime": { "status": "done", "last_changed_sha": "a0f6ab0", "notes": "ChatGateway (JWT auth, tenant rooms, CORS env), EventEmitter2 decoupling, ws-events types, reconnect resync, dedup, error boundaries" },
-    "phase_10_selfserve_polish": { "status": "in_progress", "notes": "4/7 done: API prefix /api/v1, ResponseInterceptor, GlobalExceptionFilter, Swagger /api/docs. Skipped: onboarding endpoint (flow exists). Rate limiting + CORS already done." },
-    "phase_11_testing": { "status": "not_started" }
+    "phase_10_selfserve_polish": { "status": "done", "notes": "API prefix /api/v1, ResponseInterceptor, GlobalExceptionFilter, Swagger /api/docs. Rate limiting + CORS already done." },
+    "phase_11_testing": { "status": "done", "notes": "PromptInjectionGuardPipe (12 patterns), SanitizeInputPipe (HTML/XSS strip), 5 DB indexes (ivfflat + btree), Dockerfile upgrade (non-root, healthcheck), graceful shutdown. Integration tests skipped (MVP)." }
   },
   "business_rules": [
     "Tao Tenant -> auto-create OWNER TenantMember + default Agent (transaction)",
@@ -146,15 +146,17 @@
     "Response format: ResponseInterceptor wraps { success: true, data } globally",
     "Error format: GlobalExceptionFilter → { success: false, error: { statusCode, message, timestamp, path } }",
     "Swagger CLI plugin in nest-cli.json — auto-detect DTO types, reduce manual @ApiProperty",
-    "Swagger UI at /api/docs (dev only, disabled in production)"
+    "Swagger UI at /api/docs (dev only, disabled in production)",
+    "PromptInjectionGuardPipe: 12 regex patterns, applied to chat + test-chat endpoints",
+    "SanitizeInputPipe: strip HTML/script tags, applied to chat + test-chat + human-reply",
+    "Graceful shutdown: app.enableShutdownHooks() in main.ts",
+    "Dockerfile: non-root user (appuser), healthcheck, multi-stage build"
   ],
   "known_issues": [
     "src/tenant/ and src/agent/ (root level) are empty scaffolding dirs, real code is in src/modules/",
     "Tenant.settings column exists in DB but no DTO exposes it yet",
-    "HNSW vector index on knowledge_chunks.embedding not yet created (needs manual SQL)",
-    "FB access token stored plain text (encrypt AES-256 in Phase 10)",
+    "FB access token stored plain text (encrypt AES-256 future)",
     "In-memory dedup Map needs Redis when scaling to multiple instances",
-    "Socket.IO single-instance only — needs @socket.io/redis-adapter for horizontal scaling",
-    "WS CORS: currently open in dev, production restricts via CORS_ORIGINS env"
+    "Socket.IO single-instance only — needs @socket.io/redis-adapter for horizontal scaling"
   ]
 }

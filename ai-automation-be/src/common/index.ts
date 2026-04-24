@@ -5,3 +5,5 @@ export { TenantGuard } from './guards/tenant.guard.js';
 export { CurrentUser } from './decorators/current-user.decorator.js';
 export { GlobalExceptionFilter } from './filters/global-exception.filter.js';
 export { ResponseInterceptor } from './interceptors/response.interceptor.js';
+export { SanitizeInputPipe } from './pipes/sanitize-input.pipe.js';
+export { PromptInjectionGuardPipe } from './pipes/prompt-injection-guard.pipe.js';

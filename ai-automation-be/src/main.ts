@@ -73,6 +73,9 @@ async function bootstrap() {
     logger.log(`📚 Swagger UI: http://localhost:${port}/api/docs`);
   }
 
+  // Graceful shutdown — cleanup Prisma, WebSocket trước khi exit
+  app.enableShutdownHooks();
+
   await app.listen(port);
   logger.log(
     `🚀 AI Chatbot Service running on http://localhost:${port} [${nodeEnv}]`,

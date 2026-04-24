@@ -6,6 +6,7 @@ import {
   Body,
   Param,
   UseGuards,
+  UsePipes,
 } from '@nestjs/common';
 import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import { ConversationService } from './conversation.service.js';
@@ -16,6 +17,8 @@ import { SupabaseAuthGuard } from '../../common/guards/auth.guard.js';
 import { TenantGuard } from '../../common/guards/tenant.guard.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { SanitizeInputPipe } from '../../common/pipes/sanitize-input.pipe.js';
+import { PromptInjectionGuardPipe } from '../../common/pipes/prompt-injection-guard.pipe.js';
 
 @ApiTags('Conversations')
 @ApiBearerAuth()
@@ -26,6 +29,7 @@ export class ConversationController {
 
   @ApiOperation({ summary: 'Gửi tin nhắn cho Bot AI và nhận phản hồi' })
   @Post('chat')
+  @UsePipes(SanitizeInputPipe, PromptInjectionGuardPipe)
   sendMessage(
     @CurrentUser() user: { sellerId: string },
     @Param('tenantId') tenantId: string,
@@ -43,6 +47,7 @@ export class ConversationController {
     short: { ttl: 60000, limit: 5 },
     long: { ttl: 3600000, limit: 30 },
   })
+  @UsePipes(SanitizeInputPipe, PromptInjectionGuardPipe)
   testChat(
     @CurrentUser() user: { sellerId: string },
     @Param('tenantId') tenantId: string,
@@ -92,6 +97,7 @@ export class ConversationController {
     summary: 'Nhân viên gửi tin nhắn trực tiếp (không qua LLM)',
   })
   @Post('conversations/:conversationId/human-reply')
+  @UsePipes(SanitizeInputPipe)
   humanReply(
     @CurrentUser() user: { sellerId: string },
     @Param('tenantId') tenantId: string,

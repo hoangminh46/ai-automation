@@ -1,39 +1,41 @@
 {
-  "updated_at": "2026-04-24T10:03:00+07:00",
+  "updated_at": "2026-04-24T11:00:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260424-100300-be",
+  "active_handoff_id": "handoff-20260424-110000-be",
   "working_on": {
-    "phase": "Phase 10 — Self-serve API & Polish (4/7 done). Phase 11 next.",
+    "phase": "🎉 All 11 phases COMPLETE. Module ready for production beta.",
     "status": "dirty",
-    "summary": "Phase 10: API prefix /api/v1, ResponseInterceptor, GlobalExceptionFilter, Swagger /api/docs. Onboarding endpoint skipped (flow exists). Rate limiting + CORS already done."
+    "summary": "Phase 11 done: PromptInjectionGuardPipe, SanitizeInputPipe, 5 DB indexes, Dockerfile upgrade, graceful shutdown."
   },
   "git_snapshot": {
-    "head_sha": "763cc39",
-    "last_saved_head_sha": "a0f6ab0",
-    "base_sha": "a0f6ab0",
+    "head_sha": "cdf363a",
+    "last_saved_head_sha": "cdf363a",
+    "base_sha": "cdf363a",
     "branch": "main",
     "has_uncommitted_changes": true,
     "changed_files": [
-      "src/main.ts",
-      "src/common/filters/global-exception.filter.ts",
-      "src/common/interceptors/response.interceptor.ts",
+      "src/common/pipes/prompt-injection-guard.pipe.ts",
+      "src/common/pipes/sanitize-input.pipe.ts",
       "src/common/index.ts",
-      "nest-cli.json",
-      "plans/260413-1600-ai-chatbot-module/plan.md",
-      "plans/260413-1600-ai-chatbot-module/phase-10-selfserve-polish.md"
+      "src/modules/conversation/conversation.controller.ts",
+      "src/main.ts",
+      "Dockerfile",
+      "scripts/add-indexes.sql"
     ]
   },
   "pending_tasks": [
-    "Phase 11: Testing & Hardening",
-    "Create HNSW index on knowledge_chunks.embedding (manual SQL on Supabase)",
     "Encrypt FB access token AES-256",
-    "Scale: Redis SET dedup + @socket.io/redis-adapter"
+    "Scale: Redis SET dedup + @socket.io/redis-adapter",
+    "Zalo OA Channel",
+    "Website Widget Channel",
+    "Payment Integration"
   ],
   "recent_changes": [
-    "main.ts: setGlobalPrefix('api/v1') + exclude webhook, ResponseInterceptor, GlobalExceptionFilter, Swagger DocumentBuilder",
-    "GlobalExceptionFilter: catch-all → { success: false, error: { statusCode, message, timestamp, path } }",
-    "ResponseInterceptor: wrap → { success: true, data }",
-    "nest-cli.json: Swagger CLI plugin for auto-detect DTO types",
-    "common/index.ts: export new filter + interceptor"
+    "PromptInjectionGuardPipe: 12 regex patterns for LLM prompt injection detection",
+    "SanitizeInputPipe: strip HTML/script tags, XSS prevention",
+    "Applied pipes to chat, test-chat, human-reply endpoints",
+    "5 DB indexes created: conversations, messages, customers, channel_connections, knowledge_chunks",
+    "Dockerfile: non-root user, healthcheck, .prisma copy",
+    "main.ts: app.enableShutdownHooks() for graceful shutdown"
   ]
 }

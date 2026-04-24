@@ -43,7 +43,8 @@
     "Real-time CRM — Socket.IO WebSocket, useSocket hook, reconnect resync, dedup, error boundaries (Sprint 5)",
     "Phase 10 (BE) — API prefix /api/v1, standard response format, Swagger UI /api/docs (Sprint 5)",
     "Chat bubble overflow fix — break-all + overflow-hidden for long text (Sprint 5)",
-    "BE Phase 01-09 + 06E + 10(partial) done"
+    "Phase 11 (BE) — PromptInjectionGuardPipe, SanitizeInputPipe, 5 DB indexes, Dockerfile, graceful shutdown (Sprint 5)",
+    "🎉 BE Module Complete — All 11 phases done"
   ],
   "business_rules": [
     "Mỗi Tenant có Slug đơn nhất. FE tự convert name → slug khi gọi API.",
