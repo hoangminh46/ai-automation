@@ -41,7 +41,9 @@
     "Handover to Bot — button in CustomerPanel, OPEN/SNOOZED → BOT_HANDLING (Sprint 5)",
     "Channel Management — Connect/Disconnect FB Page, setup guide, webhook URL copy (Sprint 5)",
     "Real-time CRM — Socket.IO WebSocket, useSocket hook, reconnect resync, dedup, error boundaries (Sprint 5)",
-    "BE Phase 01-09 + 06E done (LLM + Pipeline + Knowledge RAG + Facebook Channel + WebSocket)"
+    "Phase 10 (BE) — API prefix /api/v1, standard response format, Swagger UI /api/docs (Sprint 5)",
+    "Chat bubble overflow fix — break-all + overflow-hidden for long text (Sprint 5)",
+    "BE Phase 01-09 + 06E + 10(partial) done"
   ],
   "business_rules": [
     "Mỗi Tenant có Slug đơn nhất. FE tự convert name → slug khi gọi API.",
@@ -72,6 +74,9 @@
     "Store optimistic update: updateConversationLocally() thay vì force-fetch.",
     "Socket hook pattern: src/hooks/useSocket.ts — returns { status, socket, reconnectCount }.",
     "WS event handlers: payload typed as unknown + try-catch boundary + early return on invalid.",
-    "Stale closure prevention: useRef cho selectedConvId trong socket callbacks."
+    "Stale closure prevention: useRef cho selectedConvId trong socket callbacks.",
+    "Axios auto-unwrap: response interceptor unwrap { success, data } → service layer vẫn dùng response.data.",
+    "Axios baseURL: /api/v1 prefix — webhook URL dùng raw base (không qua axios).",
+    "Chat bubble: break-all + overflow-hidden + overflow-x-hidden cho text dài không space."
   ]
 }

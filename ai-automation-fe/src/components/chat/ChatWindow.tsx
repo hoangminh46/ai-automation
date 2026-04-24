@@ -152,7 +152,7 @@ export function ChatWindow({
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3 bg-slate-50/50 dark:bg-slate-900/50">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-4 space-y-3 bg-slate-50/50 dark:bg-slate-900/50">
         {isLoadingMessages ? (
           <div className="flex flex-col items-center justify-center h-full">
             <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-3" />
@@ -199,7 +199,7 @@ export function ChatWindow({
                 )}
 
                 <div
-                  className={`max-w-[70%] ${isRight ? "items-end" : "items-start"} flex flex-col`}
+                  className={`max-w-[70%] min-w-0 ${isRight ? "items-end" : "items-start"} flex flex-col`}
                 >
                   <span
                     className={`text-[10px] font-medium mb-1 px-1 ${
@@ -212,13 +212,13 @@ export function ChatWindow({
                   </span>
 
                   <div
-                    className={`${config.bubbleBg} ${config.textColor} px-4 py-2.5 shadow-sm ${
+                    className={`${config.bubbleBg} ${config.textColor} px-4 py-2.5 shadow-sm overflow-hidden ${
                       isRight
                         ? "rounded-2xl rounded-tr-md"
                         : "rounded-2xl rounded-tl-md"
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                    <p className="text-sm whitespace-pre-wrap break-all leading-relaxed">
                       {msg.content}
                     </p>
 

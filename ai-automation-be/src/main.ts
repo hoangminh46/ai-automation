@@ -1,8 +1,11 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe, Logger, RequestMethod } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -28,6 +31,19 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // API prefix + versioning — exclude webhook (Facebook gọi trực tiếp)
+  app.setGlobalPrefix('api/v1', {
+    exclude: [
+      { path: '', method: RequestMethod.GET },
+      { path: 'webhook/facebook', method: RequestMethod.GET },
+      { path: 'webhook/facebook', method: RequestMethod.POST },
+    ],
+  });
+
+  // Global standard response format: { success, data } / { success, error }
+  app.useGlobalInterceptors(new ResponseInterceptor());
+  app.useGlobalFilters(new GlobalExceptionFilter());
+
   // Global validation pipe — reject invalid DTOs
   app.useGlobalPipes(
     new ValidationPipe({
@@ -39,6 +55,23 @@ async function bootstrap() {
       },
     }),
   );
+
+  // Swagger API docs — chỉ bật ở development
+  if (nodeEnv === 'development') {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('AI Chatbot API')
+      .setDescription(
+        'Multi-tenant AI Chatbot backend cho seller TMĐT Việt Nam. ' +
+          'RAG-based, Facebook Messenger integration, real-time WebSocket.',
+      )
+      .setVersion('1.0')
+      .addBearerAuth()
+      .addServer(`http://localhost:${port}`, 'Local Development')
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api/docs', app, document);
+    logger.log(`📚 Swagger UI: http://localhost:${port}/api/docs`);
+  }
 
   await app.listen(port);
   logger.log(

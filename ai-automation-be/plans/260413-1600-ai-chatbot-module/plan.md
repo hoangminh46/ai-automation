@@ -36,7 +36,7 @@ Module AI Chatbot backend độc lập (NestJS), AI Agent Pipeline lấy cảm h
 | 09 | Facebook Messenger Channel | 10 | ✅ |
 | 06E-1 | WebSocket Gateway Foundation | 5 | ✅ |
 | 06E-2 | WS Event Emission from Services | 5 | ✅ |
-| 10 | Self-serve API & Polish | 7 | ⬜ |
+| 10 | Self-serve API & Polish | 7 | 🟡 4/7 done |
 | 11 | Testing & Hardening | 7 | ⬜ |
 
 ## Acceptance Criteria

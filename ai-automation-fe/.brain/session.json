@@ -1,42 +1,30 @@
 {
-  "updated_at": "2026-04-24T09:10:00+07:00",
+  "updated_at": "2026-04-24T10:03:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260424-091000-fe",
+  "active_handoff_id": "handoff-20260424-100300-fe",
   "working_on": {
-    "sprint": "Sprint 5 — Phase 06E done. Phase 10 next.",
-    "description": "Phase 06E complete: useSocket hook (reconnect detection), socket event wiring (dedup + error boundaries), conversation-store (addConversation + auto-sort), reconnect resync."
+    "sprint": "Sprint 5 — Phase 10 (BE) done. Chat bubble fix. Phase 11 next.",
+    "description": "Phase 10: axios baseURL → /api/v1, auto-unwrap { success, data } interceptor. Chat bubble overflow fix: break-all + overflow-hidden."
   },
   "git_snapshot": {
-    "head_sha": "a0f6ab0",
-    "last_saved_head_sha": "db13084",
-    "base_sha": "db13084",
+    "head_sha": "763cc39",
+    "last_saved_head_sha": "a0f6ab0",
+    "base_sha": "a0f6ab0",
     "branch": "main",
-    "has_uncommitted_changes": false,
-    "changed_files": [],
-    "staged_files": [],
-    "unstaged_files": [],
-    "untracked_files": [],
-    "commit_range": "db13084..a0f6ab0",
-    "commits_since_last_save": [
-      { "sha": "0b1496f", "message": "docs(plan): split Phase 06E into 4 sub-phases" },
-      { "sha": "a0f6ab0", "message": "feat: Phase 06E — WebSocket real-time CRM (Socket.IO)" }
+    "has_uncommitted_changes": true,
+    "changed_files": [
+      "src/lib/axios.ts",
+      "src/components/chat/ChatWindow.tsx",
+      "plans/frontend_plan.md"
     ]
   },
   "pending_tasks": [
-    "Phase 10: Self-serve API & Polish",
     "Phase 11: Testing & Hardening",
     "E2E test CRM + Channel + WebSocket flow"
   ],
   "recent_changes": [
-    "useSocket hook: auto-connect, JWT auth, reconnect detection (reconnectCount), jitter",
-    "conversation-store: addConversation + updateConversationLocally with auto-sort",
-    "page.tsx: wire 3 socket events with dedup + error boundaries + reconnect resync",
-    "Dedup fix: race condition when WS event arrives before HTTP response",
-    "socket.io-client dependency added"
-  ],
-  "uncommitted_summary": {
-    "status": "clean",
-    "summary": "No uncommitted changes",
-    "files": []
-  }
+    "axios.ts: baseURL + /api/v1, response interceptor auto-unwrap { success, data }",
+    "axios.ts: error interceptor extracts error.message from standard format",
+    "ChatWindow.tsx: break-all + overflow-hidden on bubble, overflow-x-hidden on scroll container, min-w-0 on wrapper"
+  ]
 }

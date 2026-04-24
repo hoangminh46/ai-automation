@@ -257,6 +257,34 @@
         "Sound/visual notification cho messages ở conversation không đang xem?",
         "SocketProvider context nếu cần WS ở nhiều routes?"
       ]
+    },
+    {
+      "id": "handoff-20260424-100300-fe",
+      "saved_at": "2026-04-24T10:03:00+07:00",
+      "branch": "main",
+      "head_sha": "pending-commit",
+      "base_sha": "763cc39",
+      "source": "commit",
+      "commit_range": "763cc39..HEAD",
+      "summary": "Phase 10 FE sync: axios baseURL → /api/v1, auto-unwrap response interceptor. Chat bubble overflow fix: break-all + overflow-hidden.",
+      "project_changes": [
+        "axios.ts: baseURL appended /api/v1, response interceptor auto-unwrap { success, data }",
+        "axios.ts: error interceptor extracts message from standard format",
+        "ChatWindow.tsx: break-all + overflow-hidden on bubble div, overflow-x-hidden on scroll container, min-w-0 on flex wrapper",
+        "frontend_plan.md: Phase 10 + chat fix noted, priority → Phase 11"
+      ],
+      "commits": [],
+      "working_tree": { "status": "dirty" },
+      "decisions": [
+        "Auto-unwrap at axios level — service layer doesn't need changes (response.data stays same)",
+        "break-all over break-words — more aggressive, guaranteed to wrap long unbroken strings",
+        "overflow-x-hidden on scroll container — prevents horizontal scroll from long text"
+      ],
+      "next_steps": [
+        "Phase 11: Testing & Hardening",
+        "E2E test full CRM flow"
+      ],
+      "open_questions": []
     }
   ]
 }

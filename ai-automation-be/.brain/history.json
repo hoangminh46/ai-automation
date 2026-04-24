@@ -271,6 +271,39 @@
         "Redis adapter khi scale horizontal?",
         "Token refresh handling cho long-lived socket connections?"
       ]
+    },
+    {
+      "id": "handoff-20260424-100300-be",
+      "saved_at": "2026-04-24T10:03:00+07:00",
+      "branch": "main",
+      "head_sha": "pending-commit",
+      "base_sha": "763cc39",
+      "source": "commit",
+      "commit_range": "763cc39..HEAD",
+      "summary": "Phase 10 — Self-serve API & Polish (4/7 done). API prefix /api/v1, ResponseInterceptor, GlobalExceptionFilter, Swagger UI /api/docs. Onboarding skipped.",
+      "project_changes": [
+        "main.ts: setGlobalPrefix('api/v1') + exclude webhook, global interceptor + filter, Swagger setup (dev only)",
+        "GlobalExceptionFilter: unified error format { success: false, error: { statusCode, message, timestamp, path } }",
+        "ResponseInterceptor: unified success format { success: true, data }",
+        "nest-cli.json: @nestjs/swagger CLI plugin for auto-detect DTO types",
+        "common/index.ts: barrel exports for filter + interceptor"
+      ],
+      "commits": [],
+      "working_tree": { "status": "dirty" },
+      "decisions": [
+        "API prefix /api/v1 — standard for REST APIs, easy versioning",
+        "Exclude webhook/facebook from prefix — FB calls directly",
+        "Swagger dev-only — disable in production for security",
+        "Onboarding endpoint SKIPPED — Supabase Auth + Create Tenant flow already exists",
+        "Rate limiting + CORS already done from previous phases"
+      ],
+      "next_steps": [
+        "Phase 11: Testing & Hardening",
+        "Encrypt FB access token AES-256"
+      ],
+      "open_questions": [
+        "Enable Swagger in production? (secured with API key)"
+      ]
     }
   ]
 }

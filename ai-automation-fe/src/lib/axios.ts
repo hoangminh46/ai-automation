@@ -3,7 +3,8 @@ import { createClient } from "./supabase/client";
 
 // Base API config (gọi sang NestJS backend)
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001",
+  baseURL:
+    (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001") + "/api/v1",
   headers: {
     "Content-Type": "application/json",
   },
@@ -29,14 +30,24 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Bắt lỗi response (ví dụ 401 hết phiên đăng nhập -> đá ra màn login)
+// Bắt lỗi response + auto-unwrap standard format { success, data }
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // BE trả { success: true, data: ... } → unwrap để service layer vẫn dùng response.data bình thường
+    if (response.data && typeof response.data === "object" && "success" in response.data && response.data.success === true) {
+      response.data = response.data.data;
+    }
+    return response;
+  },
   async (error) => {
     if (error.response?.status === 401) {
-      // Logic xử lý kick về trang đăng nhập nếu JWT hết hạn (tạm log console)
       console.warn("JWT Expired or Unauthorized. Should redirect to login.");
+    }
+    // Extract error message từ standard format { success: false, error: { message } }
+    if (error.response?.data?.error?.message) {
+      error.message = error.response.data.error.message;
     }
     return Promise.reject(error);
   }
 );
+

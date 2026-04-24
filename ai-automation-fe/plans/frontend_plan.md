@@ -139,10 +139,11 @@
 - **BE Phase 09 done**: Facebook Channel hoàn thành (webhook, adapter, routing, reply, handover) — 9/11 phases.
 - **Phase 06E split**: Chia thành 4 sub-phases (06E-1→4) vì scope lớn. WebSocket (Socket.IO) thay Polling — production-grade real-time (2026-04-23).
 - **Phase 06E done**: Full WebSocket implementation — ChatGateway, EventEmitter2, useSocket, reconnect resync, dedup, error boundaries, CORS restriction (2026-04-24).
+- **Phase 10 (BE)**: API prefix `/api/v1`, ResponseInterceptor `{ success, data }`, GlobalExceptionFilter, Swagger UI `/api/docs`. FE: axios baseURL + auto-unwrap interceptor (2026-04-24).
+- **Chat bubble fix**: Thêm `break-all` + `overflow-hidden` + `overflow-x-hidden` cho message content tránh tràn text dài (2026-04-24).
 
 ### Thứ tự ưu tiên tiếp theo:
 ```
-Phase 10: Self-serve API & Polish                      ← TIẾP THEO
-Phase 11: Testing & Hardening                          ← SAU
+Phase 11: Testing & Hardening                          ← TIẾP THEO
 ```
 

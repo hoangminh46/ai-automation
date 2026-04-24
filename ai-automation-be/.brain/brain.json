@@ -103,7 +103,7 @@
     "phase_08_knowledge_rag": { "status": "done", "last_changed_sha": "dfe8d15" },
     "phase_09_facebook_messenger": { "status": "done", "last_changed_sha": "4042b40", "notes": "Channel adapter, webhook, routing, human reply→FB, handover-to-bot" },
     "phase_06E_websocket_realtime": { "status": "done", "last_changed_sha": "a0f6ab0", "notes": "ChatGateway (JWT auth, tenant rooms, CORS env), EventEmitter2 decoupling, ws-events types, reconnect resync, dedup, error boundaries" },
-    "phase_10_selfserve_polish": { "status": "not_started" },
+    "phase_10_selfserve_polish": { "status": "in_progress", "notes": "4/7 done: API prefix /api/v1, ResponseInterceptor, GlobalExceptionFilter, Swagger /api/docs. Skipped: onboarding endpoint (flow exists). Rate limiting + CORS already done." },
     "phase_11_testing": { "status": "not_started" }
   },
   "business_rules": [
@@ -141,7 +141,12 @@
     "WS events: EventEmitter2 decoupled (Service emits → Gateway broadcasts to Socket.IO rooms)",
     "WS room naming: tenant:{tenantId} — multi-tenant isolation",
     "WS timestamp consistency: shared const now = new Date() for DB update + WS emit",
-    "WS CORS: dev mở hết, production restrict theo CORS_ORIGINS env"
+    "WS CORS: dev mở hết, production restrict theo CORS_ORIGINS env",
+    "API prefix: /api/v1 globally, exclude webhook/facebook (FB calls directly)",
+    "Response format: ResponseInterceptor wraps { success: true, data } globally",
+    "Error format: GlobalExceptionFilter → { success: false, error: { statusCode, message, timestamp, path } }",
+    "Swagger CLI plugin in nest-cli.json — auto-detect DTO types, reduce manual @ApiProperty",
+    "Swagger UI at /api/docs (dev only, disabled in production)"
   ],
   "known_issues": [
     "src/tenant/ and src/agent/ (root level) are empty scaffolding dirs, real code is in src/modules/",

@@ -1,47 +1,39 @@
 {
-  "updated_at": "2026-04-24T09:10:00+07:00",
+  "updated_at": "2026-04-24T10:03:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260424-091000-be",
+  "active_handoff_id": "handoff-20260424-100300-be",
   "working_on": {
-    "phase": "Phase 06E — WebSocket Real-time CRM DONE. Phase 10 next.",
-    "status": "clean",
-    "summary": "Phase 06E complete: ChatGateway (JWT auth, tenant rooms), EventEmitter2 decoupling, ws-events types, CORS env restriction. BE 11/11 phases for WS done."
+    "phase": "Phase 10 — Self-serve API & Polish (4/7 done). Phase 11 next.",
+    "status": "dirty",
+    "summary": "Phase 10: API prefix /api/v1, ResponseInterceptor, GlobalExceptionFilter, Swagger /api/docs. Onboarding endpoint skipped (flow exists). Rate limiting + CORS already done."
   },
   "git_snapshot": {
-    "head_sha": "a0f6ab0",
-    "last_saved_head_sha": "074f3d8",
-    "base_sha": "074f3d8",
+    "head_sha": "763cc39",
+    "last_saved_head_sha": "a0f6ab0",
+    "base_sha": "a0f6ab0",
     "branch": "main",
-    "has_uncommitted_changes": false,
-    "changed_files": [],
-    "staged_files": [],
-    "unstaged_files": [],
-    "untracked_files": [],
-    "commit_range": "074f3d8..a0f6ab0",
-    "commits_since_last_save": [
-      { "sha": "0b1496f", "message": "docs(plan): split Phase 06E into 4 sub-phases — WebSocket real-time CRM" },
-      { "sha": "a0f6ab0", "message": "feat: Phase 06E — WebSocket real-time CRM (Socket.IO)" }
+    "has_uncommitted_changes": true,
+    "changed_files": [
+      "src/main.ts",
+      "src/common/filters/global-exception.filter.ts",
+      "src/common/interceptors/response.interceptor.ts",
+      "src/common/index.ts",
+      "nest-cli.json",
+      "plans/260413-1600-ai-chatbot-module/plan.md",
+      "plans/260413-1600-ai-chatbot-module/phase-10-selfserve-polish.md"
     ]
   },
   "pending_tasks": [
-    "Phase 10: Self-serve API & Polish (encrypt FB token AES-256, rate limiting, error UX)",
     "Phase 11: Testing & Hardening",
     "Create HNSW index on knowledge_chunks.embedding (manual SQL on Supabase)",
-    "Scale: chuyển in-memory dedup Map → Redis SET khi multi-instance",
-    "Scale: @socket.io/redis-adapter khi multi-instance"
+    "Encrypt FB access token AES-256",
+    "Scale: Redis SET dedup + @socket.io/redis-adapter"
   ],
   "recent_changes": [
-    "ChatGateway: JWT auth on connect, tenant room isolation, CORS env-based restriction",
-    "ws-events.ts: typed event constants (NEW_MESSAGE, CONVERSATION_UPDATED, NEW_CONVERSATION)",
-    "ConversationService: emit events on resolve, humanReply, handoverToBot",
-    "ChannelService: emit events on new message, new conversation, bot reply",
-    "EventEmitter2 decoupled architecture (Service → Gateway, no circular deps)",
-    "Timestamp consistency: shared Date variable for DB update + WS emit",
-    "Plan: Phase 06E ✅ Done (all 4 sub-phases)"
-  ],
-  "uncommitted_summary": {
-    "status": "clean",
-    "summary": "No uncommitted changes",
-    "files": []
-  }
+    "main.ts: setGlobalPrefix('api/v1') + exclude webhook, ResponseInterceptor, GlobalExceptionFilter, Swagger DocumentBuilder",
+    "GlobalExceptionFilter: catch-all → { success: false, error: { statusCode, message, timestamp, path } }",
+    "ResponseInterceptor: wrap → { success: true, data }",
+    "nest-cli.json: Swagger CLI plugin for auto-detect DTO types",
+    "common/index.ts: export new filter + interceptor"
+  ]
 }
