@@ -38,3 +38,8 @@ prisma/*.db
 
 # Docker
 docker-compose.override.yml
+
+# Mine / Codex
+AGENTS.md
+.codex/
+
