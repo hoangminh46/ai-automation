@@ -1,14 +1,14 @@
 {
-  "updated_at": "2026-04-24T11:00:00+07:00",
+  "updated_at": "2026-04-26T09:00:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260424-110000-fe",
+  "active_handoff_id": "handoff-20260426-090000-fe",
   "working_on": {
-    "sprint": "Sprint 5 — 🎉 BE Module Complete (all 11 phases). Next: new channels/features.",
-    "description": "Phase 10+11 BE done. FE: axios /api/v1 sync, chat bubble fix. No new FE changes in Phase 11."
+    "sprint": "Sprint 5 — 🎉 BE Module Complete. Post-Phase 11: Deployment & Maintenance.",
+    "description": "Phase 11 BE done. Adapted to Prisma 7.x in BE. Added deployment guides for Render (BE) + Vercel (FE)."
   },
   "git_snapshot": {
-    "head_sha": "cdf363a",
-    "last_saved_head_sha": "cdf363a",
+    "head_sha": "d141c68",
+    "last_saved_head_sha": "d141c68",
     "base_sha": "cdf363a",
     "branch": "main",
     "has_uncommitted_changes": false,
@@ -21,7 +21,8 @@
     "E2E test full CRM flow"
   ],
   "recent_changes": [
-    "Phase 11 is BE-only (no FE changes): security pipes, DB indexes, Dockerfile",
-    "Plans updated: BE Module Complete marker"
+    "Deployment guide for Render + Vercel (free tier)",
+    "Prisma 7.x adaptation in BE acknowledged",
+    "BE Phase 11 complete — Security pipes, DB indexes, Dockerfile"
   ]
 }

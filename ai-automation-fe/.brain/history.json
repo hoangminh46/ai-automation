@@ -290,23 +290,55 @@
       "id": "handoff-20260424-110000-fe",
       "saved_at": "2026-04-24T11:00:00+07:00",
       "branch": "main",
-      "head_sha": "pending-commit",
+      "head_sha": "0cfa1ab",
       "base_sha": "cdf363a",
       "source": "commit",
-      "commit_range": "cdf363a..HEAD",
+      "commit_range": "cdf363a..0cfa1ab",
       "summary": "Phase 11 (BE only): security pipes, DB indexes, Dockerfile. No FE code changes. Plans updated: BE Module Complete.",
       "project_changes": [
         "frontend_plan.md: Phase 11 noted, BE Module Complete marker added",
         "brain.json: Phase 11 status updated",
         "No FE source code changes in this phase"
       ],
-      "commits": [],
+      "commits": ["0cfa1ab"],
       "working_tree": { "status": "clean" },
       "decisions": [],
       "next_steps": [
         "Zalo OA Channel UI",
         "Website Widget UI",
         "Payment Integration UI"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "handoff-20260426-090000-fe",
+      "saved_at": "2026-04-26T09:00:00+07:00",
+      "branch": "main",
+      "head_sha": "d141c68",
+      "base_sha": "0cfa1ab",
+      "source": "commit",
+      "commit_range": "0cfa1ab..d141c68",
+      "summary": "Post-Phase 11: Deployment Guides and Prisma 7 adaptation (BE). Added Render + Vercel deployment instructions.",
+      "project_changes": [
+        "Added deployment guide for Render (BE) + Vercel (FE)",
+        "Acknowledged Prisma 7.x adaptation in BE",
+        "Updated project roadmap"
+      ],
+      "commits": [
+        "55b7b15",
+        "15a7d1c",
+        "6c74f66",
+        "e986d4f",
+        "11c64d5",
+        "d141c68"
+      ],
+      "working_tree": { "status": "clean" },
+      "decisions": [
+        "Render (BE) + Vercel (FE) chosen as standard free tier deployment path"
+      ],
+      "next_steps": [
+        "Zalo OA Channel UI",
+        "Website Widget UI"
       ],
       "open_questions": []
     }

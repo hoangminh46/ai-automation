@@ -1,27 +1,19 @@
 {
-  "updated_at": "2026-04-24T11:00:00+07:00",
+  "updated_at": "2026-04-26T09:00:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260424-110000-be",
+  "active_handoff_id": "handoff-20260426-090000-be",
   "working_on": {
-    "phase": "🎉 All 11 phases COMPLETE. Module ready for production beta.",
-    "status": "dirty",
-    "summary": "Phase 11 done: PromptInjectionGuardPipe, SanitizeInputPipe, 5 DB indexes, Dockerfile upgrade, graceful shutdown."
+    "phase": "🎉 Module COMPLETE. Post-Phase 11: Prisma 7.x adaptation & Deployment ready.",
+    "status": "clean",
+    "summary": "Phase 11 complete (Security, DB, Docker). Adapted to Prisma 7.x (postgresqlExtensions removed, schema fix). Deployment docs added (Render + Vercel)."
   },
   "git_snapshot": {
-    "head_sha": "cdf363a",
-    "last_saved_head_sha": "cdf363a",
+    "head_sha": "d141c68",
+    "last_saved_head_sha": "d141c68",
     "base_sha": "cdf363a",
     "branch": "main",
-    "has_uncommitted_changes": true,
-    "changed_files": [
-      "src/common/pipes/prompt-injection-guard.pipe.ts",
-      "src/common/pipes/sanitize-input.pipe.ts",
-      "src/common/index.ts",
-      "src/modules/conversation/conversation.controller.ts",
-      "src/main.ts",
-      "Dockerfile",
-      "scripts/add-indexes.sql"
-    ]
+    "has_uncommitted_changes": false,
+    "changed_files": []
   },
   "pending_tasks": [
     "Encrypt FB access token AES-256",
@@ -31,11 +23,14 @@
     "Payment Integration"
   ],
   "recent_changes": [
-    "PromptInjectionGuardPipe: 12 regex patterns for LLM prompt injection detection",
-    "SanitizeInputPipe: strip HTML/script tags, XSS prevention",
-    "Applied pipes to chat, test-chat, human-reply endpoints",
-    "5 DB indexes created: conversations, messages, customers, channel_connections, knowledge_chunks",
-    "Dockerfile: non-root user, healthcheck, .prisma copy",
-    "main.ts: app.enableShutdownHooks() for graceful shutdown"
-  ]
+    "Adapted to Prisma 7.x breaking changes (schema + Dockerfile)",
+    "Fixed dist/main.js path by excluding prisma.config.ts from build",
+    "Added deployment guide for Render (BE) + Vercel (FE) free tier",
+    "Phase 11: PromptInjectionGuardPipe, SanitizeInputPipe, 5 DB indexes, Dockerfile upgrade, graceful shutdown."
+  ],
+  "uncommitted_summary": {
+    "status": "clean",
+    "summary": "Workspace is clean. All changes committed up to d141c68.",
+    "files": []
+  }
 }

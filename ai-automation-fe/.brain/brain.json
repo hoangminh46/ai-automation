@@ -44,7 +44,8 @@
     "Phase 10 (BE) — API prefix /api/v1, standard response format, Swagger UI /api/docs (Sprint 5)",
     "Chat bubble overflow fix — break-all + overflow-hidden for long text (Sprint 5)",
     "Phase 11 (BE) — PromptInjectionGuardPipe, SanitizeInputPipe, 5 DB indexes, Dockerfile, graceful shutdown (Sprint 5)",
-    "🎉 BE Module Complete — All 11 phases done"
+    "🎉 BE Module Complete — All 11 phases done",
+    "Deployment Guide — Render (BE) + Vercel (FE) free tier deployment setup (Sprint 5)"
   ],
   "business_rules": [
     "Mỗi Tenant có Slug đơn nhất. FE tự convert name → slug khi gọi API.",

@@ -8,7 +8,7 @@
   "tech_stack": {
     "runtime": "NestJS 11 (TypeScript 5.7)",
     "database": "PostgreSQL (Supabase) + pgvector",
-    "orm": "Prisma 7 + PrismaPg adapter + pg Pool",
+    "orm": "Prisma 7 (adapted for 7.x breaking changes)",
     "auth": "Supabase Auth Native SDK Edge Validation (getUser)",
     "ai_llm": "Gemini 2.5 Flash via OpenAI-compatible API (openai npm package)",
     "ai_embedding": "Gemini gemini-embedding-001 via @google/generative-ai SDK (1536d MRL)",
@@ -27,7 +27,7 @@
     "security": "Helmet, CORS, timingSafeEqual (webhook HMAC)",
     "realtime": "Socket.IO (@nestjs/websockets + @nestjs/platform-socket.io) + @nestjs/event-emitter (EventEmitter2)",
     "dependencies_source": "package.json",
-    "last_verified_sha": "a0f6ab0"
+    "last_verified_sha": "d141c68"
   },
   "database_schema": {
     "tables": [
@@ -51,7 +51,7 @@
       "Conversation -> Message": "1:N"
     },
     "source_file": "prisma/schema.prisma",
-    "last_verified_sha": "4042b40"
+    "last_verified_sha": "d141c68"
   },
   "auth_flow": {
     "strategy": "SupabaseAuthGuard (Native SDK)",

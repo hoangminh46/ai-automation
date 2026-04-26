@@ -309,10 +309,10 @@
       "id": "handoff-20260424-110000-be",
       "saved_at": "2026-04-24T11:00:00+07:00",
       "branch": "main",
-      "head_sha": "pending-commit",
+      "head_sha": "0cfa1ab",
       "base_sha": "cdf363a",
-      "source": "mixed",
-      "commit_range": "cdf363a..HEAD",
+      "source": "commit",
+      "commit_range": "cdf363a..0cfa1ab",
       "summary": "🎉 Phase 11 — Testing & Hardening done. All 11 BE phases complete. Security pipes, 5 DB indexes, Dockerfile upgrade, graceful shutdown.",
       "project_changes": [
         "PromptInjectionGuardPipe: 12 regex patterns for LLM injection (jailbreak, DAN, ignore instructions)",
@@ -323,8 +323,10 @@
         "main.ts: app.enableShutdownHooks() for graceful shutdown",
         "Cleaned up temp test/verify scripts"
       ],
-      "commits": [],
-      "working_tree": { "status": "dirty" },
+      "commits": [
+        { "sha": "0cfa1ab", "message": "feat: Phase 11 — security hardening, DB indexes, Dockerfile, graceful shutdown. All 11 phases complete 🎉" }
+      ],
+      "working_tree": { "status": "clean" },
       "decisions": [
         "Integration tests SKIPPED — MVP, manual testing sufficient",
         "PromptInjectionGuardPipe as @UsePipes (not global) — only on LLM-facing endpoints",
@@ -336,6 +338,42 @@
         "Zalo OA Channel / Website Widget / Payment Integration",
         "Encrypt FB access token AES-256",
         "Redis adapter for multi-instance scaling"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "handoff-20260426-090000-be",
+      "saved_at": "2026-04-26T09:00:00+07:00",
+      "branch": "main",
+      "head_sha": "d141c68",
+      "base_sha": "0cfa1ab",
+      "source": "commit",
+      "commit_range": "0cfa1ab..d141c68",
+      "summary": "Prisma 7.x adaptation and Deployment ready. Fixed build path and added Render/Vercel guides.",
+      "project_changes": [
+        "Adapted to Prisma 7.x (removed deprecated postgresqlExtensions, fixed Dockerfile)",
+        "Fixed dist/main.js path by excluding prisma.config.ts from build",
+        "Deployment guide added for Render + Vercel (free tier)",
+        "Roadmap post-MVP updated"
+      ],
+      "commits": [
+        { "sha": "55b7b15", "message": "docs: deployment guide (Oracle Cloud + Vercel), docker-compose, nginx, roadmap post-MVP" },
+        { "sha": "15a7d1c", "message": "docs: switch deployment guide to Render + Vercel (free tier)" },
+        { "sha": "6c74f66", "message": "fix: remove deprecated postgresqlExtensions previewFeature (Prisma 7.x)" },
+        { "sha": "e986d4f", "message": "fix: adapt to Prisma 7.x breaking changes (remove url from schema, fix Dockerfile)" },
+        { "sha": "11c64d5", "message": "fix: exclude prisma.config.ts from build (fixes dist/main.js path)" },
+        { "sha": "d141c68", "message": "update deploy status" }
+      ],
+      "working_tree": { "status": "clean" },
+      "decisions": [
+        "Prisma 7.x adaptation: removed postgresqlExtensions as it's no longer needed/supported in previewFeature",
+        "Exclude prisma.config.ts: build output was putting main.js in a subfolder dist/src/main.js instead of dist/main.js",
+        "Render + Vercel: chosen as easiest free tier deployment path for MVP"
+      ],
+      "next_steps": [
+        "Zalo OA Channel",
+        "Website Widget Channel",
+        "Encrypt FB access token AES-256"
       ],
       "open_questions": []
     }
