@@ -341,6 +341,50 @@
         "Website Widget UI"
       ],
       "open_questions": []
+    },
+    {
+      "id": "handoff-20260504-163400-fe",
+      "saved_at": "2026-05-04T16:34:00+07:00",
+      "branch": "main",
+      "head_sha": "2aef0b1",
+      "base_sha": "d141c68",
+      "source": "working_tree",
+      "commit_range": "d141c68..2aef0b1 + uncommitted",
+      "summary": "Channel management UI complete: Facebook OAuth flow with multi-page selection, Zalo OA OAuth connect/disconnect, URL callback parsing. Fixed remount bug (fbPendingSession clear on refresh). All TSC + ESLint clean.",
+      "project_changes": [
+        "FacebookChannelSection.tsx: NEW — full OAuth connect flow, multi-page selection card UI, disconnect with confirmation",
+        "ZaloChannelSection.tsx: NEW — OAuth connect/disconnect, status badges, setup guide",
+        "page.tsx: parse URL callback params, manage fbPendingSession state, clear on refresh",
+        "channel.service.ts: added getFacebookAuthUrl, getZaloAuthUrl, getPendingPages, selectFacebookPage, disconnectZaloOA"
+      ],
+      "commits": [
+        "2aef0b1 add git ignore agent"
+      ],
+      "working_tree": {
+        "status": "dirty",
+        "key_files": [
+          "src/app/dashboard/channels/FacebookChannelSection.tsx (NEW)",
+          "src/app/dashboard/channels/ZaloChannelSection.tsx (NEW)",
+          "src/app/dashboard/channels/page.tsx (MODIFIED)",
+          "src/lib/services/channel.service.ts (MODIFIED)"
+        ]
+      },
+      "decisions": [
+        "Channel sections split into separate component files per channel for maintainability",
+        "Multi-page selection uses card-based UI with hover effects instead of dropdown",
+        "fbPendingSession cleared in onRefresh callback to prevent remount useEffect re-firing",
+        "URL params pattern: ?facebook=connected, ?facebook=select_page&session_id=xxx, ?zalo=connected"
+      ],
+      "next_steps": [
+        "Commit channel UI changes",
+        "Test Zalo OA flow after user verifies Zalo account",
+        "Google/Microsoft SSO UI",
+        "Website Widget Channel UI",
+        "Payment Integration UI"
+      ],
+      "open_questions": [
+        "Zalo OA UI ready but untested — pending user Zalo account verification"
+      ]
     }
   ]
 }

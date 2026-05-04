@@ -37,6 +37,7 @@ async function bootstrap() {
       { path: '', method: RequestMethod.GET },
       { path: 'webhook/facebook', method: RequestMethod.GET },
       { path: 'webhook/facebook', method: RequestMethod.POST },
+      { path: 'webhook/zalo', method: RequestMethod.POST },
     ],
   });
 

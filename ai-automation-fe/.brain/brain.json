@@ -23,12 +23,19 @@
     "GET /tenants/:tenantId/conversations": "Lấy danh sách conversations",
     "GET /tenants/:tenantId/conversations/:id/messages": "Lấy lịch sử tin nhắn",
     "PATCH /tenants/:tenantId/conversations/:id/resolve": "Đánh dấu conversation đã giải quyết",
-    "POST /tenants/:tenantId/conversations/:id/human-reply": "Nhân viên gửi tin nhắn trực tiếp (không qua LLM), gửi qua FB Messenger",
+    "POST /tenants/:tenantId/conversations/:id/human-reply": "Nhân viên gửi tin nhắn trực tiếp, gửi qua FB/Zalo",
     "PATCH /tenants/:tenantId/conversations/:id/handover-bot": "Bàn giao hội thoại cho Bot xử lý tự động",
     "POST /tenants/:tenantId/knowledge/documents": "Upload tài liệu (multipart, .txt/.pdf, max 10MB)",
     "GET /tenants/:tenantId/knowledge/documents": "Danh sách tài liệu đã upload",
     "DELETE /tenants/:tenantId/knowledge/documents/:docId": "Xoá tài liệu (cascade)",
-    "POST /tenants/:tenantId/knowledge/search": "Tìm kiếm knowledge chunks (semantic)"
+    "POST /tenants/:tenantId/knowledge/search": "Tìm kiếm knowledge chunks (semantic)",
+    "GET /tenants/:tenantId/channels/facebook/auth-url": "Lấy Facebook OAuth URL",
+    "GET /tenants/:tenantId/channels/zalo/auth-url": "Lấy Zalo OAuth URL",
+    "GET /tenants/:tenantId/channels": "Danh sách channel connections",
+    "DELETE /tenants/:tenantId/channels/facebook/disconnect": "Ngắt kết nối Facebook Page",
+    "DELETE /tenants/:tenantId/channels/zalo/disconnect": "Ngắt kết nối Zalo OA",
+    "GET /tenants/:tenantId/channels/facebook/pending-pages/:sessionId": "Lấy danh sách Pages chờ chọn",
+    "POST /tenants/:tenantId/channels/facebook/select-page": "Chọn Facebook Page kết nối"
   },
   "features": [
     "Authentication (Hoàn thành - Sprint 1)",
@@ -37,15 +44,14 @@
     "Dark/Light/System Theme Mode (Hoàn thành - Sprint 3)",
     "Knowledge Upload UI — Drag & Drop, Document Table, Status Badges (Hoàn thành - Sprint 4)",
     "Playground — Chat UI test Bot AI với RAG pipeline thực tế (Hoàn thành - Sprint 4)",
-    "Live Chat CRM UI — Phase 06A+B+C done (layout + data binding + human reply) (Sprint 5)",
-    "Handover to Bot — button in CustomerPanel, OPEN/SNOOZED → BOT_HANDLING (Sprint 5)",
-    "Channel Management — Connect/Disconnect FB Page, setup guide, webhook URL copy (Sprint 5)",
-    "Real-time CRM — Socket.IO WebSocket, useSocket hook, reconnect resync, dedup, error boundaries (Sprint 5)",
-    "Phase 10 (BE) — API prefix /api/v1, standard response format, Swagger UI /api/docs (Sprint 5)",
-    "Chat bubble overflow fix — break-all + overflow-hidden for long text (Sprint 5)",
-    "Phase 11 (BE) — PromptInjectionGuardPipe, SanitizeInputPipe, 5 DB indexes, Dockerfile, graceful shutdown (Sprint 5)",
+    "Live Chat CRM UI — layout + data binding + human reply (Sprint 5)",
+    "Handover to Bot — button in CustomerPanel (Sprint 5)",
+    "Channel Management — Facebook OAuth + Zalo OA OAuth, setup guide, webhook URL copy (Sprint 6)",
+    "Facebook Multi-page Selection — interactive card UI for choosing FB Page when user manages multiple pages (Sprint 6)",
+    "Zalo OA Channel Section — OAuth connect/disconnect, status display (Sprint 6)",
+    "Real-time CRM — Socket.IO WebSocket, useSocket hook, reconnect resync, dedup (Sprint 5)",
     "🎉 BE Module Complete — All 11 phases done",
-    "Deployment Guide — Render (BE) + Vercel (FE) free tier deployment setup (Sprint 5)"
+    "Deployment Guide — Render (BE) + Vercel (FE) free tier (Sprint 5)"
   ],
   "business_rules": [
     "Mỗi Tenant có Slug đơn nhất. FE tự convert name → slug khi gọi API.",
@@ -59,11 +65,11 @@
     "Knowledge upload: max 10MB, .txt/.pdf only, multipart/form-data qua axios.",
     "Zustand store dùng loadedForTenantId pattern để gate loading.",
     "CRM /dashboard/chat route dùng full-height layout (overflow-hidden).",
-    "CRM conversation list: dữ liệu từ store, messages fetch trực tiếp qua service.",
     "Handover to Bot: chỉ hiện nút khi status OPEN/SNOOZED, optimistic update store.",
-    "WebSocket: useSocket hook quản lý connection lifecycle, reconnectCount signal resync.",
-    "WebSocket dedup: cả optimistic update (handleSendMessage) và WS handler đều check message.id.",
-    "WebSocket reconnect: re-fetch conversations (force) + messages cho conversation đang mở."
+    "WebSocket dedup: cả optimistic update và WS handler đều check message.id.",
+    "Channel page: parse URL query params (?facebook=connected, ?zalo=connected, ?facebook=select_page&session_id=xxx)",
+    "Facebook multi-page: pendingSessionId prop → component loads pages → user selects → onRefresh clears session to prevent remount bug",
+    "Channel disconnect: confirm dialog before disconnecting, toast notification on success"
   ],
   "coding_conventions": [
     "useEffect+setState bị cấm — thay bằng key remount hoặc useSyncExternalStore.",
@@ -79,6 +85,7 @@
     "Stale closure prevention: useRef cho selectedConvId trong socket callbacks.",
     "Axios auto-unwrap: response interceptor unwrap { success, data } → service layer vẫn dùng response.data.",
     "Axios baseURL: /api/v1 prefix — webhook URL dùng raw base (không qua axios).",
-    "Chat bubble: break-all + overflow-hidden + overflow-x-hidden cho text dài không space."
+    "Channel section components: separate files per channel (FacebookChannelSection.tsx, ZaloChannelSection.tsx).",
+    "OAuth callback handling: page.tsx parses URL params → passes state to channel sections → sections manage own UI state."
   ]
 }

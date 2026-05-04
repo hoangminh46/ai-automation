@@ -376,6 +376,61 @@
         "Encrypt FB access token AES-256"
       ],
       "open_questions": []
+    },
+    {
+      "id": "handoff-20260504-163400-be",
+      "saved_at": "2026-05-04T16:34:00+07:00",
+      "branch": "main",
+      "head_sha": "2aef0b1",
+      "base_sha": "d141c68",
+      "source": "working_tree",
+      "commit_range": "d141c68..2aef0b1 + uncommitted",
+      "summary": "Major channel integration sprint: Zalo OA full integration + Facebook OAuth refactor + security hardening (AES-256-GCM, HMAC state, rate limiting, token revocation). All changes uncommitted but validated (TSC + ESLint 0 errors). Facebook connection tested and working end-to-end.",
+      "project_changes": [
+        "Zalo OA: full adapter (zalo.adapter.ts), OAuth flow, token refresh service (1h TTL auto-refresh), webhook controller (HMAC verify), DB schema (ZALO enum added)",
+        "Facebook OAuth: replaced manual token input with full OAuth flow, auto Page Token retrieval, multi-page selection (pending session pattern)",
+        "crypto.util.ts: AES-256-GCM token encrypt/decrypt, HMAC-SHA256 signed OAuth state with 10min TTL",
+        "Rate limiting: @Throttle(5/min) on all OAuth entry + callback endpoints",
+        "Token revocation: FB disconnect → DELETE subscribed_apps + clear DB tokens, Zalo disconnect → clear tokens",
+        "DB schema: ChannelType enum now includes ZALO, accessTokenEnc/refreshTokenEnc/tokenExpiresAt fields"
+      ],
+      "commits": [
+        "2aef0b1 add git ignore agent"
+      ],
+      "working_tree": {
+        "status": "dirty",
+        "key_files": [
+          "src/common/crypto.util.ts (NEW - token encryption + OAuth state signing)",
+          "src/modules/channel/channel.service.ts (MAJOR - OAuth flows, multi-page, token revocation)",
+          "src/modules/channel/channel.controller.ts (MODIFIED - new OAuth + multi-page endpoints)",
+          "src/modules/channel/adapters/zalo.adapter.ts (NEW - Zalo API adapter)",
+          "src/modules/channel/services/zalo-token.service.ts (NEW - token refresh service)",
+          "src/modules/channel/webhook/facebook-callback.controller.ts (NEW - OAuth callback)",
+          "src/modules/channel/webhook/zalo-callback.controller.ts (NEW - OAuth callback)",
+          "src/modules/channel/webhook/zalo-webhook.controller.ts (NEW - webhook handler)",
+          "prisma/schema.prisma (MODIFIED - ZALO enum + token fields)"
+        ]
+      },
+      "decisions": [
+        "OAuth state uses HMAC-SHA256 truncated to 16 hex chars — lightweight but sufficient for CSRF protection",
+        "Token encryption fallback to plaintext when TOKEN_ENCRYPTION_KEY not set (dev convenience)",
+        "Multi-page sessions stored in-memory Map (acceptable for single-instance, consider Redis for production)",
+        "Zalo token refresh: 5-minute buffer before expiry, background cron every 15 minutes",
+        "FB disconnect unsubscribes webhook first (non-blocking) then clears tokens",
+        "Rate limiting: 5 req/min per IP on OAuth endpoints, 10/min + 100/hour global"
+      ],
+      "next_steps": [
+        "Commit all channel integration changes",
+        "Zalo: user needs to verify Zalo account before creating app on developers.zalo.me",
+        "Google/Microsoft SSO implementation (research done in conversation 15a75ca5)",
+        "Website Widget Channel",
+        "Payment Integration",
+        "Consider Redis for pending page sessions + message dedup in production"
+      ],
+      "open_questions": [
+        "Zalo account verification pending — cannot test Zalo OA flow yet",
+        "Ngrok free tier interstitial page can delay OAuth callback — consider paid plan or custom domain for production"
+      ]
     }
   ]
 }

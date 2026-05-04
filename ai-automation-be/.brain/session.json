@@ -1,36 +1,77 @@
 {
-  "updated_at": "2026-04-26T09:00:00+07:00",
+  "updated_at": "2026-05-04T16:41:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260426-090000-be",
+  "active_handoff_id": "handoff-20260504-163400-be",
   "working_on": {
-    "phase": "🎉 Module COMPLETE. Post-Phase 11: Prisma 7.x adaptation & Deployment ready.",
+    "phase": "Channel Integration Complete — committed 6bb468f",
     "status": "clean",
-    "summary": "Phase 11 complete (Security, DB, Docker). Adapted to Prisma 7.x (postgresqlExtensions removed, schema fix). Deployment docs added (Render + Vercel)."
+    "summary": "Completed: Zalo OA full integration, Facebook OAuth refactor (replaced manual token), multi-page selection, AES-256-GCM token encryption, HMAC OAuth state, rate limiting, token revocation on disconnect. All TSC + ESLint clean. Facebook connection tested and working. Zalo pending user Zalo account verification."
   },
   "git_snapshot": {
-    "head_sha": "d141c68",
+    "head_sha": "2aef0b1",
     "last_saved_head_sha": "d141c68",
-    "base_sha": "cdf363a",
+    "base_sha": "d141c68",
     "branch": "main",
-    "has_uncommitted_changes": false,
-    "changed_files": []
+    "has_uncommitted_changes": true,
+    "changed_files": [
+      ".env.example",
+      "prisma/schema.prisma",
+      "src/app.module.ts",
+      "src/common/crypto.util.ts",
+      "src/config/configs.ts",
+      "src/config/index.ts",
+      "src/main.ts",
+      "src/modules/channel/adapters/zalo.adapter.ts",
+      "src/modules/channel/channel.controller.ts",
+      "src/modules/channel/channel.module.ts",
+      "src/modules/channel/channel.service.ts",
+      "src/modules/channel/services/zalo-token.service.ts",
+      "src/modules/channel/webhook/facebook-callback.controller.ts",
+      "src/modules/channel/webhook/zalo-callback.controller.ts",
+      "src/modules/channel/webhook/zalo-webhook.controller.ts"
+    ],
+    "staged_files": [],
+    "unstaged_files": [],
+    "untracked_files": [],
+    "commit_range": "d141c68..2aef0b1",
+    "commits_since_last_save": [
+      "2aef0b1 add git ignore agent"
+    ]
   },
   "pending_tasks": [
-    "Encrypt FB access token AES-256",
+    "Commit all channel integration changes",
+    "Zalo OA: user cần xác thực tài khoản Zalo trước khi tạo app trên developers.zalo.me",
     "Scale: Redis SET dedup + @socket.io/redis-adapter",
-    "Zalo OA Channel",
+    "Google/Microsoft SSO (researched, not implemented)",
     "Website Widget Channel",
     "Payment Integration"
   ],
   "recent_changes": [
-    "Adapted to Prisma 7.x breaking changes (schema + Dockerfile)",
-    "Fixed dist/main.js path by excluding prisma.config.ts from build",
-    "Added deployment guide for Render (BE) + Vercel (FE) free tier",
-    "Phase 11: PromptInjectionGuardPipe, SanitizeInputPipe, 5 DB indexes, Dockerfile upgrade, graceful shutdown."
+    "Zalo OA full integration: OAuth, adapter, webhook, token refresh, DB schema (ZALO enum)",
+    "Facebook OAuth refactor: replaced manual token with OAuth flow, multi-page selection",
+    "crypto.util.ts: AES-256-GCM encrypt/decrypt + HMAC-SHA256 signed state",
+    "Rate limiting: @Throttle(5/min) on all OAuth endpoints + callbacks",
+    "Token revocation: FB disconnect unsubscribes webhook + clears tokens, Zalo clears tokens",
+    "Fixed: pending page session bug (fbPendingSession not cleared on onRefresh causing remount error)",
+    "Removed deprecated FB_PAGE_ACCESS_TOKEN, added FB_APP_ID + APP_BASE_URL to .env"
   ],
   "uncommitted_summary": {
-    "status": "clean",
-    "summary": "Workspace is clean. All changes committed up to d141c68.",
-    "files": []
+    "status": "dirty",
+    "summary": "Major channel integration work: Zalo OA + Facebook OAuth refactor + security hardening. ~15 files changed/added. All validated (TSC + ESLint clean). Needs commit.",
+    "files": [
+      ".env.example (M)",
+      "prisma/schema.prisma (M)",
+      "src/common/crypto.util.ts (A)",
+      "src/modules/channel/adapters/zalo.adapter.ts (A)",
+      "src/modules/channel/channel.controller.ts (M)",
+      "src/modules/channel/channel.module.ts (M)",
+      "src/modules/channel/channel.service.ts (M)",
+      "src/modules/channel/services/zalo-token.service.ts (A)",
+      "src/modules/channel/webhook/facebook-callback.controller.ts (A)",
+      "src/modules/channel/webhook/zalo-callback.controller.ts (A)",
+      "src/modules/channel/webhook/zalo-webhook.controller.ts (A)",
+      "docs/specs/zalo-oa-channel_spec.md (A)",
+      "plans/ (A - multiple plan files)"
+    ]
   }
 }

@@ -24,10 +24,10 @@
     "pdf_parsing": "pdf-parse",
     "validation": "class-validator (DTO) + Joi (env)",
     "api_docs": "Swagger (@nestjs/swagger)",
-    "security": "Helmet, CORS, timingSafeEqual (webhook HMAC)",
+    "security": "Helmet, CORS, timingSafeEqual (webhook HMAC), AES-256-GCM (token encryption), HMAC-SHA256 (OAuth state), @nestjs/throttler (rate limiting)",
     "realtime": "Socket.IO (@nestjs/websockets + @nestjs/platform-socket.io) + @nestjs/event-emitter (EventEmitter2)",
     "dependencies_source": "package.json",
-    "last_verified_sha": "d141c68"
+    "last_verified_sha": "2aef0b1"
   },
   "database_schema": {
     "tables": [
@@ -38,20 +38,25 @@
     "enums": ["TenantRole", "ChannelType", "DocumentStatus", "MessageRole", "ConversationStatus"],
     "conversation_statuses": ["BOT_HANDLING", "OPEN", "SNOOZED", "RESOLVED"],
     "message_roles": ["CUSTOMER", "ASSISTANT", "SYSTEM", "HUMAN_AGENT", "TOOL"],
-    "channel_types": ["FACEBOOK"],
+    "channel_types": ["FACEBOOK", "ZALO"],
+    "channel_connection_fields": {
+      "accessTokenEnc": "String? — AES-256-GCM encrypted (enc:iv:authTag:ciphertext) or plaintext (dev)",
+      "refreshTokenEnc": "String? — Zalo refresh token, encrypted same as accessTokenEnc",
+      "tokenExpiresAt": "DateTime? — null for FB (non-expiring), set for Zalo (1h access token)"
+    },
     "key_relations": {
       "Seller -> Tenant": "1:N (seller_id FK, owner who created)",
       "Seller -> TenantMember": "1:N (RBAC membership)",
       "Tenant -> TenantMember": "1:N (staff of shop)",
       "Tenant -> Agent": "1:N (AI bots per shop)",
-      "Tenant -> ChannelConnection": "1:N (FB pages per shop)",
+      "Tenant -> ChannelConnection": "1:N (FB pages + Zalo OA per shop)",
       "Tenant -> Conversation": "1:N",
       "Agent -> Conversation": "1:N",
       "Customer -> Conversation": "1:N",
       "Conversation -> Message": "1:N"
     },
     "source_file": "prisma/schema.prisma",
-    "last_verified_sha": "d141c68"
+    "last_verified_sha": "2aef0b1"
   },
   "auth_flow": {
     "strategy": "SupabaseAuthGuard (Native SDK)",
@@ -80,17 +85,24 @@
     { "method": "GET", "path": "/tenants/:tenantId/conversations", "module": "conversation" },
     { "method": "GET", "path": "/tenants/:tenantId/conversations/:id/messages", "module": "conversation" },
     { "method": "PATCH", "path": "/tenants/:tenantId/conversations/:id/resolve", "module": "conversation", "description": "Mark conversation as RESOLVED" },
-    { "method": "POST", "path": "/tenants/:tenantId/conversations/:id/human-reply", "module": "conversation", "description": "Staff sends message directly (no LLM), auto-switches status to OPEN, sends to FB Messenger" },
+    { "method": "POST", "path": "/tenants/:tenantId/conversations/:id/human-reply", "module": "conversation", "description": "Staff sends message directly (no LLM), auto-switches status to OPEN, sends to FB/Zalo" },
     { "method": "PATCH", "path": "/tenants/:tenantId/conversations/:id/handover-bot", "module": "conversation", "description": "Hand conversation back to bot (OPEN → BOT_HANDLING), SYSTEM audit message" },
     { "method": "POST", "path": "/tenants/:tenantId/knowledge/documents", "module": "knowledge", "description": "Upload document (multipart, .txt/.pdf, max 10MB)" },
     { "method": "GET", "path": "/tenants/:tenantId/knowledge/documents", "module": "knowledge", "description": "List documents with status" },
     { "method": "DELETE", "path": "/tenants/:tenantId/knowledge/documents/:docId", "module": "knowledge", "description": "Delete document (cascade chunks)" },
     { "method": "POST", "path": "/tenants/:tenantId/knowledge/search", "module": "knowledge", "description": "Semantic search knowledge chunks" },
-    { "method": "POST", "path": "/tenants/:tenantId/channels/facebook/connect", "module": "channel", "description": "Connect Facebook Page" },
+    { "method": "GET", "path": "/tenants/:tenantId/channels/facebook/auth-url", "module": "channel", "description": "Get Facebook OAuth URL (rate limited 5/min)" },
+    { "method": "GET", "path": "/tenants/:tenantId/channels/zalo/auth-url", "module": "channel", "description": "Get Zalo OAuth URL (rate limited 5/min)" },
     { "method": "GET", "path": "/tenants/:tenantId/channels", "module": "channel", "description": "List channel connections" },
-    { "method": "DELETE", "path": "/tenants/:tenantId/channels/facebook/disconnect", "module": "channel", "description": "Disconnect Facebook Page" },
+    { "method": "DELETE", "path": "/tenants/:tenantId/channels/facebook/disconnect", "module": "channel", "description": "Disconnect Facebook Page (unsubscribe webhook + clear tokens)" },
+    { "method": "DELETE", "path": "/tenants/:tenantId/channels/zalo/disconnect", "module": "channel", "description": "Disconnect Zalo OA (clear tokens)" },
+    { "method": "GET", "path": "/tenants/:tenantId/channels/facebook/pending-pages/:sessionId", "module": "channel", "description": "Get pending pages for multi-page selection" },
+    { "method": "POST", "path": "/tenants/:tenantId/channels/facebook/select-page", "module": "channel", "description": "Select a Facebook Page from pending session" },
+    { "method": "GET", "path": "/channels/facebook/callback", "module": "webhook", "description": "Facebook OAuth callback (rate limited)" },
+    { "method": "GET", "path": "/channels/zalo/callback", "module": "webhook", "description": "Zalo OAuth callback (rate limited)" },
     { "method": "GET", "path": "/webhook/facebook", "module": "webhook", "description": "FB webhook verification" },
-    { "method": "POST", "path": "/webhook/facebook", "module": "webhook", "description": "FB webhook events" }
+    { "method": "POST", "path": "/webhook/facebook", "module": "webhook", "description": "FB webhook events" },
+    { "method": "POST", "path": "/webhook/zalo", "module": "webhook", "description": "Zalo webhook events (HMAC verified)" }
   ],
   "features": {
     "phase_01_project_init": { "status": "done", "last_changed_sha": "750efb7" },
@@ -101,10 +113,13 @@
     "phase_06_conversation_memory": { "status": "done", "last_changed_sha": "3560291" },
     "phase_07_knowledge_upload": { "status": "done", "last_changed_sha": "b2c1504" },
     "phase_08_knowledge_rag": { "status": "done", "last_changed_sha": "dfe8d15" },
-    "phase_09_facebook_messenger": { "status": "done", "last_changed_sha": "4042b40", "notes": "Channel adapter, webhook, routing, human reply→FB, handover-to-bot" },
-    "phase_06E_websocket_realtime": { "status": "done", "last_changed_sha": "a0f6ab0", "notes": "ChatGateway (JWT auth, tenant rooms, CORS env), EventEmitter2 decoupling, ws-events types, reconnect resync, dedup, error boundaries" },
-    "phase_10_selfserve_polish": { "status": "done", "notes": "API prefix /api/v1, ResponseInterceptor, GlobalExceptionFilter, Swagger /api/docs. Rate limiting + CORS already done." },
-    "phase_11_testing": { "status": "done", "notes": "PromptInjectionGuardPipe (12 patterns), SanitizeInputPipe (HTML/XSS strip), 5 DB indexes (ivfflat + btree), Dockerfile upgrade (non-root, healthcheck), graceful shutdown. Integration tests skipped (MVP)." }
+    "phase_09_facebook_messenger": { "status": "done", "last_changed_sha": "2aef0b1", "notes": "Refactored to OAuth flow (no manual token). Multi-page selection, token encryption, webhook unsubscribe on disconnect, rate limiting." },
+    "phase_06E_websocket_realtime": { "status": "done", "last_changed_sha": "a0f6ab0" },
+    "phase_10_selfserve_polish": { "status": "done" },
+    "phase_11_testing": { "status": "done" },
+    "zalo_oa_channel": { "status": "done", "last_changed_sha": "2aef0b1", "notes": "Full Zalo OA integration: OAuth, token refresh (1h TTL), webhook (HMAC), message routing, ZaloAdapter for send/reply." },
+    "facebook_oauth_refactor": { "status": "done", "last_changed_sha": "2aef0b1", "notes": "Replaced manual token input with OAuth flow. HMAC-signed state, multi-page selection, encrypted token storage." },
+    "security_enhancements": { "status": "done", "last_changed_sha": "2aef0b1", "notes": "AES-256-GCM token encryption (crypto.util.ts), HMAC-SHA256 OAuth state, rate limiting (@Throttle 5/min on OAuth endpoints), token revocation on disconnect." }
   },
   "business_rules": [
     "Tao Tenant -> auto-create OWNER TenantMember + default Agent (transaction)",
@@ -120,12 +135,19 @@
     "RAG: soft-lock prompt — prioritize knowledge but allow general answers",
     "RAG: similarity threshold 0.3, top-K=5, graceful fallback on search failure",
     "Conversation status OPEN = nhân viên đang xử lý, bot không reply",
-    "Human agent reply → auto status OPEN + forward to Facebook Messenger",
+    "Human agent reply → auto status OPEN + forward to Facebook/Zalo",
     "Handover-to-bot → status BOT_HANDLING + SYSTEM audit message",
     "FB webhook: respond 200 trong 5s, xử lý async",
+    "Zalo webhook: HMAC-SHA256 verify (OA Secret Key), respond 200 async",
     "Message dedup: in-memory Map (TTL 5 phút) — cần Redis khi multi-instance",
     "Webhook HMAC: timingSafeEqual (anti timing attack)",
-    "FB Graph API: Bearer auth header (không dùng query param)"
+    "FB Graph API: Bearer auth header (không dùng query param)",
+    "FB OAuth: HMAC-signed state (tenantId.timestamp.sig16), TTL 10 phút",
+    "FB Multi-page: 1 page → auto-connect, N pages → pending session (in-memory, TTL 10 phút) → FE chọn",
+    "Token encryption: AES-256-GCM, backward-compatible (plaintext nếu KEY chưa set)",
+    "Token revocation: FB disconnect → DELETE /{pageId}/subscribed_apps (non-blocking) + clear tokens",
+    "Zalo token refresh: access_token 1h TTL, auto-refresh 5 phút trước khi hết, background job mỗi 15 phút",
+    "Rate limiting: OAuth endpoints 5/min, global 10/min + 100/hour"
   ],
   "coding_conventions": [
     "Import paths use .js extension (ESM compat)",
@@ -140,23 +162,27 @@
     "Fire-and-forget pattern for sendHumanReplyToChannel (.catch log, no await block)",
     "WS events: EventEmitter2 decoupled (Service emits → Gateway broadcasts to Socket.IO rooms)",
     "WS room naming: tenant:{tenantId} — multi-tenant isolation",
-    "WS timestamp consistency: shared const now = new Date() for DB update + WS emit",
-    "WS CORS: dev mở hết, production restrict theo CORS_ORIGINS env",
-    "API prefix: /api/v1 globally, exclude webhook/facebook (FB calls directly)",
+    "API prefix: /api/v1 globally, exclude webhook/* and channels/*/callback",
     "Response format: ResponseInterceptor wraps { success: true, data } globally",
     "Error format: GlobalExceptionFilter → { success: false, error: { statusCode, message, timestamp, path } }",
-    "Swagger CLI plugin in nest-cli.json — auto-detect DTO types, reduce manual @ApiProperty",
-    "Swagger UI at /api/docs (dev only, disabled in production)",
-    "PromptInjectionGuardPipe: 12 regex patterns, applied to chat + test-chat endpoints",
-    "SanitizeInputPipe: strip HTML/script tags, applied to chat + test-chat + human-reply",
+    "Token encrypt/decrypt: encryptToken()/decryptToken() from src/common/crypto.util.ts — all token read/write must use these",
+    "OAuth state: createSignedState()/verifySignedState() from src/common/crypto.util.ts",
+    "Pending page sessions: in-memory Map with 10min TTL + 60s cleanup interval",
     "Graceful shutdown: app.enableShutdownHooks() in main.ts",
     "Dockerfile: non-root user (appuser), healthcheck, multi-stage build"
   ],
+  "env_vars": {
+    "required": ["DATABASE_URL", "SUPABASE_URL", "SUPABASE_ANON_KEY", "OPENAI_API_KEY", "FB_APP_ID", "FB_APP_SECRET", "FB_VERIFY_TOKEN", "APP_BASE_URL"],
+    "optional_zalo": ["ZALO_APP_ID", "ZALO_APP_SECRET", "ZALO_OA_SECRET_KEY"],
+    "optional_security": ["TOKEN_ENCRYPTION_KEY (64-char hex, production only)", "CORS_ORIGINS"],
+    "notes": "APP_BASE_URL = ngrok HTTPS URL for dev, production domain for prod. FB_PAGE_ACCESS_TOKEN removed — OAuth handles it."
+  },
   "known_issues": [
     "src/tenant/ and src/agent/ (root level) are empty scaffolding dirs, real code is in src/modules/",
     "Tenant.settings column exists in DB but no DTO exposes it yet",
-    "FB access token stored plain text (encrypt AES-256 future)",
     "In-memory dedup Map needs Redis when scaling to multiple instances",
-    "Socket.IO single-instance only — needs @socket.io/redis-adapter for horizontal scaling"
+    "Socket.IO single-instance only — needs @socket.io/redis-adapter for horizontal scaling",
+    "Pending page sessions are in-memory — lost on server restart (acceptable for dev, consider Redis for prod)",
+    "Ngrok free tier shows interstitial page on first visit — can delay OAuth callback"
   ]
 }

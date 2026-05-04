@@ -9,6 +9,7 @@ import {
   supabaseConfig,
   openaiConfig,
   facebookConfig,
+  zaloConfig,
 } from './config/index.js';
 import { CommonModule } from './common/common.module.js';
 import { AuthModule } from './auth/auth.module.js';
@@ -29,6 +30,7 @@ import { ChannelModule } from './modules/channel/channel.module.js';
         supabaseConfig,
         openaiConfig,
         facebookConfig,
+        zaloConfig,
       ],
       validationOptions: {
         abortEarly: true,

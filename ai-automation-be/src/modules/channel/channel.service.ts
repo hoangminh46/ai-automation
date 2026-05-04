@@ -10,8 +10,16 @@ import { PrismaService } from '../../common/prisma.service.js';
 import { LlmService } from '../../common/llm/llm.service.js';
 import { KnowledgeSearchService } from '../knowledge/services/knowledge-search.service.js';
 import { FacebookAdapter } from './adapters/facebook.adapter.js';
+import { ZaloAdapter } from './adapters/zalo.adapter.js';
+import { ZaloTokenService } from './services/zalo-token.service.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { WS_EVENTS } from '../../common/ws-events.js';
+import {
+  encryptToken,
+  decryptToken,
+  createSignedState,
+  verifySignedState,
+} from '../../common/crypto.util.js';
 import type { IncomingMessage } from './adapters/channel-adapter.interface.js';
 import type OpenAI from 'openai';
 
@@ -20,6 +28,22 @@ const HISTORY_LIMIT = 20;
 /** In-memory dedup: track processed message IDs with TTL */
 const processedMessages = new Map<string, number>();
 const DEDUP_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+/** Pending FB page selections: sessionId → { tenantId, pages, longLivedToken, expiresAt } */
+export interface FacebookPage {
+  id: string;
+  name: string;
+  access_token: string;
+}
+
+interface PendingPageSession {
+  tenantId: string;
+  pages: FacebookPage[];
+  expiresAt: number;
+}
+
+const pendingPageSessions = new Map<string, PendingPageSession>();
+const PAGE_SESSION_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 interface AgentConfig {
   id: string;
@@ -42,16 +66,268 @@ export class ChannelService implements OnModuleDestroy {
     private readonly knowledgeSearch: KnowledgeSearchService,
     private readonly configService: ConfigService,
     private readonly facebookAdapter: FacebookAdapter,
+    private readonly zaloAdapter: ZaloAdapter,
+    private readonly zaloTokenService: ZaloTokenService,
     private readonly eventEmitter: EventEmitter2,
   ) {
-    this.cleanupInterval = setInterval(() => this.cleanupDedupMap(), 60_000);
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupDedupMap();
+      this.cleanupPendingPageSessions();
+    }, 60_000);
   }
 
   onModuleDestroy() {
     clearInterval(this.cleanupInterval);
   }
+  // ─── Facebook OAuth ────────────────────────────────────────────
 
-  // ─── Page Connect / Disconnect ────────────────────────────────
+  /**
+   * Tạo Facebook OAuth URL để FE redirect seller đi authorize.
+   */
+  getFacebookAuthUrl(tenantId: string): string {
+    const appId = this.configService.get<string>('facebook.appId');
+    const baseUrl =
+      this.configService.get<string>('app.baseUrl') ||
+      `http://localhost:${this.configService.get<number>('app.port', 3001)}`;
+
+    const redirectUri = `${baseUrl}/api/v1/channels/facebook/callback`;
+
+    const signedState = createSignedState(tenantId, appId || '');
+
+    const params = new URLSearchParams({
+      client_id: appId || '',
+      redirect_uri: redirectUri,
+      scope: 'pages_show_list,pages_messaging,pages_manage_metadata',
+      response_type: 'code',
+      state: signedState,
+    });
+
+    return `https://www.facebook.com/v21.0/dialog/oauth?${params.toString()}`;
+  }
+
+  /**
+   * OAuth callback: exchange code → User Token → Long-lived Token → Page Token → store.
+   */
+  async handleFacebookCallback(
+    rawState: string,
+    code: string,
+  ): Promise<{
+    pageName: string | null;
+    tenantId: string;
+    pages: { id: string; name: string }[] | null;
+    sessionId: string | null;
+  }> {
+    const appId = this.configService.get<string>('facebook.appId');
+    const appSecret = this.configService.get<string>('facebook.appSecret');
+
+    // Verify signed state → extract tenantId
+    const tenantId = verifySignedState(rawState, appId || '');
+
+    const baseUrl =
+      this.configService.get<string>('app.baseUrl') ||
+      `http://localhost:${this.configService.get<number>('app.port', 3001)}`;
+    const redirectUri = `${baseUrl}/api/v1/channels/facebook/callback`;
+
+    // Step 1: Exchange code → short-lived User Access Token
+    const tokenUrl = new URL(
+      'https://graph.facebook.com/v21.0/oauth/access_token',
+    );
+    tokenUrl.searchParams.set('client_id', appId || '');
+    tokenUrl.searchParams.set('client_secret', appSecret || '');
+    tokenUrl.searchParams.set('redirect_uri', redirectUri);
+    tokenUrl.searchParams.set('code', code);
+
+    const tokenRes = await fetch(tokenUrl.toString());
+    if (!tokenRes.ok) {
+      const errBody = await tokenRes.text();
+      this.logger.error(`[FBOAuth] Token exchange failed: ${errBody}`);
+      throw new Error('Facebook token exchange failed');
+    }
+    const tokenData = (await tokenRes.json()) as { access_token?: string };
+    const shortToken = tokenData.access_token;
+    if (!shortToken) {
+      throw new Error('No access_token in Facebook response');
+    }
+
+    // Step 2: Exchange short-lived → long-lived User Token (60 days)
+    const longUrl = new URL(
+      'https://graph.facebook.com/v21.0/oauth/access_token',
+    );
+    longUrl.searchParams.set('grant_type', 'fb_exchange_token');
+    longUrl.searchParams.set('client_id', appId || '');
+    longUrl.searchParams.set('client_secret', appSecret || '');
+    longUrl.searchParams.set('fb_exchange_token', shortToken);
+
+    const longRes = await fetch(longUrl.toString());
+    const longData = (await longRes.json()) as { access_token?: string };
+    // Fallback: nếu exchange fail → dùng short token
+    const longLivedUserToken = longData.access_token || shortToken;
+
+    // Step 3: Get Pages list
+    const pagesUrl = `https://graph.facebook.com/v21.0/me/accounts?access_token=${longLivedUserToken}`;
+    const pagesRes = await fetch(pagesUrl);
+    if (!pagesRes.ok) {
+      const errBody = await pagesRes.text();
+      this.logger.error(`[FBOAuth] Get pages failed: ${errBody}`);
+      throw new Error('Cannot retrieve Facebook Pages');
+    }
+
+    const pagesData = (await pagesRes.json()) as {
+      data?: Array<{
+        id: string;
+        name: string;
+        access_token: string;
+      }>;
+    };
+
+    const pages = pagesData.data || [];
+    if (pages.length === 0) {
+      throw new Error(
+        'Không tìm thấy Facebook Page nào. Vui lòng đảm bảo bạn quản lý ít nhất 1 Page.',
+      );
+    }
+
+    // Step 4: Nếu chỉ có 1 Page → auto-connect. Nếu nhiều → trả về để user chọn.
+    if (pages.length === 1) {
+      const selectedPage = pages[0];
+      await this.subscribeAndConnectPage(
+        tenantId,
+        selectedPage.id,
+        selectedPage.name,
+        selectedPage.access_token,
+      );
+
+      return {
+        pageName: selectedPage.name,
+        tenantId,
+        pages: null,
+        sessionId: null,
+      };
+    }
+
+    // Multi-page: lưu session tạm → FE hiện UI chọn
+    const { randomBytes } = await import('crypto');
+    const sessionId = randomBytes(16).toString('hex');
+    pendingPageSessions.set(sessionId, {
+      tenantId,
+      pages: pages.map((p) => ({
+        id: p.id,
+        name: p.name,
+        access_token: p.access_token,
+      })),
+      expiresAt: Date.now() + PAGE_SESSION_TTL_MS,
+    });
+
+    this.logger.log(
+      `[FBOAuth] Multiple pages (${pages.length}) for tenant ${tenantId}, session=${sessionId}`,
+    );
+
+    return {
+      pageName: null,
+      tenantId,
+      pages: pages.map((p) => ({ id: p.id, name: p.name })),
+      sessionId,
+    };
+  }
+
+  /**
+   * Subscribe webhook + connect Page (dùng chung cho cả auto-connect và select-page).
+   */
+  private async subscribeAndConnectPage(
+    tenantId: string,
+    pageId: string,
+    pageName: string,
+    pageAccessToken: string,
+  ): Promise<void> {
+    // Auto-subscribe webhook cho Page
+    try {
+      const subUrl = `https://graph.facebook.com/v21.0/${pageId}/subscribed_apps`;
+      const subRes = await fetch(subUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subscribed_fields: 'messages,messaging_postbacks',
+          access_token: pageAccessToken,
+        }),
+      });
+      if (!subRes.ok) {
+        const errBody = await subRes.text();
+        this.logger.warn(
+          `[FBOAuth] Webhook subscribe failed (non-blocking): ${errBody}`,
+        );
+      } else {
+        this.logger.log(`[FBOAuth] Webhook subscribed for Page ${pageId}`);
+      }
+    } catch (err) {
+      this.logger.warn(
+        `[FBOAuth] Webhook subscribe error: ${err instanceof Error ? err.message : err}`,
+      );
+    }
+
+    await this.connectFacebookPage(tenantId, pageId, pageAccessToken, pageName);
+
+    this.logger.log(
+      `[FBOAuth] Connected Page "${pageName}" (${pageId}) for tenant ${tenantId}`,
+    );
+  }
+
+  /**
+   * Lấy danh sách Pages đang chờ user chọn.
+   */
+  getPendingPages(
+    sessionId: string,
+    tenantId: string,
+  ): { id: string; name: string }[] {
+    const session = pendingPageSessions.get(sessionId);
+    if (!session || session.tenantId !== tenantId) {
+      throw new NotFoundException(
+        'Phiên chọn Page không tồn tại hoặc đã hết hạn',
+      );
+    }
+    if (Date.now() > session.expiresAt) {
+      pendingPageSessions.delete(sessionId);
+      throw new NotFoundException('Phiên chọn Page đã hết hạn');
+    }
+    return session.pages.map((p) => ({ id: p.id, name: p.name }));
+  }
+
+  /**
+   * User chọn Page từ danh sách → connect.
+   */
+  async selectFacebookPage(
+    sessionId: string,
+    pageId: string,
+    tenantId: string,
+  ): Promise<{ pageName: string }> {
+    const session = pendingPageSessions.get(sessionId);
+    if (!session || session.tenantId !== tenantId) {
+      throw new NotFoundException(
+        'Phiên chọn Page không tồn tại hoặc đã hết hạn',
+      );
+    }
+    if (Date.now() > session.expiresAt) {
+      pendingPageSessions.delete(sessionId);
+      throw new NotFoundException('Phiên chọn Page đã hết hạn');
+    }
+
+    const selectedPage = session.pages.find((p) => p.id === pageId);
+    if (!selectedPage) {
+      throw new NotFoundException('Page ID không hợp lệ');
+    }
+
+    await this.subscribeAndConnectPage(
+      tenantId,
+      selectedPage.id,
+      selectedPage.name,
+      selectedPage.access_token,
+    );
+
+    pendingPageSessions.delete(sessionId);
+
+    return { pageName: selectedPage.name };
+  }
+
+  // ─── Page Connect / Disconnect (legacy + internal) ────────────
 
   async connectFacebookPage(
     tenantId: string,
@@ -79,7 +355,7 @@ export class ChannelService implements OnModuleDestroy {
       return this.prisma.channelConnection.update({
         where: { id: existing.id },
         data: {
-          accessTokenEnc: pageAccessToken,
+          accessTokenEnc: encryptToken(pageAccessToken),
           externalName: pageName || existing.externalName,
           isActive: true,
         },
@@ -92,7 +368,7 @@ export class ChannelService implements OnModuleDestroy {
         channelType: 'FACEBOOK',
         externalId: pageId,
         externalName: pageName || `FB Page ${pageId}`,
-        accessTokenEnc: pageAccessToken,
+        accessTokenEnc: encryptToken(pageAccessToken),
         isActive: true,
       },
     });
@@ -109,10 +385,211 @@ export class ChannelService implements OnModuleDestroy {
       );
     }
 
+    // Unsubscribe webhook (non-blocking)
+    if (connection.accessTokenEnc) {
+      try {
+        const token = decryptToken(connection.accessTokenEnc);
+        const unsubUrl = `https://graph.facebook.com/v21.0/${connection.externalId}/subscribed_apps?access_token=${token}`;
+        const unsubRes = await fetch(unsubUrl, { method: 'DELETE' });
+        if (unsubRes.ok) {
+          this.logger.log(
+            `[Disconnect] Unsubscribed webhook for Page ${connection.externalId}`,
+          );
+        } else {
+          this.logger.warn(
+            `[Disconnect] Webhook unsubscribe failed: ${await unsubRes.text()}`,
+          );
+        }
+      } catch (err) {
+        this.logger.warn(
+          `[Disconnect] Webhook unsubscribe error: ${err instanceof Error ? err.message : err}`,
+        );
+      }
+    }
+
     return this.prisma.channelConnection.update({
       where: { id: connection.id },
-      data: { isActive: false },
+      data: {
+        isActive: false,
+        accessTokenEnc: null,
+        refreshTokenEnc: null,
+      },
     });
+  }
+
+  // ─── Zalo OA Connect / Disconnect ─────────────────────────────
+
+  /**
+   * Tạo Zalo OAuth URL để FE redirect seller đi authorize.
+   */
+  getZaloAuthUrl(tenantId: string): string {
+    const appId = this.configService.get<string>('zalo.appId');
+    const baseUrl =
+      this.configService.get<string>('app.baseUrl') ||
+      `http://localhost:${this.configService.get<number>('app.port', 3001)}`;
+
+    const redirectUri = `${baseUrl}/api/v1/channels/zalo/callback`;
+
+    const signedState = createSignedState(tenantId, appId || '');
+
+    const params = new URLSearchParams({
+      app_id: appId || '',
+      redirect_uri: redirectUri,
+      state: signedState,
+    });
+
+    return `https://permission.zalo.me/v3/permission?${params.toString()}`;
+  }
+
+  /**
+   * OAuth callback: exchange authorization code → tokens → store.
+   * Gọi Zalo API lấy OA info rồi lưu ChannelConnection.
+   */
+  async handleZaloCallback(
+    rawState: string,
+    code: string,
+  ): Promise<{ oaName: string; tenantId: string }> {
+    const appId = this.configService.get<string>('zalo.appId');
+    const tenantId = verifySignedState(rawState, appId || '');
+    // Step 1: Exchange code → tokens
+    const tokenData = await this.zaloTokenService.exchangeCodeForTokens(code);
+
+    const accessToken = tokenData.access_token || '';
+    const refreshToken = tokenData.refresh_token || '';
+    const expiresIn = parseInt(tokenData.expires_in || '3600', 10);
+
+    // Step 2: Get OA info
+    const oaInfo = await this.getZaloOaInfo(accessToken);
+    const oaId = oaInfo.oa_id || '';
+    const oaName = oaInfo.name || `Zalo OA ${oaId.slice(-4)}`;
+
+    if (!oaId) {
+      throw new Error('Cannot retrieve Zalo OA ID');
+    }
+
+    // Step 3: Upsert ChannelConnection
+    await this.connectZaloOA(
+      tenantId,
+      oaId,
+      oaName,
+      accessToken,
+      refreshToken,
+      expiresIn,
+    );
+
+    this.logger.log(
+      `[ZaloOAuth] Connected OA "${oaName}" (${oaId}) for tenant ${tenantId}`,
+    );
+
+    return { oaName, tenantId };
+  }
+
+  /**
+   * Lưu/update ChannelConnection cho Zalo OA.
+   */
+  private async connectZaloOA(
+    tenantId: string,
+    oaId: string,
+    oaName: string,
+    accessToken: string,
+    refreshToken: string,
+    expiresInSeconds: number,
+  ) {
+    const existing = await this.prisma.channelConnection.findUnique({
+      where: {
+        channelType_externalId: {
+          channelType: 'ZALO',
+          externalId: oaId,
+        },
+      },
+    });
+
+    if (existing && existing.tenantId !== tenantId) {
+      throw new ConflictException(
+        'Zalo OA này đã được kết nối bởi cửa hàng khác',
+      );
+    }
+
+    const tokenExpiresAt = new Date(Date.now() + expiresInSeconds * 1000);
+
+    if (existing) {
+      return this.prisma.channelConnection.update({
+        where: { id: existing.id },
+        data: {
+          accessTokenEnc: encryptToken(accessToken),
+          refreshTokenEnc: encryptToken(refreshToken),
+          tokenExpiresAt,
+          externalName: oaName,
+          isActive: true,
+        },
+      });
+    }
+
+    return this.prisma.channelConnection.create({
+      data: {
+        tenantId,
+        channelType: 'ZALO',
+        externalId: oaId,
+        externalName: oaName,
+        accessTokenEnc: encryptToken(accessToken),
+        refreshTokenEnc: encryptToken(refreshToken),
+        tokenExpiresAt,
+        isActive: true,
+      },
+    });
+  }
+
+  async disconnectZaloOA(tenantId: string) {
+    const connection = await this.prisma.channelConnection.findFirst({
+      where: { tenantId, channelType: 'ZALO', isActive: true },
+    });
+
+    if (!connection) {
+      throw new NotFoundException(
+        'Không tìm thấy kết nối Zalo OA cho cửa hàng này',
+      );
+    }
+
+    return this.prisma.channelConnection.update({
+      where: { id: connection.id },
+      data: {
+        isActive: false,
+        accessTokenEnc: null,
+        refreshTokenEnc: null,
+      },
+    });
+  }
+
+  /**
+   * Gọi Zalo API lấy thông tin OA (oa_id, name, avatar).
+   */
+  private async getZaloOaInfo(
+    accessToken: string,
+  ): Promise<{ oa_id?: string; name?: string }> {
+    const response = await fetch('https://openapi.zalo.me/v2.0/oa/getoa', {
+      method: 'GET',
+      headers: { access_token: accessToken },
+    });
+
+    if (!response.ok) {
+      this.logger.error(`[GetOA] HTTP ${response.status}`);
+      throw new Error(`Zalo GetOA API error: ${response.status}`);
+    }
+
+    const result = (await response.json()) as {
+      error?: number;
+      message?: string;
+      data?: { oa_id?: string; name?: string };
+    };
+
+    if (result.error && result.error !== 0) {
+      this.logger.error(
+        `[GetOA] Zalo error: ${result.error} - ${result.message}`,
+      );
+      throw new Error(`Zalo GetOA error: ${result.error}`);
+    }
+
+    return result.data || {};
   }
 
   async listChannels(tenantId: string) {
@@ -124,6 +601,7 @@ export class ChannelService implements OnModuleDestroy {
         externalId: true,
         externalName: true,
         isActive: true,
+        tokenExpiresAt: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -131,8 +609,8 @@ export class ChannelService implements OnModuleDestroy {
   }
 
   /**
-   * Gửi tin nhắn nhân viên qua Facebook Messenger cho khách.
-   * Tìm channelConversationId (FB sender ID) → gửi qua Graph API.
+   * Gửi tin nhắn nhân viên qua channel (Facebook/Zalo) cho khách.
+   * Tìm channelConversationId → gửi qua adapter tương ứng.
    */
   async sendHumanReplyToChannel(
     conversationId: string,
@@ -151,7 +629,9 @@ export class ChannelService implements OnModuleDestroy {
       return;
     }
 
-    if (conversation.channelType !== 'FACEBOOK') {
+    const channelType = conversation.channelType as 'FACEBOOK' | 'ZALO';
+
+    if (channelType !== 'FACEBOOK' && channelType !== 'ZALO') {
       this.logger.debug(
         `[HumanReply] Channel ${conversation.channelType} not yet supported for outbound`,
       );
@@ -161,26 +641,41 @@ export class ChannelService implements OnModuleDestroy {
     const connection = await this.prisma.channelConnection.findFirst({
       where: {
         tenantId: conversation.tenantId,
-        channelType: 'FACEBOOK',
+        channelType,
         isActive: true,
       },
     });
 
     if (!connection?.accessTokenEnc) {
       this.logger.warn(
-        `[HumanReply] No active FB connection for tenant ${conversation.tenantId}`,
+        `[HumanReply] No active ${channelType} connection for tenant ${conversation.tenantId}`,
       );
       return;
     }
 
-    await this.facebookAdapter.sendReply(
-      conversation.channelConversationId,
-      content,
-      connection.accessTokenEnc,
-    );
+    if (channelType === 'ZALO') {
+      const validToken = await this.ensureValidZaloToken(connection);
+      if (!validToken) {
+        this.logger.error(
+          `[HumanReply] Zalo token invalid for tenant ${conversation.tenantId}`,
+        );
+        return;
+      }
+      await this.zaloAdapter.sendReply(
+        conversation.channelConversationId,
+        content,
+        validToken,
+      );
+    } else {
+      await this.facebookAdapter.sendReply(
+        conversation.channelConversationId,
+        content,
+        decryptToken(connection.accessTokenEnc),
+      );
+    }
 
     this.logger.log(
-      `[HumanReply] Sent to FB user ${conversation.channelConversationId}`,
+      `[HumanReply] Sent to ${channelType} user ${conversation.channelConversationId}`,
     );
   }
 
@@ -209,7 +704,7 @@ export class ChannelService implements OnModuleDestroy {
           continue;
         }
 
-        this.handleIncomingMessage(incoming).catch((err) => {
+        this.handleIncomingMessage(incoming, 'FACEBOOK').catch((err) => {
           this.logger.error(
             `[Webhook] Failed to process message ${incoming.messageId}: ${err instanceof Error ? err.message : err}`,
           );
@@ -219,18 +714,40 @@ export class ChannelService implements OnModuleDestroy {
   }
 
   /**
+   * Entry point: xử lý raw Zalo webhook event.
+   */
+  processZaloWebhookEvent(body: Record<string, unknown>): void {
+    const incoming = this.zaloAdapter.normalizeIncoming(body);
+    if (!incoming) return;
+
+    if (this.isDuplicate(incoming.messageId)) {
+      this.logger.debug(
+        `[Dedup] Skip duplicate Zalo message: ${incoming.messageId}`,
+      );
+      return;
+    }
+
+    this.handleIncomingMessage(incoming, 'ZALO').catch((err) => {
+      this.logger.error(
+        `[ZaloWebhook] Failed to process message ${incoming.messageId}: ${err instanceof Error ? err.message : err}`,
+      );
+    });
+  }
+
+  /**
    * Core routing: pageId → tenant → agent → pipeline → reply
    */
   private async handleIncomingMessage(
     incoming: IncomingMessage,
+    channelType: 'FACEBOOK' | 'ZALO',
   ): Promise<void> {
     const pipelineStart = Date.now();
 
-    // Step 1: Tìm ChannelConnection theo pageId
+    // Step 1: Tìm ChannelConnection theo pageId (FB) hoặc OA ID (Zalo)
     const connection = await this.prisma.channelConnection.findUnique({
       where: {
         channelType_externalId: {
-          channelType: 'FACEBOOK',
+          channelType,
           externalId: incoming.pageId,
         },
       },
@@ -238,25 +755,40 @@ export class ChannelService implements OnModuleDestroy {
 
     if (!connection || !connection.isActive) {
       this.logger.warn(
-        `[Routing] No active connection for page ${incoming.pageId}`,
+        `[Routing] No active ${channelType} connection for ${incoming.pageId}`,
       );
       return;
     }
 
     const tenantId = connection.tenantId;
-    const accessToken = connection.accessTokenEnc;
+
+    // Step 2: Lấy access token (Zalo cần check expiry + refresh)
+    let accessToken = connection.accessTokenEnc
+      ? decryptToken(connection.accessTokenEnc)
+      : null;
+    if (channelType === 'ZALO') {
+      accessToken = await this.ensureValidZaloToken(connection);
+    }
 
     if (!accessToken) {
       this.logger.error(
-        `[Routing] No access token for page ${incoming.pageId}`,
+        `[Routing] No access token for ${channelType} ${incoming.pageId}`,
       );
       return;
     }
 
-    // Step 2: Tìm hoặc tạo Customer theo externalId (FB sender ID)
-    const customer = await this.resolveCustomer(tenantId, incoming.senderId);
+    // Step 3: Tìm hoặc tạo Customer
+    const customerName =
+      channelType === 'ZALO'
+        ? `Zalo User ${incoming.senderId.slice(-4)}`
+        : `FB User ${incoming.senderId.slice(-4)}`;
+    const customer = await this.resolveCustomer(
+      tenantId,
+      incoming.senderId,
+      customerName,
+    );
 
-    // Step 3: Lấy default agent của tenant (agent đầu tiên đang active)
+    // Step 4: Lấy default agent
     const agent = await this.prisma.agent.findFirst({
       where: { tenantId, isActive: true },
       orderBy: { createdAt: 'asc' },
@@ -267,27 +799,28 @@ export class ChannelService implements OnModuleDestroy {
       return;
     }
 
-    // Step 4: Tìm hoặc tạo Conversation
+    // Step 5: Tìm hoặc tạo Conversation
     const conversation = await this.resolveConversation(
       tenantId,
       agent.id,
       customer.id,
       incoming.senderId,
+      channelType,
     );
 
-    // Step 5: Nếu OPEN (nhân viên đang xử lý) → lưu tin nhắn nhưng không gọi bot
+    // Step 6: Nếu OPEN → lưu tin nhắn nhưng không gọi bot
     if (conversation.status === 'OPEN') {
       this.logger.log(
-        `[Routing] Conversation ${conversation.id} is OPEN (human handling), skip bot reply`,
+        `[Routing] Conversation ${conversation.id} is OPEN, skip bot reply`,
       );
       await this.saveCustomerMessage(tenantId, conversation.id, incoming);
       return;
     }
 
-    // Step 6: Lưu tin nhắn khách
+    // Step 7: Lưu tin nhắn khách
     await this.saveCustomerMessage(tenantId, conversation.id, incoming);
 
-    // Step 7: Nếu không có text (sticker, ảnh...) → không gọi LLM
+    // Step 8: Nếu không có text → không gọi LLM
     if (!incoming.text) {
       this.logger.debug(
         `[Routing] Non-text message from ${incoming.senderId}, skip LLM`,
@@ -295,7 +828,7 @@ export class ChannelService implements OnModuleDestroy {
       return;
     }
 
-    // Step 8: Chạy AI pipeline (history + knowledge + LLM)
+    // Step 9: Chạy AI pipeline
     const replyText = await this.runPipeline(
       tenantId,
       agent,
@@ -303,14 +836,22 @@ export class ChannelService implements OnModuleDestroy {
       incoming.text,
     );
 
-    // Step 9: Gửi reply qua Facebook
-    await this.facebookAdapter.sendReply(
-      incoming.senderId,
-      replyText,
-      accessToken,
-    );
+    // Step 10: Gửi reply qua channel adapter
+    if (channelType === 'ZALO') {
+      await this.zaloAdapter.sendReply(
+        incoming.senderId,
+        replyText,
+        accessToken,
+      );
+    } else {
+      await this.facebookAdapter.sendReply(
+        incoming.senderId,
+        replyText,
+        accessToken,
+      );
+    }
 
-    // Step 10: Lưu reply vào DB
+    // Step 11: Lưu reply + update quota
     const botMessage = await this.prisma.message.create({
       data: {
         conversationId: conversation.id,
@@ -319,7 +860,6 @@ export class ChannelService implements OnModuleDestroy {
       },
     });
 
-    // Update lastMessageAt + quota
     await Promise.all([
       this.prisma.conversation.update({
         where: { id: conversation.id },
@@ -346,8 +886,42 @@ export class ChannelService implements OnModuleDestroy {
 
     const totalMs = Date.now() - pipelineStart;
     this.logger.log(
-      `[Pipeline] FB message processed: conv=${conversation.id} total=${totalMs}ms`,
+      `[Pipeline] ${channelType} message processed: conv=${conversation.id} total=${totalMs}ms`,
     );
+  }
+
+  /**
+   * Check Zalo token expiry, refresh nếu sắp hết hạn.
+   */
+  private async ensureValidZaloToken(connection: {
+    id: string;
+    accessTokenEnc: string | null;
+    tokenExpiresAt: Date | null;
+  }): Promise<string | null> {
+    if (!connection.accessTokenEnc) return null;
+
+    const bufferMs = 5 * 60 * 1000;
+    const isExpiring =
+      connection.tokenExpiresAt &&
+      connection.tokenExpiresAt.getTime() < Date.now() + bufferMs;
+
+    if (isExpiring) {
+      this.logger.log(
+        `[TokenCheck] Refreshing Zalo token for ${connection.id}`,
+      );
+      try {
+        return await this.zaloTokenService.refreshTokenForConnection(
+          connection.id,
+        );
+      } catch (err) {
+        this.logger.error(
+          `[TokenCheck] Refresh failed: ${err instanceof Error ? err.message : err}`,
+        );
+        return decryptToken(connection.accessTokenEnc);
+      }
+    }
+
+    return decryptToken(connection.accessTokenEnc);
   }
 
   // ─── AI Pipeline ──────────────────────────────────────────────
@@ -412,10 +986,14 @@ export class ChannelService implements OnModuleDestroy {
 
   // ─── Private Helpers ──────────────────────────────────────────
 
-  private async resolveCustomer(tenantId: string, fbSenderId: string) {
+  private async resolveCustomer(
+    tenantId: string,
+    externalId: string,
+    defaultName?: string,
+  ) {
     const existing = await this.prisma.customer.findUnique({
       where: {
-        tenantId_externalId: { tenantId, externalId: fbSenderId },
+        tenantId_externalId: { tenantId, externalId },
       },
     });
 
@@ -424,8 +1002,8 @@ export class ChannelService implements OnModuleDestroy {
     return this.prisma.customer.create({
       data: {
         tenantId,
-        externalId: fbSenderId,
-        name: `FB User ${fbSenderId.slice(-4)}`,
+        externalId,
+        name: defaultName || `User ${externalId.slice(-4)}`,
       },
     });
   }
@@ -434,13 +1012,14 @@ export class ChannelService implements OnModuleDestroy {
     tenantId: string,
     agentId: string,
     customerId: string,
-    fbSenderId: string,
+    channelSenderId: string,
+    channelType: 'FACEBOOK' | 'ZALO' = 'FACEBOOK',
   ) {
     const existing = await this.prisma.conversation.findFirst({
       where: {
         tenantId,
         customerId,
-        channelType: 'FACEBOOK',
+        channelType,
         status: { not: 'RESOLVED' },
       },
       orderBy: { updatedAt: 'desc' },
@@ -453,8 +1032,8 @@ export class ChannelService implements OnModuleDestroy {
         tenantId,
         agentId,
         customerId,
-        channelType: 'FACEBOOK',
-        channelConversationId: fbSenderId,
+        channelType,
+        channelConversationId: channelSenderId,
         status: 'BOT_HANDLING',
         lastMessageAt: new Date(),
       },
@@ -583,6 +1162,20 @@ export class ChannelService implements OnModuleDestroy {
     }
     if (cleaned > 0) {
       this.logger.debug(`[Dedup] Cleaned ${cleaned} expired entries`);
+    }
+  }
+
+  private cleanupPendingPageSessions(): void {
+    const now = Date.now();
+    let cleaned = 0;
+    for (const [key, session] of pendingPageSessions) {
+      if (now > session.expiresAt) {
+        pendingPageSessions.delete(key);
+        cleaned++;
+      }
+    }
+    if (cleaned > 0) {
+      this.logger.debug(`[PageSession] Cleaned ${cleaned} expired sessions`);
     }
   }
 }

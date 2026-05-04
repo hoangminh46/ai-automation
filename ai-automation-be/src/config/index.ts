@@ -5,4 +5,5 @@ export {
   supabaseConfig,
   openaiConfig,
   facebookConfig,
+  zaloConfig,
 } from './configs';

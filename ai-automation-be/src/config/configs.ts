@@ -3,6 +3,9 @@ import { registerAs } from '@nestjs/config';
 export const appConfig = registerAs('app', () => ({
   nodeEnv: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT || '3001', 10),
+  baseUrl:
+    process.env.APP_BASE_URL ||
+    `http://localhost:${process.env.PORT || '3001'}`,
 }));
 
 export const databaseConfig = registerAs('database', () => ({
@@ -29,4 +32,10 @@ export const facebookConfig = registerAs('facebook', () => ({
   appSecret: process.env.FB_APP_SECRET,
   verifyToken: process.env.FB_VERIFY_TOKEN,
   pageAccessToken: process.env.FB_PAGE_ACCESS_TOKEN,
+}));
+
+export const zaloConfig = registerAs('zalo', () => ({
+  appId: process.env.ZALO_APP_ID,
+  appSecret: process.env.ZALO_APP_SECRET,
+  oaSecretKey: process.env.ZALO_OA_SECRET_KEY,
 }));
