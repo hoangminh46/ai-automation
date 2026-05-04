@@ -274,7 +274,7 @@ export default function PlaygroundPage() {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto py-6 space-y-4 min-h-0">
+      <div className={`flex-1 py-6 space-y-4 min-h-0 ${messages.length > 0 ? "overflow-y-auto" : "overflow-hidden"}`}>
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-100 to-fuchsia-100 dark:from-violet-900/30 dark:to-fuchsia-900/30 flex items-center justify-center mb-4">
@@ -287,8 +287,8 @@ export default function PlaygroundPage() {
             </h3>
             <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md">
               {selectedAgent
-                ? "Gõ tin nhắn bên dưới để test Bot AI. Tin nhắn sẽ đi qua pipeline RAG thật — bao gồm Knowledge Search nếu đã upload tài liệu."
-                : "Chọn một Bot AI từ dropdown ở góc phải để bắt đầu thử nghiệm."}
+                ? "Nhắn thử bên dưới để xem Bot trả lời khách hàng như thế nào. Nếu bạn đã thêm kiến thức, Bot sẽ tự tra cứu để trả lời chính xác hơn."
+                : "Chọn một Bot từ danh sách ở góc phải để bắt đầu."}
             </p>
             {selectedAgent?.greeting && (
               <div className="mt-6 px-4 py-3 bg-slate-100 dark:bg-slate-800/50 rounded-xl text-sm text-slate-600 dark:text-slate-300 max-w-md italic">
@@ -379,12 +379,20 @@ export default function PlaygroundPage() {
                   }
                   disabled={!selectedAgent || isSending}
                   rows={1}
-                  className="w-full resize-none rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-4 py-3 pr-12 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="w-full resize-none rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-4 py-3 pr-12 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   style={{ minHeight: "44px", maxHeight: "120px" }}
                   onInput={(e) => {
                     const target = e.target as HTMLTextAreaElement;
                     target.style.height = "auto";
-                    target.style.height = `${Math.min(target.scrollHeight, 120)}px`;
+                    const scrollH = target.scrollHeight;
+                    const maxH = 120;
+                    if (scrollH <= maxH) {
+                      target.style.height = `${scrollH}px`;
+                      target.style.overflowY = "hidden";
+                    } else {
+                      target.style.height = `${maxH}px`;
+                      target.style.overflowY = "auto";
+                    }
                   }}
                 />
               </div>

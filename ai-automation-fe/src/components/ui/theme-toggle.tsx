@@ -53,9 +53,9 @@ export function ThemeToggle() {
         <ActiveIcon className="w-4.5 h-4.5" />
       </button>
 
-      {/* Dropdown — mở LÊN TRÊN (bottom-full) để không bị tràn sidebar */}
+      {/* Dropdown — mở XUỐNG DƯỚI, căn phải */}
       {isOpen && (
-        <div className="absolute left-0 bottom-full mb-2 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl shadow-black/10 dark:shadow-black/40 overflow-hidden z-[60] animate-in fade-in slide-in-from-bottom-2 duration-150">
+        <div className="absolute right-0 top-full mt-2 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl shadow-black/10 dark:shadow-black/40 overflow-hidden z-[60] animate-in fade-in slide-in-from-top-2 duration-150">
           {/* Header label */}
           <div className="px-3 pt-2.5 pb-1.5">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">

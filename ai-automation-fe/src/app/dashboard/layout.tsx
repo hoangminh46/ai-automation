@@ -95,22 +95,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
         {/* Sidebar Footer: Theme + Logout */}
         <div className="p-3 border-t border-slate-200 dark:border-slate-800">
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-50 dark:bg-slate-900/60">
-            {/* Logout — chiếm phần lớn diện tích */}
-            <button
-              onClick={handleLogout}
-              className="flex-1 flex items-center gap-2.5 px-3 py-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:text-slate-400 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-lg transition-all font-medium text-sm"
-            >
-              <LogOut className="w-4 h-4 shrink-0" />
-              <span>Đăng xuất</span>
-            </button>
-
-            {/* Divider dọc */}
-            <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 shrink-0" />
-
-            {/* Theme toggle icon — compact */}
-            <ThemeToggle />
-          </div>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:text-slate-400 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-xl transition-all font-medium text-sm"
+          >
+            <LogOut className="w-4 h-4 shrink-0" />
+            <span>Đăng xuất</span>
+          </button>
         </div>
       </aside>
 
@@ -133,8 +124,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </div>
           </div>
 
-          {/* User Profile */}
+          {/* User Profile + Theme Toggle */}
           <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 shrink-0" />
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium text-slate-900 dark:text-white truncate max-w-[150px]">{email}</p>
               <p className="text-xs text-slate-500 dark:text-slate-400">Chủ cửa hàng</p>
