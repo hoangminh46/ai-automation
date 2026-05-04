@@ -378,12 +378,51 @@
       "next_steps": [
         "Commit channel UI changes",
         "Test Zalo OA flow after user verifies Zalo account",
-        "Google/Microsoft SSO UI",
         "Website Widget Channel UI",
         "Payment Integration UI"
       ],
       "open_questions": [
         "Zalo OA UI ready but untested — pending user Zalo account verification"
+      ]
+    },
+    {
+      "id": "handoff-20260504-172700-fe",
+      "saved_at": "2026-05-04T17:27:00+07:00",
+      "branch": "main",
+      "head_sha": "3743f13",
+      "base_sha": "d141c68",
+      "source": "commit",
+      "commit_range": "d141c68..3743f13",
+      "summary": "UI polish & UX refinement: Playground refactor (stateless, no DB), channel guide simplification for non-tech users, global slim scrollbar, ThemeToggle moved to header.",
+      "project_changes": [
+        "Playground: switched from /chat (DB records) to /chat/test (stateless) — no more junk conversations",
+        "Playground: 20-message session limit, removed token display, user-friendly text",
+        "Deleted agent-test-chat.tsx — merged test functionality into Playground",
+        "Removed 'Thử Bot' button from AgentCard",
+        "Channel guides: replaced developer guides with 3-step user guides (Facebook + Zalo synced)",
+        "Removed 'Hướng dẫn thiết lập' developer card from channels page",
+        "globals.css: 6px slim scrollbar with slate colors (webkit + Firefox)",
+        "ThemeToggle: moved from sidebar footer to header, dropdown opens downward",
+        "Sidebar footer: simplified to just logout button"
+      ],
+      "commits": [
+        "3743f13 polish: slim scrollbar, theme toggle to header, playground UX improvements",
+        "2d107bc refactor: merge Playground + Test Bot, simplify channel guides for end users",
+        "dd73d13 feat: Zalo OA integration + Facebook OAuth refactor + security hardening"
+      ],
+      "working_tree": [],
+      "decisions": [
+        "Playground should NOT create DB records — sandbox test only",
+        "Channel guides: hide developer details (webhook, ngrok, app ID) from end users",
+        "ThemeToggle better placed in header for discoverability"
+      ],
+      "next_steps": [
+        "Zalo OA: test after user verifies Zalo account",
+        "Deploy to production (Render + Vercel) with correct env vars",
+        "Website Widget Channel"
+      ],
+      "open_questions": [
+        "Zalo account verification still pending"
       ]
     }
   ]

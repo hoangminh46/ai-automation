@@ -422,7 +422,6 @@
       "next_steps": [
         "Commit all channel integration changes",
         "Zalo: user needs to verify Zalo account before creating app on developers.zalo.me",
-        "Google/Microsoft SSO implementation (research done in conversation 15a75ca5)",
         "Website Widget Channel",
         "Payment Integration",
         "Consider Redis for pending page sessions + message dedup in production"
@@ -430,6 +429,34 @@
       "open_questions": [
         "Zalo account verification pending — cannot test Zalo OA flow yet",
         "Ngrok free tier interstitial page can delay OAuth callback — consider paid plan or custom domain for production"
+      ]
+    },
+    {
+      "id": "handoff-20260504-172700-be",
+      "saved_at": "2026-05-04T17:27:00+07:00",
+      "branch": "main",
+      "head_sha": "3743f13",
+      "base_sha": "d141c68",
+      "source": "commit",
+      "commit_range": "d141c68..3743f13",
+      "summary": "No BE code changes this session. FE-only UI polish: Playground refactor, channel guides, scrollbar, theme toggle. BE channel integration remains stable and committed.",
+      "project_changes": [
+        "No BE changes — all work was FE-only"
+      ],
+      "commits": [
+        "3743f13 polish (FE only)",
+        "2d107bc refactor (FE only)",
+        "dd73d13 feat: Zalo OA + Facebook OAuth (BE + FE)"
+      ],
+      "working_tree": [],
+      "decisions": [],
+      "next_steps": [
+        "Zalo OA: test after user verifies Zalo account",
+        "Deploy to production",
+        "Scale: Redis dedup + socket adapter"
+      ],
+      "open_questions": [
+        "Zalo account verification still pending"
       ]
     }
   ]
