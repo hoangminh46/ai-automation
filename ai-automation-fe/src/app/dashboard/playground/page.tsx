@@ -11,15 +11,16 @@ import {
   AlertCircle,
   Loader2,
   Sparkles,
-  Zap,
 } from "lucide-react";
 import { useTenantStore } from "@/store/tenant-store";
 import { useAgentStore } from "@/store/agent-store";
-import { Agent } from "@/lib/services/agent.service";
-import { chatService } from "@/lib/services/chat.service";
+import { Agent, agentService, ChatMessage } from "@/lib/services/agent.service";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 
-interface ChatMessage {
+const MAX_SESSION_MESSAGES = 20;
+const MAX_HISTORY_CONTEXT = 10;
+
+interface UIMessage {
   id: string;
   role: "user" | "bot";
   content: string;
@@ -42,8 +43,7 @@ export default function PlaygroundPage() {
 
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [isAgentDropdownOpen, setIsAgentDropdownOpen] = useState(false);
-  const [conversationId, setConversationId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<UIMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,10 +90,8 @@ export default function PlaygroundPage() {
       setSelectedAgent(agent);
       setIsAgentDropdownOpen(false);
 
-      // Reset conversation nếu đổi agent
       if (selectedAgent?.id !== agent.id) {
         setMessages([]);
-        setConversationId(null);
         setError(null);
       }
     },
@@ -102,16 +100,18 @@ export default function PlaygroundPage() {
 
   const handleNewConversation = useCallback(() => {
     setMessages([]);
-    setConversationId(null);
     setError(null);
     inputRef.current?.focus();
   }, []);
 
+  const userMessageCount = messages.filter((m) => m.role === "user").length;
+  const isSessionLimitReached = userMessageCount >= MAX_SESSION_MESSAGES;
+
   const handleSend = useCallback(async () => {
-    if (!inputValue.trim() || !activeTenant || !selectedAgent || isSending)
+    if (!inputValue.trim() || !activeTenant || !selectedAgent || isSending || isSessionLimitReached)
       return;
 
-    const userMessage: ChatMessage = {
+    const userMessage: UIMessage = {
       id: `user-${Date.now()}`,
       role: "user",
       content: inputValue.trim(),
@@ -124,17 +124,23 @@ export default function PlaygroundPage() {
     setError(null);
 
     try {
-      const response = await chatService.sendMessage(activeTenant.id, {
-        agentId: selectedAgent.id,
-        message: userMessage.content,
-        conversationId: conversationId || undefined,
-        customerName: "Playground Tester",
-      });
+      // Build history for context (convert UIMessage → ChatMessage format)
+      const history: ChatMessage[] = messages
+        .slice(-MAX_HISTORY_CONTEXT)
+        .map((m) => ({
+          role: m.role === "user" ? "CUSTOMER" as const : "BOT" as const,
+          content: m.content,
+        }));
 
-      setConversationId(response.conversationId);
+      const response = await agentService.testChatWithAgent(
+        activeTenant.id,
+        selectedAgent.id,
+        userMessage.content,
+        history,
+      );
 
-      const botMessage: ChatMessage = {
-        id: response.messageId,
+      const botMessage: UIMessage = {
+        id: `bot-${Date.now()}`,
         role: "bot",
         content: response.reply,
         agentName: response.agentName,
@@ -151,7 +157,7 @@ export default function PlaygroundPage() {
       setIsSending(false);
       inputRef.current?.focus();
     }
-  }, [inputValue, activeTenant, selectedAgent, isSending, conversationId]);
+  }, [inputValue, activeTenant, selectedAgent, isSending, isSessionLimitReached, messages]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -186,10 +192,6 @@ export default function PlaygroundPage() {
   }
 
   const activeAgents = agents.filter((a) => a.isActive);
-  const totalTokens = messages.reduce(
-    (sum, m) => sum + (m.usage?.totalTokens || 0),
-    0,
-  );
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] animate-in fade-in duration-300">
@@ -204,19 +206,18 @@ export default function PlaygroundPage() {
               Playground
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-              Test Bot AI với Knowledge RAG thực tế
+              Thử trò chuyện với Bot AI trước khi mở cho khách hàng
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {/* Token counter */}
-          {totalTokens > 0 && (
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-700 dark:text-amber-400 text-xs font-medium">
-              <Zap className="w-3.5 h-3.5" />
-              {totalTokens.toLocaleString()} tokens
-            </div>
-          )}
+          {/* Message counter */}
+            {userMessageCount > 0 && (
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-500 dark:text-slate-400 text-xs font-medium">
+                {userMessageCount}/{MAX_SESSION_MESSAGES} tin nhắn
+              </div>
+            )}
 
           {/* Agent Selector */}
           <div className="relative" ref={dropdownRef}>
@@ -317,23 +318,6 @@ export default function PlaygroundPage() {
                 <p className="text-sm whitespace-pre-wrap leading-relaxed">
                   {msg.content}
                 </p>
-
-                {/* Token usage (only for bot messages) */}
-                {msg.usage && (
-                  <div
-                    className={`flex items-center gap-2 mt-2 pt-2 border-t text-[10px] ${
-                      msg.role === "user"
-                        ? "border-blue-500/30 text-blue-200"
-                        : "border-slate-200 dark:border-slate-700 text-slate-400"
-                    }`}
-                  >
-                    <Zap className="w-3 h-3" />
-                    <span>
-                      {msg.usage.promptTokens}↓ {msg.usage.completionTokens}↑ ={" "}
-                      {msg.usage.totalTokens} tokens
-                    </span>
-                  </div>
-                )}
               </div>
 
               {msg.role === "user" && (
@@ -374,45 +358,53 @@ export default function PlaygroundPage() {
 
       {/* Input Area */}
       <div className="border-t border-slate-200 dark:border-slate-800 pt-4">
-        <div className="flex items-end gap-3">
-          <div className="flex-1 relative">
-            <textarea
-              ref={inputRef}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={
-                selectedAgent
-                  ? `Nhắn tin cho ${selectedAgent.name}...`
-                  : "Chọn Bot trước khi nhắn..."
-              }
-              disabled={!selectedAgent || isSending}
-              rows={1}
-              className="w-full resize-none rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-4 py-3 pr-12 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              style={{ minHeight: "44px", maxHeight: "120px" }}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = "auto";
-                target.style.height = `${Math.min(target.scrollHeight, 120)}px`;
-              }}
-            />
+        {isSessionLimitReached ? (
+          <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 rounded-xl text-sm">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>Đã hết {MAX_SESSION_MESSAGES} lượt thử. Nhấn <strong>↻</strong> để bắt đầu cuộc trò chuyện mới.</span>
           </div>
-          <button
-            onClick={handleSend}
-            disabled={!inputValue.trim() || !selectedAgent || isSending}
-            className="p-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white rounded-xl transition-all shadow-lg shadow-violet-600/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none shrink-0"
-          >
-            {isSending ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <Send className="w-5 h-5" />
-            )}
-          </button>
-        </div>
-        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 text-center">
-          Enter để gửi · Shift+Enter để xuống dòng · Pipeline: Context → Quota →
-          Knowledge RAG → LLM
-        </p>
+        ) : (
+          <>
+            <div className="flex items-end gap-3">
+              <div className="flex-1 relative">
+                <textarea
+                  ref={inputRef}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={
+                    selectedAgent
+                      ? `Nhắn tin cho ${selectedAgent.name}...`
+                      : "Chọn Bot trước khi nhắn..."
+                  }
+                  disabled={!selectedAgent || isSending}
+                  rows={1}
+                  className="w-full resize-none rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-4 py-3 pr-12 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  style={{ minHeight: "44px", maxHeight: "120px" }}
+                  onInput={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = "auto";
+                    target.style.height = `${Math.min(target.scrollHeight, 120)}px`;
+                  }}
+                />
+              </div>
+              <button
+                onClick={handleSend}
+                disabled={!inputValue.trim() || !selectedAgent || isSending}
+                className="p-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white rounded-xl transition-all shadow-lg shadow-violet-600/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none shrink-0"
+              >
+                {isSending ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Send className="w-5 h-5" />
+                )}
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 text-center">
+              Enter để gửi · Shift+Enter để xuống dòng · Tin nhắn thử không lưu vào hệ thống
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

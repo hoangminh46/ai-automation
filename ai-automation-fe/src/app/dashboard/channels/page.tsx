@@ -13,11 +13,7 @@ import { LoadingScreen } from "@/components/ui/loading-screen";
 import {
   AlertCircle,
   CheckCircle2,
-  ExternalLink,
   Loader2,
-  Copy,
-  Check,
-  Info,
 } from "lucide-react";
 
 export default function ChannelsPage() {
@@ -28,8 +24,7 @@ export default function ChannelsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Webhook URL copy
-  const [copied, setCopied] = useState(false);
+
 
   // OAuth callback toast (for both Zalo and Facebook)
   const [oauthToast, setOauthToast] = useState<{
@@ -47,9 +42,7 @@ export default function ChannelsPage() {
     (c) => c.channelType === "ZALO" && c.isActive,
   );
 
-  const apiBaseUrl =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-  const webhookUrl = `${apiBaseUrl}/webhook/facebook`;
+
 
   const fetchChannels = useCallback(async () => {
     if (!tenantId) return;
@@ -125,15 +118,7 @@ export default function ChannelsPage() {
     return () => clearTimeout(timer);
   }, [searchParams, fetchChannels]);
 
-  const handleCopyWebhookUrl = async () => {
-    try {
-      await navigator.clipboard.writeText(webhookUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      /* clipboard API not available */
-    }
-  };
+
 
   if (!tenantHasLoaded) {
     return <LoadingScreen />;
@@ -216,129 +201,8 @@ export default function ChannelsPage() {
               onRefresh={fetchChannels}
             />
           </div>
-
-          {/* ── Setup Guide Card ── */}
-          <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
-            {/* Guide Header */}
-            <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20">
-              <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
-                <Info className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-900 dark:text-white">
-                  Hướng dẫn thiết lập
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Cấu hình Webhook cho Facebook & Zalo
-                </p>
-              </div>
-            </div>
-
-            <div className="px-6 py-5 space-y-5">
-              {/* Webhook URL */}
-              <div className="bg-slate-50 dark:bg-slate-900/60 rounded-xl p-4">
-                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                  Facebook Webhook Callback URL
-                </p>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 text-sm font-mono text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-2 rounded-lg break-all">
-                    {webhookUrl || "https://your-domain.com/webhook/facebook"}
-                  </code>
-                  <button
-                    onClick={handleCopyWebhookUrl}
-                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 rounded-lg transition-all shrink-0"
-                    title="Sao chép"
-                  >
-                    {copied ? (
-                      <Check className="w-4 h-4 text-emerald-500" />
-                    ) : (
-                      <Copy className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Steps */}
-              <ol className="space-y-4">
-                <StepItem
-                  step={1}
-                  title="Tạo Facebook App / Zalo App"
-                  description="Facebook: developers.facebook.com → Create App → thêm Messenger product. Zalo: developers.zalo.me → Tạo ứng dụng."
-                  link="https://developers.facebook.com/apps/"
-                />
-                <StepItem
-                  step={2}
-                  title="Cấu hình Webhook"
-                  description="Dán Webhook URL ở trên vào App Settings. Facebook: dùng FB_VERIFY_TOKEN. Zalo: chọn event send_message."
-                />
-                <StepItem
-                  step={3}
-                  title="Kết nối trên Dashboard"
-                  description="Nhấn nút 'Kết nối' ở card phía trên → đăng nhập → cấp quyền → hoàn tất tự động. Không cần copy token thủ công."
-                />
-              </ol>
-
-              {/* Important Notes */}
-              <div className="bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-800/50 rounded-xl p-4 space-y-2">
-                <p className="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider">
-                  Lưu ý quan trọng
-                </p>
-                <ul className="text-xs text-amber-700 dark:text-amber-400/80 space-y-1 list-disc list-inside">
-                  <li>
-                    Webhook URL phải là HTTPS — dùng <strong>ngrok</strong> khi
-                    phát triển local.
-                  </li>
-                  <li>
-                    Token được lấy tự động qua OAuth — không cần copy thủ công.
-                  </li>
-                  <li>
-                    Mỗi Facebook Page / Zalo OA chỉ kết nối được với{" "}
-                    <strong>1 cửa hàng</strong>.
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
         </div>
       )}
     </div>
-  );
-}
-
-function StepItem({
-  step,
-  title,
-  description,
-  link,
-}: {
-  step: number;
-  title: string;
-  description: string;
-  link?: string;
-}) {
-  return (
-    <li className="flex gap-3">
-      <div className="w-7 h-7 shrink-0 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">
-        {step}
-      </div>
-      <div className="pt-0.5">
-        <p className="text-sm font-semibold text-slate-900 dark:text-white">
-          {title}
-        </p>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
-          {description}
-        </p>
-        {link && (
-          <a
-            href={link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1 font-medium"
-          >
-            Mở trang <ExternalLink className="w-3 h-3" />
-          </a>
-        )}
-      </div>
-    </li>
   );
 }

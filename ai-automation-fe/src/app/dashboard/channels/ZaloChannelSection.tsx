@@ -8,9 +8,6 @@ import {
 import {
   AlertCircle,
   AlertTriangle,
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
   Link2,
   Link2Off,
   Loader2,
@@ -40,7 +37,7 @@ export default function ZaloChannelSection({
   const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showGuide, setShowGuide] = useState(false);
+
 
   const isTokenExpired =
     zaloConnection?.tokenExpiresAt &&
@@ -246,73 +243,28 @@ export default function ZaloChannelSection({
               )}
             </button>
 
-            {/* Collapsible Setup Guide */}
-            <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
-              <button
-                onClick={() => setShowGuide(!showGuide)}
-                className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-all"
-              >
-                <span>📋 Hướng dẫn thiết lập Zalo OA</span>
-                {showGuide ? (
-                  <ChevronUp className="w-4 h-4 text-slate-400" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 text-slate-400" />
-                )}
-              </button>
-
-              {showGuide && (
-                <div className="px-4 pb-4 space-y-4 border-t border-slate-200 dark:border-slate-700 pt-4">
-                  <ol className="space-y-3">
-                    <GuideStep
-                      step={1}
-                      title="Tạo Zalo Official Account"
-                      description="Truy cập oa.zalo.me, đăng nhập và tạo OA mới (hoặc dùng OA đã có)."
-                      link="https://oa.zalo.me/"
-                    />
-                    <GuideStep
-                      step={2}
-                      title="Tạo App trên Zalo Developers"
-                      description="Vào developers.zalo.me → Tạo ứng dụng mới → liên kết với OA vừa tạo."
-                      link="https://developers.zalo.me/"
-                    />
-                    <GuideStep
-                      step={3}
-                      title="Cấu hình Webhook URL"
-                      description="Trong App Settings → Webhook → dán URL webhook của hệ thống. Chọn events: send_message."
-                    />
-                    <GuideStep
-                      step={4}
-                      title="Xác thực domain"
-                      description="Upload file xác minh hoặc thêm DNS record theo hướng dẫn của Zalo."
-                    />
-                    <GuideStep
-                      step={5}
-                      title="Kết nối trên Dashboard"
-                      description="Nhấn nút 'Kết nối Zalo OA' ở trên → authorize → hoàn tất."
-                    />
-                  </ol>
-
-                  <div className="bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-800/50 rounded-xl p-4 space-y-2">
-                    <p className="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider">
-                      Lưu ý
-                    </p>
-                    <ul className="text-xs text-amber-700 dark:text-amber-400/80 space-y-1 list-disc list-inside">
-                      <li>
-                        Zalo access token hết hạn sau <strong>1 giờ</strong> — hệ
-                        thống sẽ tự động gia hạn.
-                      </li>
-                      <li>
-                        Mỗi Zalo OA chỉ kết nối được với{" "}
-                        <strong>1 cửa hàng</strong>.
-                      </li>
-                      <li>
-                        Webhook URL phải là HTTPS — dùng <strong>ngrok</strong>{" "}
-                        khi phát triển local.
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              )}
+            <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-2.5">
+              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                📋 Cách kết nối chỉ với 3 bước:
+              </p>
+              <ol className="text-xs text-slate-500 dark:text-slate-400 space-y-1.5 list-none">
+                <li className="flex gap-2">
+                  <span className="inline-flex items-center justify-center w-4 h-4 shrink-0 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 text-[10px] font-bold">1</span>
+                  Bạn cần có một <strong className="text-slate-700 dark:text-slate-300">trang Zalo doanh nghiệp</strong> (tạo miễn phí tại{" "}
+                  <a href="https://oa.zalo.me/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">oa.zalo.me</a>)
+                </li>
+                <li className="flex gap-2">
+                  <span className="inline-flex items-center justify-center w-4 h-4 shrink-0 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 text-[10px] font-bold">2</span>
+                  Nhấn nút <strong className="text-slate-700 dark:text-slate-300">Kết nối Zalo OA</strong> ở trên → đăng nhập Zalo → chọn trang muốn kết nối
+                </li>
+                <li className="flex gap-2">
+                  <span className="inline-flex items-center justify-center w-4 h-4 shrink-0 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 text-[10px] font-bold">3</span>
+                  Nhấn <strong className="text-slate-700 dark:text-slate-300">Cho phép</strong> → chatbot sẽ tự động hoạt động trên Zalo
+                </li>
+              </ol>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
+                💡 Mỗi trang Zalo chỉ kết nối được với 1 cửa hàng.
+              </p>
             </div>
           </div>
         )}
@@ -321,43 +273,3 @@ export default function ZaloChannelSection({
   );
 }
 
-function GuideStep({
-  step,
-  title,
-  description,
-  link,
-}: {
-  step: number;
-  title: string;
-  description: string;
-  link?: string;
-}) {
-  return (
-    <li className="flex gap-3">
-      <div
-        className="w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-xs font-bold text-white"
-        style={{ backgroundColor: "#0068FF" }}
-      >
-        {step}
-      </div>
-      <div className="pt-0.5">
-        <p className="text-sm font-semibold text-slate-900 dark:text-white">
-          {title}
-        </p>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
-          {description}
-        </p>
-        {link && (
-          <a
-            href={link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1 font-medium"
-          >
-            Mở trang <ExternalLink className="w-3 h-3" />
-          </a>
-        )}
-      </div>
-    </li>
-  );
-}

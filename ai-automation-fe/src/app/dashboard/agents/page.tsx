@@ -10,7 +10,6 @@ import { AgentCard } from "@/components/agent/agent-card";
 import { AgentEmptyState } from "@/components/agent/agent-empty-state";
 import { AgentFormModal } from "@/components/agent/agent-form-modal";
 import { AgentDeleteDialog } from "@/components/agent/agent-delete-dialog";
-import { AgentTestChat } from "@/components/agent/agent-test-chat";
 
 export default function AgentsPage() {
   const activeTenant = useTenantStore((state) => state.activeTenant);
@@ -31,7 +30,7 @@ export default function AgentsPage() {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [testChatAgent, setTestChatAgent] = useState<Agent | null>(null);
+
 
   // Khi vào trang hoặc đổi Tenant: fetch data (store tự skip nếu đã load cho tenant này)
   const tenantId = activeTenant?.id;
@@ -162,7 +161,6 @@ export default function AgentsPage() {
               onEdit={handleOpenEdit}
               onDelete={handleOpenDelete}
               onToggleActive={handleToggleActive}
-              onTestChat={setTestChatAgent}
             />
           ))}
         </div>
@@ -190,14 +188,6 @@ export default function AgentsPage() {
         onConfirm={handleDeleteConfirm}
         isDeleting={isDeleting}
       />
-
-      {testChatAgent && (
-        <AgentTestChat
-          agent={testChatAgent}
-          isOpen={!!testChatAgent}
-          onClose={() => setTestChatAgent(null)}
-        />
-      )}
     </div>
   );
 }

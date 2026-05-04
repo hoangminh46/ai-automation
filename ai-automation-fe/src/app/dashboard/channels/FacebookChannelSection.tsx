@@ -7,7 +7,6 @@ import {
 } from "@/lib/services/channel.service";
 import {
   AlertCircle,
-  ExternalLink,
   Link2,
   Link2Off,
   Loader2,
@@ -374,21 +373,24 @@ export default function FacebookChannelSection({
               )}
             </button>
 
-            <div className="bg-blue-50 dark:bg-blue-900/15 border border-blue-200 dark:border-blue-800/50 rounded-xl p-4">
-              <p className="text-xs text-blue-700 dark:text-blue-400/80 leading-relaxed">
-                💡 Nhấn <strong>Kết nối Facebook Page</strong> → đăng nhập
-                Facebook → chọn Page muốn kết nối → cấp quyền → hoàn tất tự
-                động.
+            <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-2.5">
+              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                📋 Cách kết nối chỉ với 3 bước:
               </p>
-              <a
-                href="https://developers.facebook.com/apps/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline mt-2 font-medium"
-              >
-                Facebook Developer Console{" "}
-                <ExternalLink className="w-3 h-3" />
-              </a>
+              <ol className="text-xs text-slate-500 dark:text-slate-400 space-y-1.5 list-none">
+                <li className="flex gap-2">
+                  <span className="inline-flex items-center justify-center w-4 h-4 shrink-0 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-[10px] font-bold">1</span>
+                  Nhấn nút <strong className="text-slate-700 dark:text-slate-300">Kết nối Facebook Page</strong> ở trên
+                </li>
+                <li className="flex gap-2">
+                  <span className="inline-flex items-center justify-center w-4 h-4 shrink-0 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-[10px] font-bold">2</span>
+                  Đăng nhập Facebook → chọn trang cửa hàng muốn kết nối
+                </li>
+                <li className="flex gap-2">
+                  <span className="inline-flex items-center justify-center w-4 h-4 shrink-0 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-[10px] font-bold">3</span>
+                  Nhấn <strong className="text-slate-700 dark:text-slate-300">Cho phép</strong> → chatbot sẽ tự động hoạt động trên Messenger
+                </li>
+              </ol>
             </div>
           </div>
         )}
