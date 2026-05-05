@@ -15,12 +15,22 @@
         "Phase 03: Tenant + Agent CRUD with RBAC (uncommitted)"
       ],
       "commits": [
-        { "sha": "750efb7", "message": "chore: init monorepo - AI Automation Suite" },
-        { "sha": "b96af61", "message": "feat(be): Phase 02 - Database schema, Prisma, Auth module" }
+        {
+          "sha": "750efb7",
+          "message": "chore: init monorepo - AI Automation Suite"
+        },
+        {
+          "sha": "b96af61",
+          "message": "feat(be): Phase 02 - Database schema, Prisma, Auth module"
+        }
       ],
       "working_tree": {
         "summary": "Phase 03 fully implemented. 14 new files, 13 modified.",
-        "key_files": ["src/modules/tenant/", "src/modules/agent/", "src/common/guards/tenant.guard.ts"]
+        "key_files": [
+          "src/modules/tenant/",
+          "src/modules/agent/",
+          "src/common/guards/tenant.guard.ts"
+        ]
       },
       "decisions": [
         "Use sellerId (not authId/sub) as identity key for service queries",
@@ -29,8 +39,14 @@
         "TenantGuard attaches tenant + membership to request",
         "Nested REST routes: /tenants/:tenantId/agents"
       ],
-      "next_steps": ["Commit Phase 03", "Start Phase 04 LLM Integration"],
-      "open_questions": ["Tenant.settings DTO timing", "HNSW index manual migration"]
+      "next_steps": [
+        "Commit Phase 03",
+        "Start Phase 04 LLM Integration"
+      ],
+      "open_questions": [
+        "Tenant.settings DTO timing",
+        "HNSW index manual migration"
+      ]
     },
     {
       "id": "handoff-20260414-144100",
@@ -47,7 +63,10 @@
         "Brain files (.brain/) added to repo for portability"
       ],
       "commits": [
-        { "sha": "421a13d", "message": "feat(be): Phase 03 - Tenant & Agent CRUD with RBAC" }
+        {
+          "sha": "421a13d",
+          "message": "feat(be): Phase 03 - Tenant & Agent CRUD with RBAC"
+        }
       ],
       "working_tree": {
         "summary": "Clean. No uncommitted changes.",
@@ -84,7 +103,10 @@
         "Logic fixes: history desc+reverse, HUMAN_AGENT→assistant, LLM error handling with try/catch+Logger"
       ],
       "commits": [
-        { "sha": "9190a57", "message": "feat(be): Phase 04 - LLM Integration (Gemini 2.5 Flash + ConversationModule)" }
+        {
+          "sha": "9190a57",
+          "message": "feat(be): Phase 04 - LLM Integration (Gemini 2.5 Flash + ConversationModule)"
+        }
       ],
       "working_tree": {
         "summary": "14 files changed (8 new, 6 modified), 481 insertions. All committed.",
@@ -131,8 +153,14 @@
         "Business rule: Platform controls model, user only configures name/persona/greeting"
       ],
       "commits": [
-        { "sha": "9190a57", "message": "feat(be): Phase 04 - LLM Integration (Gemini 2.5 Flash + ConversationModule)" },
-        { "sha": "83eebc4", "message": "refactor: hide LLM params from user, platform controls model" }
+        {
+          "sha": "9190a57",
+          "message": "feat(be): Phase 04 - LLM Integration (Gemini 2.5 Flash + ConversationModule)"
+        },
+        {
+          "sha": "83eebc4",
+          "message": "refactor: hide LLM params from user, platform controls model"
+        }
       ],
       "working_tree": {
         "summary": "Clean. All changes committed.",
@@ -168,11 +196,26 @@
         "New deps: @google/generative-ai, pdf-parse, @types/multer"
       ],
       "commits": [
-        { "sha": "d5e9f04", "message": "feat: test chat cost protection" },
-        { "sha": "b4f99e3", "message": "feat: add POST /chat/test endpoint" },
-        { "sha": "3560291", "message": "feat(be): Phase 05+06 complete" },
-        { "sha": "b2c1504", "message": "feat(be): Phase 07 — Knowledge Upload & Processing pipeline" },
-        { "sha": "dfe8d15", "message": "feat(be): Phase 08 — Knowledge Search & RAG pipeline integration" }
+        {
+          "sha": "d5e9f04",
+          "message": "feat: test chat cost protection"
+        },
+        {
+          "sha": "b4f99e3",
+          "message": "feat: add POST /chat/test endpoint"
+        },
+        {
+          "sha": "3560291",
+          "message": "feat(be): Phase 05+06 complete"
+        },
+        {
+          "sha": "b2c1504",
+          "message": "feat(be): Phase 07 — Knowledge Upload & Processing pipeline"
+        },
+        {
+          "sha": "dfe8d15",
+          "message": "feat(be): Phase 08 — Knowledge Search & RAG pipeline integration"
+        }
       ],
       "working_tree": {
         "summary": "Clean. All changes committed.",
@@ -215,10 +258,19 @@
         "Prisma datasource: url = env(DATABASE_URL)"
       ],
       "commits": [
-        { "sha": "4042b40", "message": "feat: Phase 09 — Facebook Channel + security fixes + handover-to-bot" },
-        { "sha": "074f3d8", "message": "docs: update plans — Phase 09 Facebook Channel done, 9/11 phases complete" }
+        {
+          "sha": "4042b40",
+          "message": "feat: Phase 09 — Facebook Channel + security fixes + handover-to-bot"
+        },
+        {
+          "sha": "074f3d8",
+          "message": "docs: update plans — Phase 09 Facebook Channel done, 9/11 phases complete"
+        }
       ],
-      "working_tree": { "summary": "Clean", "key_files": [] },
+      "working_tree": {
+        "summary": "Clean",
+        "key_files": []
+      },
       "decisions": [
         "In-memory Map for dedup (MVP) — Redis khi multi-instance",
         "FB access token plain text (MVP) — encrypt AES-256 Phase 10",
@@ -253,10 +305,18 @@
         "conversation.module: register ChatGateway as provider"
       ],
       "commits": [
-        { "sha": "0b1496f", "message": "docs(plan): split Phase 06E into 4 sub-phases" },
-        { "sha": "a0f6ab0", "message": "feat: Phase 06E — WebSocket real-time CRM (Socket.IO)" }
+        {
+          "sha": "0b1496f",
+          "message": "docs(plan): split Phase 06E into 4 sub-phases"
+        },
+        {
+          "sha": "a0f6ab0",
+          "message": "feat: Phase 06E — WebSocket real-time CRM (Socket.IO)"
+        }
       ],
-      "working_tree": { "status": "clean" },
+      "working_tree": {
+        "status": "clean"
+      },
       "decisions": [
         "Socket.IO over raw WebSocket — built-in reconnect, rooms, fallback to polling",
         "EventEmitter2 decoupling — avoid circular deps, easy swap to Redis Pub/Sub",
@@ -289,7 +349,9 @@
         "common/index.ts: barrel exports for filter + interceptor"
       ],
       "commits": [],
-      "working_tree": { "status": "dirty" },
+      "working_tree": {
+        "status": "dirty"
+      },
       "decisions": [
         "API prefix /api/v1 — standard for REST APIs, easy versioning",
         "Exclude webhook/facebook from prefix — FB calls directly",
@@ -324,9 +386,14 @@
         "Cleaned up temp test/verify scripts"
       ],
       "commits": [
-        { "sha": "0cfa1ab", "message": "feat: Phase 11 — security hardening, DB indexes, Dockerfile, graceful shutdown. All 11 phases complete 🎉" }
+        {
+          "sha": "0cfa1ab",
+          "message": "feat: Phase 11 — security hardening, DB indexes, Dockerfile, graceful shutdown. All 11 phases complete 🎉"
+        }
       ],
-      "working_tree": { "status": "clean" },
+      "working_tree": {
+        "status": "clean"
+      },
       "decisions": [
         "Integration tests SKIPPED — MVP, manual testing sufficient",
         "PromptInjectionGuardPipe as @UsePipes (not global) — only on LLM-facing endpoints",
@@ -357,14 +424,34 @@
         "Roadmap post-MVP updated"
       ],
       "commits": [
-        { "sha": "55b7b15", "message": "docs: deployment guide (Oracle Cloud + Vercel), docker-compose, nginx, roadmap post-MVP" },
-        { "sha": "15a7d1c", "message": "docs: switch deployment guide to Render + Vercel (free tier)" },
-        { "sha": "6c74f66", "message": "fix: remove deprecated postgresqlExtensions previewFeature (Prisma 7.x)" },
-        { "sha": "e986d4f", "message": "fix: adapt to Prisma 7.x breaking changes (remove url from schema, fix Dockerfile)" },
-        { "sha": "11c64d5", "message": "fix: exclude prisma.config.ts from build (fixes dist/main.js path)" },
-        { "sha": "d141c68", "message": "update deploy status" }
+        {
+          "sha": "55b7b15",
+          "message": "docs: deployment guide (Oracle Cloud + Vercel), docker-compose, nginx, roadmap post-MVP"
+        },
+        {
+          "sha": "15a7d1c",
+          "message": "docs: switch deployment guide to Render + Vercel (free tier)"
+        },
+        {
+          "sha": "6c74f66",
+          "message": "fix: remove deprecated postgresqlExtensions previewFeature (Prisma 7.x)"
+        },
+        {
+          "sha": "e986d4f",
+          "message": "fix: adapt to Prisma 7.x breaking changes (remove url from schema, fix Dockerfile)"
+        },
+        {
+          "sha": "11c64d5",
+          "message": "fix: exclude prisma.config.ts from build (fixes dist/main.js path)"
+        },
+        {
+          "sha": "d141c68",
+          "message": "update deploy status"
+        }
       ],
-      "working_tree": { "status": "clean" },
+      "working_tree": {
+        "status": "clean"
+      },
       "decisions": [
         "Prisma 7.x adaptation: removed postgresqlExtensions as it's no longer needed/supported in previewFeature",
         "Exclude prisma.config.ts: build output was putting main.js in a subfolder dist/src/main.js instead of dist/main.js",
@@ -458,6 +545,43 @@
       "open_questions": [
         "Zalo account verification still pending"
       ]
+    },
+    {
+      "id": "handoff-20260505-171500-be",
+      "saved_at": "2026-05-05T17:15:00+07:00",
+      "branch": "main",
+      "head_sha": "08f7cdc",
+      "base_sha": "3743f13",
+      "source": "commit",
+      "commit_range": "3743f13..08f7cdc",
+      "summary": "Roadmap Post-MVP Finalized. Defined features for multi-instance scaling, 4-tier pricing, multimodal input, and Subdomain Landing Page architecture.",
+      "project_changes": [
+        "Updated roadmap-post-mvp.md with detailed multi-instance scaling tasks",
+        "Defined 4-tier pricing structure (Free, Basic, Standard, Premium)",
+        "Added Bám đuổi khách hàng (Retargeting) feature specifications",
+        "Added Hỗ trợ đa phương thức (Multimodal Vision & Audio) specifications",
+        "Separated Landing Page architecture into Subdomain model (aichatbot.vn vs app.aichatbot.vn)"
+      ],
+      "commits": [
+        {
+          "sha": "08f7cdc",
+          "message": "docs: finalize post-MVP roadmap (scaling, pricing, landing page architecture)"
+        }
+      ],
+      "working_tree": {
+        "status": "clean"
+      },
+      "decisions": [
+        "Use 4-tier pricing model: Free (7 days), Basic (299k), Standard (599k), Premium (1.199k)",
+        "Upsell high-value features (Follow-up 24h, Multimodal) in higher tiers",
+        "Use Subdomain architecture for Landing Page (aichatbot.vn) and Web App (app.aichatbot.vn) to optimize SEO and load times"
+      ],
+      "next_steps": [
+        "Website Chat Widget",
+        "Landing Page implementation",
+        "Payment Integration (Stripe/VNPay)"
+      ],
+      "open_questions": []
     }
   ]
 }

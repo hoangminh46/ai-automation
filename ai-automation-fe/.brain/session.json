@@ -1,51 +1,42 @@
 {
-  "updated_at": "2026-05-04T17:27:00+07:00",
+  "updated_at": "2026-05-05T17:15:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260504-172700-fe",
+  "active_handoff_id": "handoff-20260505-171500-fe",
   "working_on": {
-    "sprint": "Sprint 6 — UI Polish & UX Refinement",
-    "description": "Completed: Channel guide simplification for non-tech users, Playground refactor (stateless /chat/test, removed Test Bot modal), global slim scrollbar, ThemeToggle moved to header, textarea scroll fix. All TSC clean."
+    "sprint": "Roadmap Post-MVP Planning",
+    "description": "Defined features for multi-instance scaling, 4-tier pricing, multimodal input, and Subdomain Landing Page architecture."
   },
   "git_snapshot": {
-    "head_sha": "3743f13",
-    "last_saved_head_sha": "3743f13",
-    "base_sha": "d141c68",
+    "head_sha": "08f7cdc",
+    "last_saved_head_sha": "08f7cdc",
+    "base_sha": "3743f13",
     "branch": "main",
     "has_uncommitted_changes": false,
     "changed_files": [],
-    "commit_range": "d141c68..3743f13",
+    "commit_range": "3743f13..08f7cdc",
     "commits_since_last_save": [
-      "3743f13 polish: slim scrollbar, theme toggle to header, playground UX improvements",
-      "2d107bc refactor: merge Playground + Test Bot, simplify channel guides for end users",
-      "dd73d13 feat: Zalo OA integration + Facebook OAuth refactor + security hardening",
-      "2aef0b1 add git ignore agent"
-    ]
+      "08f7cdc docs: finalize post-MVP roadmap (scaling, pricing, landing page architecture)"
+    ],
+    "staged_files": [],
+    "unstaged_files": [],
+    "untracked_files": []
   },
   "pending_tasks": [
-    "Zalo OA: test after user verifies Zalo account",
-
-    "Website Widget Channel UI",
-    "Payment Integration UI",
-    "E2E test full CRM flow"
+    "Website Chat Widget",
+    "Landing Page implementation (aichatbot.vn)",
+    "Payment Integration (Stripe/VNPay)",
+    "Scale: Redis dedup + socket.io redis adapter"
   ],
   "recent_changes": [
-    "Playground: switched from /chat to /chat/test (stateless, no DB records)",
-    "Playground: added 20-message session limit with warning UI",
-    "Playground: removed per-message token usage display",
-    "Playground: user-friendly empty state text (no jargon)",
-    "Playground: textarea scroll fix (hidden until maxHeight exceeded)",
-    "Playground: hide scrollbar on empty state",
-    "Deleted agent-test-chat.tsx (merged into Playground)",
-    "Removed onTestChat prop from AgentCard",
-    "Channel guides: simplified for non-tech users (3-step inline format)",
-    "Channel page: removed developer setup guide card",
-    "globals.css: added global slim scrollbar (6px, slate colors)",
-    "ThemeToggle: moved from sidebar footer to header",
-    "Sidebar footer: simplified to just logout button"
+    "Updated roadmap-post-mvp.md with detailed multi-instance scaling tasks",
+    "Defined 4-tier pricing structure (Free, Basic, Standard, Premium)",
+    "Added Bám đuổi khách hàng (Retargeting) feature specifications",
+    "Added Hỗ trợ đa phương thức (Multimodal Vision & Audio) specifications",
+    "Separated Landing Page architecture into Subdomain model (aichatbot.vn vs app.aichatbot.vn)"
   ],
   "uncommitted_summary": {
     "status": "clean",
-    "summary": "All changes committed. TSC clean.",
+    "summary": "All changes committed.",
     "files": []
   }
 }

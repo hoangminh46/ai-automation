@@ -14,7 +14,9 @@
         "Xoá Passport-JWT, thay thế bằng Supabase Edge validation ở Backend (AuthGuard).",
         "Triển khai Tenant Store (Zustand) tự động load & tự sinh Slug."
       ],
-      "commits": ["6aaee7e"],
+      "commits": [
+        "6aaee7e"
+      ],
       "working_tree": {},
       "decisions": [
         "Không dùng PassportModule để chứng thực JWT Supabase nữa, mà dùng thư viện API SDK của Supabase trực tiếp do nó bắt buộc chuẩn ECC P-256.",
@@ -48,7 +50,9 @@
         "Fix globals.css: @custom-variant dark cho Tailwind CSS v4 (không dùng media query)",
         "Fix layout.tsx: fetchTenants() hoisted lên DashboardLayout — fix bug agent page không có tenant data"
       ],
-      "commits": ["8fe2fdc"],
+      "commits": [
+        "8fe2fdc"
+      ],
       "working_tree": {},
       "decisions": [
         "AgentFormModal dùng key remount (key=agent.id|'create') thay vì useEffect+setState vì React 19 strict rule (set-state-in-effect).",
@@ -168,7 +172,10 @@
         "4042b40: feat: Phase 09 — Facebook Channel + security fixes + handover-to-bot",
         "074f3d8: docs: update plans — Phase 09 Facebook Channel done"
       ],
-      "working_tree": { "status": "clean", "files": [] },
+      "working_tree": {
+        "status": "clean",
+        "files": []
+      },
       "decisions": [
         "Handover button blue (#2563EB) — phân biệt với Resolve button green",
         "canHandoverToBot chỉ khi status OPEN hoặc SNOOZED",
@@ -205,7 +212,15 @@
       "commits": [
         "db13084: feat(fe): Phase 06D — Channel management page (Enterprise) + save-brain"
       ],
-      "working_tree": { "status": "dirty", "files": ["channels/page.tsx", "channel.service.ts", "layout.tsx", "frontend_plan.md"] },
+      "working_tree": {
+        "status": "dirty",
+        "files": [
+          "channels/page.tsx",
+          "channel.service.ts",
+          "layout.tsx",
+          "frontend_plan.md"
+        ]
+      },
       "decisions": [
         "Không dùng Zustand store — local state đủ cho 1-page channel management",
         "Enterprise: form validation, token masking, disconnect confirm, 5-step guide",
@@ -239,10 +254,18 @@
         "socket.io-client added to package.json"
       ],
       "commits": [
-        { "sha": "0b1496f", "message": "docs(plan): split Phase 06E into 4 sub-phases" },
-        { "sha": "a0f6ab0", "message": "feat: Phase 06E — WebSocket real-time CRM (Socket.IO)" }
+        {
+          "sha": "0b1496f",
+          "message": "docs(plan): split Phase 06E into 4 sub-phases"
+        },
+        {
+          "sha": "a0f6ab0",
+          "message": "feat: Phase 06E — WebSocket real-time CRM (Socket.IO)"
+        }
       ],
-      "working_tree": { "status": "clean" },
+      "working_tree": {
+        "status": "clean"
+      },
       "decisions": [
         "reconnectCount pattern — hook signals reconnect, page decides what to refetch",
         "Error boundaries — all WS handlers wrap try-catch to prevent silent crashes",
@@ -274,7 +297,9 @@
         "frontend_plan.md: Phase 10 + chat fix noted, priority → Phase 11"
       ],
       "commits": [],
-      "working_tree": { "status": "dirty" },
+      "working_tree": {
+        "status": "dirty"
+      },
       "decisions": [
         "Auto-unwrap at axios level — service layer doesn't need changes (response.data stays same)",
         "break-all over break-words — more aggressive, guaranteed to wrap long unbroken strings",
@@ -300,8 +325,12 @@
         "brain.json: Phase 11 status updated",
         "No FE source code changes in this phase"
       ],
-      "commits": ["0cfa1ab"],
-      "working_tree": { "status": "clean" },
+      "commits": [
+        "0cfa1ab"
+      ],
+      "working_tree": {
+        "status": "clean"
+      },
       "decisions": [],
       "next_steps": [
         "Zalo OA Channel UI",
@@ -332,7 +361,9 @@
         "11c64d5",
         "d141c68"
       ],
-      "working_tree": { "status": "clean" },
+      "working_tree": {
+        "status": "clean"
+      },
       "decisions": [
         "Render (BE) + Vercel (FE) chosen as standard free tier deployment path"
       ],
@@ -424,6 +455,43 @@
       "open_questions": [
         "Zalo account verification still pending"
       ]
+    },
+    {
+      "id": "handoff-20260505-171500-fe",
+      "saved_at": "2026-05-05T17:15:00+07:00",
+      "branch": "main",
+      "head_sha": "08f7cdc",
+      "base_sha": "3743f13",
+      "source": "commit",
+      "commit_range": "3743f13..08f7cdc",
+      "summary": "Roadmap Post-MVP Finalized. Defined features for multi-instance scaling, 4-tier pricing, multimodal input, and Subdomain Landing Page architecture.",
+      "project_changes": [
+        "Updated roadmap-post-mvp.md with detailed multi-instance scaling tasks",
+        "Defined 4-tier pricing structure (Free, Basic, Standard, Premium)",
+        "Added Bám đuổi khách hàng (Retargeting) feature specifications",
+        "Added Hỗ trợ đa phương thức (Multimodal Vision & Audio) specifications",
+        "Separated Landing Page architecture into Subdomain model (aichatbot.vn vs app.aichatbot.vn)"
+      ],
+      "commits": [
+        {
+          "sha": "08f7cdc",
+          "message": "docs: finalize post-MVP roadmap (scaling, pricing, landing page architecture)"
+        }
+      ],
+      "working_tree": {
+        "status": "clean"
+      },
+      "decisions": [
+        "Use 4-tier pricing model: Free (7 days), Basic (299k), Standard (599k), Premium (1.199k)",
+        "Upsell high-value features (Follow-up 24h, Multimodal) in higher tiers",
+        "Use Subdomain architecture for Landing Page (aichatbot.vn) and Web App (app.aichatbot.vn) to optimize SEO and load times"
+      ],
+      "next_steps": [
+        "Website Chat Widget",
+        "Landing Page implementation",
+        "Payment Integration (Stripe/VNPay)"
+      ],
+      "open_questions": []
     }
   ]
 }
