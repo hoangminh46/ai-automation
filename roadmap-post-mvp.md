@@ -126,9 +126,44 @@ MVP core: Seller đăng ký → upload knowledge → kết nối FB → chatbot 
 
 ---
 
+### 8. Bám đuổi khách hàng (AI Follow-up / Retargeting)
+> Tự động nhắn tin lại cho khách hàng sau một khoảng thời gian im lặng để chốt đơn (Tuân thủ luật 24h của Facebook).
+
+**BE:**
+- [ ] Cronjob quét các hội thoại trạng thái OPEN mà tin nhắn cuối là của Bot (> 2h).
+- [ ] LlmService: Dùng context lịch sử để tạo câu nhắc khéo cá nhân hóa (Proactive message).
+- [ ] Gửi tự động qua Facebook API và lưu DB.
+
+**FE (Giao diện cấu hình Bám đuổi):**
+- [ ] Màn hình Settings riêng biệt cho tính năng Bám đuổi (Retargeting).
+- [ ] Công tắc On/Off tính năng.
+- [ ] Timeline Builder đơn giản: Cho phép shop thêm các mốc thời gian (VD: Gửi tin nhắn 1 sau 2 giờ, Tin nhắn 2 sau 23 giờ).
+- [ ] Custom Prompt Input: Ô nhập liệu để shop chỉ định "Kịch bản nhắc khéo" cho AI (VD: "Báo khách là kho chỉ còn 1 cái", "Tặng mã giảm 10%").
+- [ ] UI Lock: Toàn bộ màn hình này sẽ bị làm mờ (grayed out) và có ổ khóa nếu user chưa đăng ký gói Premium, kèm nút CTA "Nâng cấp gói để mở khóa".
+
+**Effort:** BE 2 ngày, FE 2 ngày | **Giá trị:** ⭐⭐⭐ Cao — tăng tỷ lệ chuyển đổi cho shop
+
+---
+
+### 9. Hỗ trợ đa phương thức (Multimodal: Ảnh & Voice)
+> Nhận diện và xử lý tin nhắn hình ảnh, âm thanh từ khách hàng (Sử dụng Gemini Vision & Audio).
+
+**BE:**
+- [ ] Facebook/Zalo Adapter: Bắt sự kiện tin nhắn có chứa file đính kèm (image/audio).
+- [ ] Download media buffer và truyền định dạng base64/buffer vào OpenAI SDK cho Gemini.
+- [ ] Prompt Tuning: Hướng dẫn AI cách phân tích ảnh (VD: khách gửi ảnh cái áo, AI quét trong Knowledge Base tìm mẫu tương tự và báo giá).
+
+**FE:**
+- [ ] ChatWindow: Hiển thị được hình ảnh và audio player thay vì chỉ hiện text.
+- [ ] Settings: Công tắc bật/tắt tính năng Multimodal cho từng Agent (để shop tiết kiệm token nếu không cần).
+
+**Effort:** BE 3 ngày, FE 1 ngày | **Giá trị:** ⭐⭐⭐ Rất Cao — Cực kỳ phù hợp cho shop thời trang/phụ kiện.
+
+---
+
 ## 🅲️ Hướng 3: Monetization (Kiếm tiền)
 
-### 8. Usage Tracking Dashboard
+### 10. Usage Tracking Dashboard
 > Hiển thị token/message đã dùng — tiền đề cho billing
 
 **BE:**
@@ -145,14 +180,19 @@ MVP core: Seller đăng ký → upload knowledge → kết nối FB → chatbot 
 
 ---
 
-### 9. Billing & Plans
-> Free/Pro/Enterprise tiers, Stripe integration
+### 11. Billing & Plans
+> 4 Tiers: Free (7-day trial), Basic, Standard, Premium. Tích hợp thanh toán online.
 
 **BE:**
-- [ ] Plan model: free (100 msg/month), pro (5000 msg), enterprise (unlimited)
-- [ ] Stripe webhook: subscription created/updated/cancelled
-- [ ] Billing API: current plan, upgrade, downgrade, invoice history
-- [ ] Quota enforcement based on plan tier
+- [ ] Plan model: 
+  - Free: 0đ (Trial 7 ngày kể từ lúc đăng ký, max 300 msg). Sau 7 ngày tự động lock tính năng AI.
+  - Basic: ~299k (3.000 msg, 3 bots).
+  - Standard: ~599k (8.000 msg, 5 bots).
+  - Premium: ~1.199k (20.000 msg, 10 bots, mở khóa tích hợp ERP/API).
+- [ ] Job kiểm tra hết hạn trial (Cronjob chạy mỗi ngày hoặc check lúc user gọi API).
+- [ ] Stripe/VNPay webhook: subscription created/updated/cancelled
+- [ ] Billing API: current plan, trial status, upgrade, downgrade, invoice history
+- [ ] Quota enforcement (Message limit & Trial expire date) based on plan tier
 
 **FE:**
 - [ ] /dashboard/billing page
@@ -165,18 +205,28 @@ MVP core: Seller đăng ký → upload knowledge → kết nối FB → chatbot 
 
 ---
 
-### 10. Landing Page
-> Giới thiệu sản phẩm, pricing, CTA đăng ký
+### 12. Landing Page
+> Tối ưu hóa SEO, Tỷ lệ chuyển đổi (Conversion Rate) và Kiến trúc SaaS.
 
-**FE only (có thể tách repo):**
-- [ ] Hero section: headline + demo video/screenshot
-- [ ] Features grid: 4-6 key features với icons
-- [ ] Pricing table: 3 tiers
-- [ ] Testimonials / Social proof
-- [ ] CTA → /login (đăng ký)
-- [ ] SEO optimized, responsive, dark mode
+**Kiến trúc hệ thống (Mô hình Subdomain chuyên nghiệp):**
+- **Tách biệt hoàn toàn Landing Page và Web App:**
+  - **Landing Page (Trang Marketing):** Chạy trên tên miền chính (VD: `aichatbot.vn`). Xây dựng thành một dự án độc lập (Static HTML/Next.js/Webflow) để tối ưu 100% tốc độ tải trang và SEO. Đội Marketing có thể dễ dàng quản trị riêng.
+  - **Web App (Hệ thống Dashboard hiện tại):** Triển khai trên tên miền phụ (VD: `app.aichatbot.vn`). Không tốn thêm chi phí, tạo subdomain miễn phí trên DNS/Vercel.
+- **Flow Đăng nhập/Đăng ký:**
+  - Các nút CTA trên Landing Page sẽ là external link trỏ thẳng sang Web App.
+  - Nút [Đăng nhập] -> `<a href="https://app.aichatbot.vn/login">`
+  - Nút [Dùng thử miễn phí] -> `<a href="https://app.aichatbot.vn/register">`.
 
-**Effort:** FE 2 ngày | **Giá trị:** ⭐⭐⭐ Marketing & conversion
+**Cấu trúc nội dung Landing Page (7 Blocks):**
+- [ ] **1. Hero Section:** Headline đánh vào nỗi đau ("Tự động chốt đơn 24/7"), Sub-headline giải thích RAG AI, 2 Nút CTA (Dùng thử miễn phí / Xem Demo video).
+- [ ] **2. Lợi ích & Tính năng lõi (Zic-zac layout):** Nêu bật tính năng Đa kênh (FB, Zalo), Tự động học từ PDF, và Bám đuổi khách hàng 24h.
+- [ ] **3. How it works (3 Bước đơn giản):** Đăng ký -> Upload tài liệu -> AI tự động chat.
+- [ ] **4. Bảng giá (Pricing):** Trình bày 4 gói (Free Trial, Basic, Standard, Premium). Làm nổi bật gói Standard.
+- [ ] **5. Social Proof:** Khu vực chuẩn bị sẵn cho Testimonials và Logo khách hàng/đối tác.
+- [ ] **6. FAQ (Hỏi đáp):** Giải đáp rào cản (AI có nói bậy không? Bảo mật dữ liệu không?).
+- [ ] **7. Final CTA:** Lời kêu gọi cuối cùng ở chân trang, trỏ về `/register`.
+
+**Effort:** FE 3 ngày | **Giá trị:** ⭐⭐⭐ Cực kỳ quan trọng để Marketing & Chốt sale
 
 ---
 
@@ -201,9 +251,10 @@ Nếu mục tiêu "phủ thị trường VN":
 
 ---
 
-## Known Technical Debt
+## Known Technical Debt & Scaling
+- [ ] **Chạy Multi-instance & Load Balancer**: Thiết lập chạy nhiều bản sao Backend song song để tăng sức chịu tải (High Traffic) và đảm bảo tính sẵn sàng cao (High Availability).
+- [ ] **Sử dụng Redis để Dedup tin nhắn**: Dùng Redis làm bộ nhớ chung khử trùng lặp webhook từ FB/Zalo, tránh bot trả lời 2 lần khi chạy multi-instance.
+- [ ] **Sử dụng @socket.io/redis-adapter**: Làm trạm trung chuyển (broadcaster) cho Socket.io, giúp nhân viên nhận tin nhắn real-time chính xác dù server nào nhận được webhook.
 - [ ] Encrypt FB access token AES-256 (plain text hiện tại)
-- [ ] Redis SET dedup khi multi-instance
-- [ ] @socket.io/redis-adapter khi horizontal scaling
 - [ ] Deployment README + CI/CD pipeline
 - [ ] E2E test full flow (khi product ổn định)
