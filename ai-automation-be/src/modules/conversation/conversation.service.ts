@@ -3,13 +3,12 @@ import {
   NotFoundException,
   ForbiddenException,
   InternalServerErrorException,
-  HttpException,
-  HttpStatus,
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service.js';
 import { LlmService } from '../../common/llm/llm.service.js';
 import { KnowledgeSearchService } from '../knowledge/services/knowledge-search.service.js';
+import { QuotaService } from '../plan/quota.service';
 import { SendMessageDto } from './dto/send-message.dto.js';
 import { TestChatDto } from './dto/test-chat.dto.js';
 import { ChatResponseDto } from './dto/chat-response.dto.js';
@@ -30,6 +29,7 @@ export class ConversationService {
     private readonly knowledgeSearch: KnowledgeSearchService,
     private readonly channelService: ChannelService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly quotaService: QuotaService,
   ) {}
 
   private async verifyTenantAccess(tenantId: string, sellerId: string) {
@@ -66,21 +66,9 @@ export class ConversationService {
     }
     metrics['context'] = Date.now() - stageStart;
 
-    // Quota check: reject nếu tenant đã hết quota
+    // Quota check + deduct: reject nếu seller đã hết AI response quota
     stageStart = Date.now();
-    const tenant = await this.prisma.tenant.findUnique({
-      where: { id: tenantId },
-      select: { messageUsed: true, messageQuota: true },
-    });
-    if (tenant && tenant.messageUsed >= tenant.messageQuota) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.TOO_MANY_REQUESTS,
-          message: `Đã hết quota tin nhắn (${tenant.messageUsed}/${tenant.messageQuota}). Vui lòng nâng cấp gói.`,
-        },
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
-    }
+    await this.quotaService.checkAndDeductAiResponse(sellerId);
     metrics['quota_check'] = Date.now() - stageStart;
 
     // Stage 2: Resolve customer + conversation
@@ -160,6 +148,12 @@ export class ConversationService {
         'Bot hiện không thể trả lời. Vui lòng thử lại sau.',
       );
     }
+
+    // Branding injection: Free plan → append watermark
+    replyContent = await this.quotaService.injectBranding(
+      sellerId,
+      replyContent,
+    );
     metrics['llm'] = Date.now() - stageStart;
 
     // Stage 8: Response — save reply + update quota
@@ -174,17 +168,11 @@ export class ConversationService {
       },
     });
 
-    // Update conversation lastMessageAt + increment tenant message quota
-    await Promise.all([
-      this.prisma.conversation.update({
-        where: { id: conversation.id },
-        data: { lastMessageAt: new Date() },
-      }),
-      this.prisma.tenant.update({
-        where: { id: tenantId },
-        data: { messageUsed: { increment: 1 } },
-      }),
-    ]);
+    // Update conversation lastMessageAt (quota đã deduct trước LLM call)
+    await this.prisma.conversation.update({
+      where: { id: conversation.id },
+      data: { lastMessageAt: new Date() },
+    });
     metrics['response'] = Date.now() - stageStart;
 
     // Pipeline metrics log

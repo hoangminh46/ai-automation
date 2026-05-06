@@ -181,27 +181,46 @@ MVP core: Seller đăng ký → upload knowledge → kết nối FB → chatbot 
 ---
 
 ### 11. Billing & Plans
-> 4 Tiers: Free (7-day trial), Basic, Standard, Premium. Tích hợp thanh toán online.
+> 4 Tiers: Free (vĩnh viễn), Basic, Standard, Premium. Tích hợp thanh toán online.
+
+**Đơn vị tính:** "AI Responses" — chỉ đếm lượt bot trả lời (tin nhắn human agent gửi không đếm, vì không tốn AI cost).
+
+**Bảng giá chính thức:**
+
+| | **Free** | **Basic** | **Standard** | **Premium** |
+|---|---|---|---|---|
+| Giá | 0đ | 299k/tháng | 599k/tháng | 1.199k/tháng |
+| Thời hạn | Vĩnh viễn | — | — | — |
+| AI Responses/tháng | 50 | 3.000 | 8.000 | 20.000 |
+| Bots | 1 | 3 | 5 | 10 |
+| Team Members | 1 (owner) | 3 | 10 | Unlimited |
+| Knowledge | 3 files / 5MB | 10 files / 30MB | 30 files / 100MB | 100 files / 500MB |
+| Retargeting (Bám đuổi) | ✅ | ✅ | ✅ | ✅ |
+| Branding watermark | ✅ Có | ❌ Không | ❌ Không | ❌ Không |
+
+**Ghi chú:**
+- **Retargeting** có ở tất cả gói — AI responses dùng cho retargeting vẫn đếm vào quota tháng.
+- **Branding watermark (gói Free):** Mỗi AI response tự động kèm dòng *"🤖 Được hỗ trợ bởi AIChatbot.vn"* ở cuối tin nhắn. Upgrade lên Basic trở lên để bỏ branding.
+- **Channels:** Không giới hạn — tất cả gói đều kết nối không giới hạn kênh (FB, Zalo, Widget...).
+- **Feature gates tương lai:** Khi build xong Streaming, Analytics, Multimodal, ERP/API sẽ quyết định gating lúc đó.
 
 **BE:**
-- [ ] Plan model: 
-  - Free: 0đ (Trial 7 ngày kể từ lúc đăng ký, max 300 msg). Sau 7 ngày tự động lock tính năng AI.
-  - Basic: ~299k (3.000 msg, 3 bots).
-  - Standard: ~599k (8.000 msg, 5 bots).
-  - Premium: ~1.199k (20.000 msg, 10 bots, mở khóa tích hợp ERP/API).
-- [ ] Job kiểm tra hết hạn trial (Cronjob chạy mỗi ngày hoặc check lúc user gọi API).
+- [ ] Plan model (DB schema: plans table + tenant_plans relation)
+- [ ] Quota enforcement middleware: AI responses count, bot limit, team limit, knowledge limit
+- [ ] Branding injection: append watermark text vào AI response nếu tenant đang dùng gói Free
 - [ ] Stripe/VNPay webhook: subscription created/updated/cancelled
-- [ ] Billing API: current plan, trial status, upgrade, downgrade, invoice history
-- [ ] Quota enforcement (Message limit & Trial expire date) based on plan tier
+- [ ] Billing API: current plan, upgrade, downgrade, invoice history
+- [ ] Monthly reset job: reset AI response counter đầu mỗi tháng (hoặc theo billing cycle)
 
 **FE:**
 - [ ] /dashboard/billing page
-- [ ] Plan comparison table
-- [ ] Stripe Checkout redirect
+- [ ] Plan comparison table (highlight gói Standard)
+- [ ] Stripe Checkout / VNPay redirect
 - [ ] Invoice history table
-- [ ] Upgrade CTA khi hết quota
+- [ ] Usage progress bar (AI responses dùng / giới hạn)
+- [ ] Upgrade CTA khi gần/hết quota
 
-**Effort:** BE 3 ngày, FE 2 ngày | **Giá trị:** ⭐⭐⭐ Kiếm tiền
+**Effort:** BE 4 ngày, FE 3 ngày | **Giá trị:** ⭐⭐⭐ Kiếm tiền
 
 ---
 

@@ -4,12 +4,16 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma.service';
+import { QuotaService } from '../plan/quota.service';
 import { CreateAgentDto } from './dto/create-agent.dto';
 import { UpdateAgentDto } from './dto/update-agent.dto';
 
 @Injectable()
 export class AgentService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly quotaService: QuotaService,
+  ) {}
 
   private async verifyTenantAccess(tenantId: string, sellerId: string) {
     const membership = await this.prisma.tenantMember.findFirst({
@@ -30,6 +34,8 @@ export class AgentService {
     if (membership.role === 'AGENT') {
       throw new ForbiddenException('Nhân sự không có quyền tạo Bot mới');
     }
+
+    await this.quotaService.checkBotLimit(sellerId);
 
     return this.prisma.agent.create({
       data: {

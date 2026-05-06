@@ -9,9 +9,10 @@ import { FacebookAdapter } from './adapters/facebook.adapter.js';
 import { ZaloAdapter } from './adapters/zalo.adapter.js';
 import { ZaloTokenService } from './services/zalo-token.service.js';
 import { KnowledgeModule } from '../knowledge/knowledge.module.js';
+import { PlanModule } from '../plan/plan.module.js';
 
 @Module({
-  imports: [KnowledgeModule],
+  imports: [KnowledgeModule, PlanModule],
   controllers: [
     ChannelController,
     FacebookWebhookController,

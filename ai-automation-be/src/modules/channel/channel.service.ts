@@ -14,6 +14,7 @@ import { ZaloAdapter } from './adapters/zalo.adapter.js';
 import { ZaloTokenService } from './services/zalo-token.service.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { WS_EVENTS } from '../../common/ws-events.js';
+import { QuotaService } from '../plan/quota.service';
 import {
   encryptToken,
   decryptToken,
@@ -69,6 +70,7 @@ export class ChannelService implements OnModuleDestroy {
     private readonly zaloAdapter: ZaloAdapter,
     private readonly zaloTokenService: ZaloTokenService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly quotaService: QuotaService,
   ) {
     this.cleanupInterval = setInterval(() => {
       this.cleanupDedupMap();
@@ -799,6 +801,9 @@ export class ChannelService implements OnModuleDestroy {
       return;
     }
 
+    // Step 4b: Resolve sellerId cho quota check (per-seller billing)
+    const sellerId = await this.quotaService.getSellerIdFromTenant(tenantId);
+
     // Step 5: Tìm hoặc tạo Conversation
     const conversation = await this.resolveConversation(
       tenantId,
@@ -830,6 +835,7 @@ export class ChannelService implements OnModuleDestroy {
 
     // Step 9: Chạy AI pipeline
     const replyText = await this.runPipeline(
+      sellerId,
       tenantId,
       agent,
       conversation.id,
@@ -860,16 +866,11 @@ export class ChannelService implements OnModuleDestroy {
       },
     });
 
-    await Promise.all([
-      this.prisma.conversation.update({
-        where: { id: conversation.id },
-        data: { lastMessageAt: new Date() },
-      }),
-      this.prisma.tenant.update({
-        where: { id: tenantId },
-        data: { messageUsed: { increment: 1 } },
-      }),
-    ]);
+    // Quota đã deduct trong runPipeline trước LLM call, chỉ cần update lastMessageAt
+    await this.prisma.conversation.update({
+      where: { id: conversation.id },
+      data: { lastMessageAt: new Date() },
+    });
 
     // Emit WS: bot reply
     this.eventEmitter.emit(WS_EVENTS.NEW_MESSAGE, {
@@ -927,19 +928,17 @@ export class ChannelService implements OnModuleDestroy {
   // ─── AI Pipeline ──────────────────────────────────────────────
 
   private async runPipeline(
+    sellerId: string,
     tenantId: string,
     agent: AgentConfig,
     conversationId: string,
     userMessage: string,
   ): Promise<string> {
-    // Quota check
-    const tenant = await this.prisma.tenant.findUnique({
-      where: { id: tenantId },
-      select: { messageUsed: true, messageQuota: true },
-    });
-
-    if (tenant && tenant.messageUsed >= tenant.messageQuota) {
-      return 'Xin lỗi, hệ thống đã hết quota tin nhắn. Vui lòng liên hệ chủ shop.';
+    // Quota check + deduct (per-seller, atomic)
+    try {
+      await this.quotaService.checkAndDeductAiResponse(sellerId);
+    } catch {
+      return 'Xin lỗi, hệ thống đã hết quota AI responses. Vui lòng liên hệ chủ shop để nâng cấp gói.';
     }
 
     // Load history
@@ -975,7 +974,8 @@ export class ChannelService implements OnModuleDestroy {
         max_tokens: agent.maxTokens,
       });
 
-      return completion.choices[0]?.message?.content ?? agent.greeting;
+      const reply = completion.choices[0]?.message?.content ?? agent.greeting;
+      return this.quotaService.injectBranding(sellerId, reply);
     } catch (error) {
       this.logger.error(
         `[Pipeline] LLM call failed: ${error instanceof Error ? error.message : error}`,

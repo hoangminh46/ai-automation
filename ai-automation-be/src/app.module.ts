@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 import {
   envValidationSchema,
   appConfig,
@@ -18,6 +19,7 @@ import { AgentModule } from './modules/agent/agent.module.js';
 import { ConversationModule } from './modules/conversation/conversation.module.js';
 import { KnowledgeModule } from './modules/knowledge/knowledge.module.js';
 import { ChannelModule } from './modules/channel/channel.module.js';
+import { PlanModule } from './modules/plan/plan.module.js';
 
 @Module({
   imports: [
@@ -42,6 +44,7 @@ import { ChannelModule } from './modules/channel/channel.module.js';
       { name: 'long', ttl: 3600000, limit: 100 },
     ]),
     EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
     CommonModule,
     AuthModule,
     TenantModule,
@@ -49,6 +52,7 @@ import { ChannelModule } from './modules/channel/channel.module.js';
     ConversationModule,
     KnowledgeModule,
     ChannelModule,
+    PlanModule,
   ],
 })
 export class AppModule {}

@@ -12,11 +12,14 @@ import {
   PanelLeft,
   ChevronDown,
   FlaskConical,
-  Radio
+  Radio,
+  BarChart3,
+  CreditCard
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useTenantStore } from "@/store/tenant-store";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { QuotaWarningBanner } from "@/components/billing/quota-warning-banner";
 
 // Menu cho Sidebar
 const MENU_ITEMS = [
@@ -26,6 +29,8 @@ const MENU_ITEMS = [
   { name: "Playground", href: "/dashboard/playground", icon: <FlaskConical className="w-5 h-5" /> },
   { name: "Kênh liên kết", href: "/dashboard/channels", icon: <Radio className="w-5 h-5" /> },
   { name: "Live Chat CRM", href: "/dashboard/chat", icon: <MessageSquare className="w-5 h-5" /> },
+  { name: "Sử dụng", href: "/dashboard/usage", icon: <BarChart3 className="w-5 h-5" /> },
+  { name: "Gói dịch vụ", href: "/dashboard/billing", icon: <CreditCard className="w-5 h-5" /> },
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
@@ -139,6 +144,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         </header>
 
         {/* Content Area (Các trang con sẽ đổ vào đây) */}
+        <QuotaWarningBanner />
         {pathname.startsWith("/dashboard/chat") ? (
           <div className="flex-1 overflow-hidden bg-slate-50 dark:bg-slate-900">
             {children}

@@ -33,9 +33,10 @@
     "tables": [
       "sellers", "tenants", "tenant_members", "agents", "agent_tools",
       "channel_connections", "knowledge_documents", "knowledge_chunks",
-      "customers", "conversations", "messages"
+      "customers", "conversations", "messages",
+      "plans", "seller_subscriptions", "response_pack_purchases"
     ],
-    "enums": ["TenantRole", "ChannelType", "DocumentStatus", "MessageRole", "ConversationStatus"],
+    "enums": ["TenantRole", "ChannelType", "DocumentStatus", "MessageRole", "ConversationStatus", "BillingPeriod", "SubscriptionStatus"],
     "conversation_statuses": ["BOT_HANDLING", "OPEN", "SNOOZED", "RESOLVED"],
     "message_roles": ["CUSTOMER", "ASSISTANT", "SYSTEM", "HUMAN_AGENT", "TOOL"],
     "channel_types": ["FACEBOOK", "ZALO"],
@@ -47,6 +48,9 @@
     "key_relations": {
       "Seller -> Tenant": "1:N (seller_id FK, owner who created)",
       "Seller -> TenantMember": "1:N (RBAC membership)",
+      "Seller -> SellerSubscription": "1:1 (sellerId @unique)",
+      "Seller -> ResponsePackPurchase": "1:N",
+      "Plan -> SellerSubscription": "1:N",
       "Tenant -> TenantMember": "1:N (staff of shop)",
       "Tenant -> Agent": "1:N (AI bots per shop)",
       "Tenant -> ChannelConnection": "1:N (FB pages + Zalo OA per shop)",
@@ -102,7 +106,10 @@
     { "method": "GET", "path": "/channels/zalo/callback", "module": "webhook", "description": "Zalo OAuth callback (rate limited)" },
     { "method": "GET", "path": "/webhook/facebook", "module": "webhook", "description": "FB webhook verification" },
     { "method": "POST", "path": "/webhook/facebook", "module": "webhook", "description": "FB webhook events" },
-    { "method": "POST", "path": "/webhook/zalo", "module": "webhook", "description": "Zalo webhook events (HMAC verified)" }
+    { "method": "POST", "path": "/webhook/zalo", "module": "webhook", "description": "Zalo webhook events (HMAC verified)" },
+    { "method": "GET", "path": "/plans", "module": "plan", "auth": "none (public)", "description": "List active plans" },
+    { "method": "GET", "path": "/sellers/me/subscription", "module": "plan", "auth": "JWT", "description": "Current seller subscription details" },
+    { "method": "GET", "path": "/sellers/me/usage", "module": "plan", "auth": "JWT", "description": "Aggregate usage stats across tenants" }
   ],
   "features": {
     "phase_01_project_init": { "status": "done", "last_changed_sha": "750efb7" },
@@ -119,7 +126,8 @@
     "phase_11_testing": { "status": "done" },
     "zalo_oa_channel": { "status": "done", "last_changed_sha": "2aef0b1", "notes": "Full Zalo OA integration: OAuth, token refresh (1h TTL), webhook (HMAC), message routing, ZaloAdapter for send/reply." },
     "facebook_oauth_refactor": { "status": "done", "last_changed_sha": "2aef0b1", "notes": "Replaced manual token input with OAuth flow. HMAC-signed state, multi-page selection, encrypted token storage." },
-    "security_enhancements": { "status": "done", "last_changed_sha": "2aef0b1", "notes": "AES-256-GCM token encryption (crypto.util.ts), HMAC-SHA256 OAuth state, rate limiting (@Throttle 5/min on OAuth endpoints), token revocation on disconnect." }
+    "security_enhancements": { "status": "done", "last_changed_sha": "2aef0b1", "notes": "AES-256-GCM token encryption (crypto.util.ts), HMAC-SHA256 OAuth state, rate limiting (@Throttle 5/min on OAuth endpoints), token revocation on disconnect." },
+    "billing_plans_system": { "status": "done", "notes": "4-tier plans (Free/Basic/Standard/Premium), QuotaService (auto-assign, limit checks, monthly reset cron), branding injection (Free watermark), downgrade LIFO deactivation, expiry cron (6h), REST APIs, FE Usage+Billing UI." }
   },
   "business_rules": [
     "Tao Tenant -> auto-create OWNER TenantMember + default Agent (transaction)",
@@ -147,7 +155,16 @@
     "Token encryption: AES-256-GCM, backward-compatible (plaintext nếu KEY chưa set)",
     "Token revocation: FB disconnect → DELETE /{pageId}/subscribed_apps (non-blocking) + clear tokens",
     "Zalo token refresh: access_token 1h TTL, auto-refresh 5 phút trước khi hết, background job mỗi 15 phút",
-    "Rate limiting: OAuth endpoints 5/min, global 10/min + 100/hour"
+    "Rate limiting: OAuth endpoints 5/min, global 10/min + 100/hour",
+    "Billing: 4 plans seeded via prisma/seed-plans.ts (idempotent upsert by slug)",
+    "Billing: SellerSubscription 1:1 per seller (sellerId @unique) — UPDATE not CREATE on plan change",
+    "Billing: Auto-assign Free plan on first getSubscription() for new sellers",
+    "Billing: QuotaService enforces AI response limits (check before LLM, increment after success)",
+    "Billing: Monthly reset cron (1st of month 00:00) resets aiResponsesUsed to 0",
+    "Billing: Branding watermark appended for Free plan via injectBranding() (excluded from testMessage/Playground)",
+    "Billing: Downgrade uses LIFO — newest resources deactivated first, OWNER never deactivated",
+    "Billing: Knowledge over-limit is soft (log warning only, no deactivation)",
+    "Billing: ExpiryCheck cron (every 6h) — expired ACTIVE subscriptions reverted to Free plan"
   ],
   "coding_conventions": [
     "Import paths use .js extension (ESM compat)",

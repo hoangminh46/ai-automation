@@ -35,7 +35,10 @@
     "DELETE /tenants/:tenantId/channels/facebook/disconnect": "Ngắt kết nối Facebook Page",
     "DELETE /tenants/:tenantId/channels/zalo/disconnect": "Ngắt kết nối Zalo OA",
     "GET /tenants/:tenantId/channels/facebook/pending-pages/:sessionId": "Lấy danh sách Pages chờ chọn",
-    "POST /tenants/:tenantId/channels/facebook/select-page": "Chọn Facebook Page kết nối"
+    "POST /tenants/:tenantId/channels/facebook/select-page": "Chọn Facebook Page kết nối",
+    "GET /plans": "Danh sách gói dịch vụ (public, không cần auth)",
+    "GET /sellers/me/subscription": "Thông tin subscription hiện tại",
+    "GET /sellers/me/usage": "Thống kê sử dụng tổng hợp (AI responses, bots, team, knowledge)"
   },
   "features": [
     "Authentication (Hoàn thành - Sprint 1)",
@@ -51,7 +54,8 @@
     "Zalo OA Channel Section — OAuth connect/disconnect, status display (Sprint 6)",
     "Real-time CRM — Socket.IO WebSocket, useSocket hook, reconnect resync, dedup (Sprint 5)",
     "🎉 BE Module Complete — All 11 phases done",
-    "Deployment Guide — Render (BE) + Vercel (FE) free tier (Sprint 5)"
+    "Deployment Guide — Render (BE) + Vercel (FE) free tier (Sprint 5)",
+    "Billing Usage UI — Usage page (progress bars), Billing page (plan comparison), QuotaWarningBanner, UpgradeModal (Sprint 7)"
   ],
   "business_rules": [
     "Mỗi Tenant có Slug đơn nhất. FE tự convert name → slug khi gọi API.",
@@ -69,7 +73,11 @@
     "WebSocket dedup: cả optimistic update và WS handler đều check message.id.",
     "Channel page: parse URL query params (?facebook=connected, ?zalo=connected, ?facebook=select_page&session_id=xxx)",
     "Facebook multi-page: pendingSessionId prop → component loads pages → user selects → onRefresh clears session to prevent remount bug",
-    "Channel disconnect: confirm dialog before disconnecting, toast notification on success"
+    "Channel disconnect: confirm dialog before disconnecting, toast notification on success",
+    "Billing: Plan interface fields must match Prisma schema exactly (price not priceMonthly, hasBrandingWatermark not hasBranding)",
+    "Billing: QuotaWarningBanner shows at >80% AI responses (amber), 100% (red), dismissable 24h via localStorage",
+    "Billing: UsageProgressBar handles limit=-1 (unlimited) and limit=0 edge cases",
+    "Billing: UpgradeModal is MVP — Zalo + Email contact only, no payment integration yet"
   ],
   "coding_conventions": [
     "useEffect+setState bị cấm — thay bằng key remount hoặc useSyncExternalStore.",
@@ -86,6 +94,8 @@
     "Axios auto-unwrap: response interceptor unwrap { success, data } → service layer vẫn dùng response.data.",
     "Axios baseURL: /api/v1 prefix — webhook URL dùng raw base (không qua axios).",
     "Channel section components: separate files per channel (FacebookChannelSection.tsx, ZaloChannelSection.tsx).",
-    "OAuth callback handling: page.tsx parses URL params → passes state to channel sections → sections manage own UI state."
+    "OAuth callback handling: page.tsx parses URL params → passes state to channel sections → sections manage own UI state.",
+    "Billing components: src/components/billing/*.tsx (UsageProgressBar, PlanComparisonTable, UpgradeModal, QuotaWarningBanner).",
+    "Billing pages: /dashboard/usage (progress cards + cycle info), /dashboard/billing (plan hero + comparison table)."
   ]
 }

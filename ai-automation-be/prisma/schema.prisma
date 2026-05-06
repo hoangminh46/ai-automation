@@ -7,6 +7,77 @@ datasource db {
 }
 
 // ============================================
+// Billing & Plans
+// ============================================
+
+enum BillingPeriod {
+  MONTHLY
+  QUARTERLY
+  SEMI_ANNUAL
+  ANNUAL
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+model Plan {
+  id                   String   @id @default(uuid())
+  slug                 String   @unique
+  name                 String
+  price                Int      @default(0) // VND/tháng (base monthly price)
+  maxAiResponses       Int      @map("max_ai_responses")
+  maxBots              Int      @map("max_bots")
+  maxTeamMembers       Int      @map("max_team_members") // -1 = unlimited
+  maxKnowledgeFiles    Int      @map("max_knowledge_files")
+  maxKnowledgeSizeMb   Int      @map("max_knowledge_size_mb")
+  hasBrandingWatermark Boolean  @default(false) @map("has_branding_watermark")
+  displayOrder         Int      @default(0) @map("display_order")
+  isActive             Boolean  @default(true) @map("is_active")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  subscriptions SellerSubscription[]
+
+  @@map("plans")
+}
+
+model SellerSubscription {
+  id                      String             @id @default(uuid())
+  sellerId                String             @unique @map("seller_id")
+  planId                  String             @map("plan_id")
+  billingPeriod           BillingPeriod      @default(MONTHLY) @map("billing_period")
+  status                  SubscriptionStatus @default(ACTIVE)
+  aiResponsesUsed         Int                @default(0) @map("ai_responses_used")
+  bonusResponsesRemaining Int                @default(0) @map("bonus_responses_remaining")
+  currentPeriodStart      DateTime           @default(now()) @map("current_period_start")
+  currentPeriodEnd        DateTime?          @map("current_period_end") // null = Free (không hết hạn)
+  createdAt               DateTime           @default(now()) @map("created_at")
+  updatedAt               DateTime           @updatedAt @map("updated_at")
+
+  seller Seller @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  plan   Plan   @relation(fields: [planId], references: [id])
+
+  @@index([planId])
+  @@map("seller_subscriptions")
+}
+
+model ResponsePackPurchase {
+  id          String   @id @default(uuid())
+  sellerId    String   @map("seller_id")
+  amount      Int      // Số AI responses mua thêm
+  price       Int      // VND đã thanh toán
+  purchasedAt DateTime @default(now()) @map("purchased_at")
+
+  seller Seller @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  @@index([sellerId])
+  @@map("response_pack_purchases")
+}
+
+// ============================================
 // Auth & Multi-tenancy
 // ============================================
 
@@ -22,6 +93,8 @@ model Seller {
   tenants           Tenant[]       // Cửa hàng mà Seller đang làm chủ/tạo ra
   tenantMembers     TenantMember[] // Các cửa hàng mà Seller được mời vào làm nhân sự
   assignedChats     Conversation[] // Hội thoại được phân công cho nhân sự này (Staff Assignee)
+  subscription      SellerSubscription? // Gói cước hiện tại (1:1)
+  responsePacks     ResponsePackPurchase[] // Lịch sử mua gói lẻ
 
   @@map("sellers")
 }

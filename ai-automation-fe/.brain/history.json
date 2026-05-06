@@ -492,6 +492,47 @@
         "Payment Integration (Stripe/VNPay)"
       ],
       "open_questions": []
+    },
+    {
+      "id": "handoff-20260506-155800-fe",
+      "saved_at": "2026-05-06T15:58:00+07:00",
+      "branch": "main",
+      "head_sha": "25552fc",
+      "base_sha": "08f7cdc",
+      "source": "working_tree",
+      "commit_range": "none (all uncommitted)",
+      "summary": "Billing FE UI complete: Usage page, Billing page, QuotaWarningBanner, UpgradeModal, sidebar menu items.",
+      "project_changes": [
+        "Created plan.service.ts (typed API client for plans/subscription/usage)",
+        "Created 4 billing components: UsageProgressBar, PlanComparisonTable, UpgradeModal, QuotaWarningBanner",
+        "Created /dashboard/usage page with 4 progress cards + cycle info",
+        "Created /dashboard/billing page with hero card + comparison table",
+        "Added sidebar items: Sử dụng + Gói dịch vụ to dashboard layout",
+        "Integrated QuotaWarningBanner into dashboard layout (above content area)"
+      ],
+      "commits": [],
+      "working_tree": {
+        "status": "dirty",
+        "key_files": [
+          "src/lib/services/plan.service.ts",
+          "src/components/billing/ (4 files)",
+          "src/app/dashboard/usage/page.tsx",
+          "src/app/dashboard/billing/page.tsx",
+          "src/app/dashboard/layout.tsx"
+        ]
+      },
+      "decisions": [
+        "FE Plan interface fields must match Prisma schema exactly (price, hasBrandingWatermark)",
+        "QuotaWarningBanner uses localStorage dismiss with 24h TTL (isDismissedRecently initializer pattern)",
+        "Skeleton loading inline in page components (not separate loading.tsx)",
+        "UpgradeModal is MVP — Zalo + Email contact, no payment flow yet"
+      ],
+      "next_steps": [
+        "Commit all billing changes",
+        "Manual test: Usage page, Billing page, Banner",
+        "Payment Integration = separate sprint"
+      ],
+      "open_questions": []
     }
   ]
 }

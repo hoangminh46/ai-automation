@@ -5,8 +5,10 @@ import { TextExtractorService } from './services/text-extractor.service.js';
 import { TextChunkerService } from './services/text-chunker.service.js';
 import { EmbeddingService } from './services/embedding.service.js';
 import { KnowledgeSearchService } from './services/knowledge-search.service.js';
+import { PlanModule } from '../plan/plan.module.js';
 
 @Module({
+  imports: [PlanModule],
   controllers: [KnowledgeController],
   providers: [
     KnowledgeService,

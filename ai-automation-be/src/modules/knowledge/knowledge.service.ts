@@ -9,6 +9,7 @@ import { PrismaService } from '../../common/prisma.service.js';
 import { TextExtractorService } from './services/text-extractor.service.js';
 import { TextChunkerService } from './services/text-chunker.service.js';
 import { EmbeddingService } from './services/embedding.service.js';
+import { QuotaService } from '../plan/quota.service';
 import { randomUUID } from 'crypto';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -23,6 +24,7 @@ export class KnowledgeService {
     private readonly extractor: TextExtractorService,
     private readonly chunker: TextChunkerService,
     private readonly embedding: EmbeddingService,
+    private readonly quotaService: QuotaService,
   ) {}
 
   private async verifyTenantAccess(tenantId: string, sellerId: string) {
@@ -60,7 +62,10 @@ export class KnowledgeService {
       );
     }
 
-    // Step 2: Create document record (PENDING)
+    // Step 2: Check plan knowledge limits (file count + size)
+    await this.quotaService.checkKnowledgeLimit(sellerId, file.size);
+
+    // Step 3: Create document record (PENDING)
     const document = await this.prisma.knowledgeDocument.create({
       data: {
         tenantId,

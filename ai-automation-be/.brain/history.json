@@ -582,6 +582,52 @@
         "Payment Integration (Stripe/VNPay)"
       ],
       "open_questions": []
+    },
+    {
+      "id": "handoff-20260506-155800-be",
+      "saved_at": "2026-05-06T15:58:00+07:00",
+      "branch": "main",
+      "head_sha": "25552fc",
+      "base_sha": "08f7cdc",
+      "source": "working_tree",
+      "commit_range": "none (all uncommitted)",
+      "summary": "Completed Billing & Plans System (Phase 01-06). Full-stack: DB schema, QuotaService, resource limits, monthly reset, branding injection, REST APIs, downgrade/expiry logic, FE Usage+Billing UI.",
+      "project_changes": [
+        "Added Plan, SellerSubscription, ResponsePackPurchase models to Prisma schema",
+        "Created PlanModule with PlanService, QuotaService, DowngradeService, ExpiryCheckService, MonthlyResetService",
+        "Created PlanController with 3 endpoints (plans, subscription, usage)",
+        "Integrated QuotaService into Agent, Conversation, Channel, Knowledge modules for limit enforcement",
+        "Created FE billing components + pages (Usage, Billing, QuotaWarningBanner)"
+      ],
+      "commits": [],
+      "working_tree": {
+        "status": "dirty",
+        "key_files": [
+          "prisma/schema.prisma",
+          "prisma/seed-plans.ts",
+          "src/modules/plan/ (10 new files)",
+          "plans/260506-0922-billing-plans-system/ (plan + 6 phase specs)",
+          "FE: src/components/billing/, src/app/dashboard/usage/, src/app/dashboard/billing/"
+        ]
+      },
+      "decisions": [
+        "SellerSubscription uses UPDATE (not CREATE) due to sellerId @unique constraint",
+        "Downgrade follows LIFO — newest resources deactivated first",
+        "OWNER role never deactivated during downgrade",
+        "Knowledge over-limit is soft (warning only)",
+        "ExpiryCheck runs every 6 hours, reverts to Free plan",
+        "Branding injection checks plan.slug='free' (not hasBrandingWatermark field)",
+        "FE Plan interface must match Prisma field names exactly (price, hasBrandingWatermark)"
+      ],
+      "next_steps": [
+        "Commit all billing changes",
+        "Manual test: Usage page, Billing page, Banner, Branding",
+        "Payment Integration = separate sprint",
+        "Website Chat Widget"
+      ],
+      "open_questions": [
+        "Should branding check use hasBrandingWatermark field instead of slug comparison?"
+      ]
     }
   ]
 }
