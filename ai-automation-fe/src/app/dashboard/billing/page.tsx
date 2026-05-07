@@ -4,13 +4,22 @@ import { useEffect, useState } from "react";
 import { CreditCard } from "lucide-react";
 import { planService, Plan, UsageStats } from "@/lib/services/plan.service";
 import { PlanComparisonTable } from "@/components/billing/plan-comparison-table";
-import { UpgradeModal } from "@/components/billing/upgrade-modal";
+import { PaymentModal } from "@/components/billing/payment-modal";
+import { TransactionHistory } from "@/components/billing/transaction-history";
+import { ResponsePackSelector } from "@/components/billing/response-pack-selector";
+
+interface SelectedPlan {
+  slug: string;
+  name: string;
+}
 
 export default function BillingPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [usage, setUsage] = useState<UsageStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<SelectedPlan | null>(null);
+
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     Promise.all([planService.getPlans(), planService.getUsage()])
@@ -20,7 +29,19 @@ export default function BillingPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [refreshKey]);
+
+  const handleUpgrade = (plan: Plan) => {
+    setSelectedPlan({
+      slug: plan.slug,
+      name: plan.name,
+    });
+  };
+
+  const handlePaymentSuccess = () => {
+    setSelectedPlan(null);
+    setRefreshKey((k) => k + 1);
+  };
 
   if (loading) return <BillingSkeleton />;
   if (!usage || plans.length === 0) return null;
@@ -33,7 +54,7 @@ export default function BillingPage() {
           Gói dịch vụ
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Quản lý gói cước và nâng cấp
+          Quản lý gói cước, mua thêm responses và xem lịch sử giao dịch
         </p>
       </div>
 
@@ -53,14 +74,6 @@ export default function BillingPage() {
             {usage.billing.daysRemaining !== null &&
               ` · Còn ${usage.billing.daysRemaining} ngày`}
           </p>
-          {usage.plan.slug === "free" && (
-            <button
-              onClick={() => setShowUpgrade(true)}
-              className="mt-4 px-5 py-2 bg-white text-blue-700 font-semibold text-sm rounded-xl hover:bg-blue-50 transition-colors shadow-lg"
-            >
-              🚀 Nâng cấp ngay
-            </button>
-          )}
         </div>
       </div>
 
@@ -77,14 +90,42 @@ export default function BillingPage() {
         <PlanComparisonTable
           plans={plans}
           currentPlanSlug={usage.plan.slug}
-          onUpgrade={() => setShowUpgrade(true)}
+          onUpgrade={handleUpgrade}
         />
       </div>
 
-      <UpgradeModal
-        isOpen={showUpgrade}
-        onClose={() => setShowUpgrade(false)}
-      />
+      {/* Response Pack */}
+      <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+        <ResponsePackSelector
+          onSuccess={() => setRefreshKey((k) => k + 1)}
+        />
+      </div>
+
+      {/* Transaction History */}
+      <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+        <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+            Lịch sử giao dịch
+          </h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Tất cả giao dịch thanh toán
+          </p>
+        </div>
+        <div className="p-6">
+          <TransactionHistory />
+        </div>
+      </div>
+
+      {/* Payment Modal */}
+      {selectedPlan && (
+        <PaymentModal
+          isOpen={!!selectedPlan}
+          onClose={() => setSelectedPlan(null)}
+          onSuccess={handlePaymentSuccess}
+          planSlug={selectedPlan.slug}
+          planName={selectedPlan.name}
+        />
+      )}
     </div>
   );
 }

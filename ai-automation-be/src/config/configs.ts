@@ -39,3 +39,11 @@ export const zaloConfig = registerAs('zalo', () => ({
   appSecret: process.env.ZALO_APP_SECRET,
   oaSecretKey: process.env.ZALO_OA_SECRET_KEY,
 }));
+
+export const sepayConfig = registerAs('sepay', () => ({
+  apiKey: process.env.SEPAY_API_KEY,
+  accountNo: process.env.SEPAY_ACCOUNT_NO,
+  bankName: process.env.SEPAY_BANK_NAME || 'MBBank',
+  accountName: process.env.SEPAY_ACCOUNT_NAME || '',
+  paymentCodePrefix: process.env.PAYMENT_CODE_PREFIX || 'AICHAT',
+}));

@@ -6,4 +6,5 @@ export {
   openaiConfig,
   facebookConfig,
   zaloConfig,
+  sepayConfig,
 } from './configs';

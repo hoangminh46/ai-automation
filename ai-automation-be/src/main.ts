@@ -31,13 +31,14 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // API prefix + versioning — exclude webhook (Facebook gọi trực tiếp)
+  // API prefix + versioning — exclude webhooks (external services gọi trực tiếp)
   app.setGlobalPrefix('api/v1', {
     exclude: [
       { path: '', method: RequestMethod.GET },
       { path: 'webhook/facebook', method: RequestMethod.GET },
       { path: 'webhook/facebook', method: RequestMethod.POST },
       { path: 'webhook/zalo', method: RequestMethod.POST },
+      { path: 'webhook/sepay', method: RequestMethod.POST },
     ],
   });
 

@@ -26,17 +26,19 @@
     "api_docs": "Swagger (@nestjs/swagger)",
     "security": "Helmet, CORS, timingSafeEqual (webhook HMAC), AES-256-GCM (token encryption), HMAC-SHA256 (OAuth state), @nestjs/throttler (rate limiting)",
     "realtime": "Socket.IO (@nestjs/websockets + @nestjs/platform-socket.io) + @nestjs/event-emitter (EventEmitter2)",
+    "payment": "SePay VietQR webhook (bank transfer detection), @nestjs/schedule (cron jobs)",
     "dependencies_source": "package.json",
-    "last_verified_sha": "2aef0b1"
+    "last_verified_sha": "d73438d"
   },
   "database_schema": {
     "tables": [
       "sellers", "tenants", "tenant_members", "agents", "agent_tools",
       "channel_connections", "knowledge_documents", "knowledge_chunks",
       "customers", "conversations", "messages",
-      "plans", "seller_subscriptions", "response_pack_purchases"
+      "plans", "seller_subscriptions", "response_pack_purchases",
+      "payment_orders"
     ],
-    "enums": ["TenantRole", "ChannelType", "DocumentStatus", "MessageRole", "ConversationStatus", "BillingPeriod", "SubscriptionStatus"],
+    "enums": ["TenantRole", "ChannelType", "DocumentStatus", "MessageRole", "ConversationStatus", "BillingPeriod", "SubscriptionStatus", "OrderType", "OrderStatus"],
     "conversation_statuses": ["BOT_HANDLING", "OPEN", "SNOOZED", "RESOLVED"],
     "message_roles": ["CUSTOMER", "ASSISTANT", "SYSTEM", "HUMAN_AGENT", "TOOL"],
     "channel_types": ["FACEBOOK", "ZALO"],
@@ -60,7 +62,7 @@
       "Conversation -> Message": "1:N"
     },
     "source_file": "prisma/schema.prisma",
-    "last_verified_sha": "2aef0b1"
+    "last_verified_sha": "d73438d"
   },
   "auth_flow": {
     "strategy": "SupabaseAuthGuard (Native SDK)",
@@ -109,7 +111,13 @@
     { "method": "POST", "path": "/webhook/zalo", "module": "webhook", "description": "Zalo webhook events (HMAC verified)" },
     { "method": "GET", "path": "/plans", "module": "plan", "auth": "none (public)", "description": "List active plans" },
     { "method": "GET", "path": "/sellers/me/subscription", "module": "plan", "auth": "JWT", "description": "Current seller subscription details" },
-    { "method": "GET", "path": "/sellers/me/usage", "module": "plan", "auth": "JWT", "description": "Aggregate usage stats across tenants" }
+    { "method": "GET", "path": "/sellers/me/usage", "module": "plan", "auth": "JWT", "description": "Aggregate usage stats across tenants" },
+    { "method": "POST", "path": "/sellers/me/payment-orders/subscription", "module": "payment", "auth": "JWT", "description": "Create subscription upgrade order" },
+    { "method": "POST", "path": "/sellers/me/payment-orders/response-pack", "module": "payment", "auth": "JWT", "description": "Create response pack order" },
+    { "method": "GET", "path": "/sellers/me/payment-orders/:id/status", "module": "payment", "auth": "JWT", "description": "Poll order status" },
+    { "method": "DELETE", "path": "/sellers/me/payment-orders/:id", "module": "payment", "auth": "JWT", "description": "Cancel pending order" },
+    { "method": "GET", "path": "/sellers/me/payment-orders", "module": "payment", "auth": "JWT", "description": "Order history (paginated)" },
+    { "method": "POST", "path": "/webhook/sepay", "module": "webhook", "auth": "Apikey header", "description": "SePay bank transfer webhook (excluded from /api/v1 prefix)" }
   ],
   "features": {
     "phase_01_project_init": { "status": "done", "last_changed_sha": "750efb7" },
@@ -127,7 +135,8 @@
     "zalo_oa_channel": { "status": "done", "last_changed_sha": "2aef0b1", "notes": "Full Zalo OA integration: OAuth, token refresh (1h TTL), webhook (HMAC), message routing, ZaloAdapter for send/reply." },
     "facebook_oauth_refactor": { "status": "done", "last_changed_sha": "2aef0b1", "notes": "Replaced manual token input with OAuth flow. HMAC-signed state, multi-page selection, encrypted token storage." },
     "security_enhancements": { "status": "done", "last_changed_sha": "2aef0b1", "notes": "AES-256-GCM token encryption (crypto.util.ts), HMAC-SHA256 OAuth state, rate limiting (@Throttle 5/min on OAuth endpoints), token revocation on disconnect." },
-    "billing_plans_system": { "status": "done", "notes": "4-tier plans (Free/Basic/Standard/Premium), QuotaService (auto-assign, limit checks, monthly reset cron), branding injection (Free watermark), downgrade LIFO deactivation, expiry cron (6h), REST APIs, FE Usage+Billing UI." }
+    "billing_plans_system": { "status": "done", "notes": "4-tier plans (Free/Basic/Standard/Premium), QuotaService (auto-assign, limit checks, monthly reset cron), branding injection (Free watermark), downgrade LIFO deactivation, expiry cron (6h), REST APIs, FE Usage+Billing UI." },
+    "payment_integration": { "status": "done", "last_changed_sha": "d73438d", "notes": "VietQR+SePay: PaymentOrder model, webhook auto-detect, QR code modal, polling, subscription activate, response pack purchase, transaction history, expiry reminder (cron 6h), WebSocket notifications, FE ExpiryWarningBanner." }
   },
   "business_rules": [
     "Tao Tenant -> auto-create OWNER TenantMember + default Agent (transaction)",
@@ -164,7 +173,15 @@
     "Billing: Branding watermark appended for Free plan via injectBranding() (excluded from testMessage/Playground)",
     "Billing: Downgrade uses LIFO — newest resources deactivated first, OWNER never deactivated",
     "Billing: Knowledge over-limit is soft (log warning only, no deactivation)",
-    "Billing: ExpiryCheck cron (every 6h) — expired ACTIVE subscriptions reverted to Free plan"
+    "Billing: ExpiryCheck cron (every 6h) — expired ACTIVE subscriptions reverted to Free plan",
+    "Payment: Only 1 PENDING order per seller at any time (ensureNoPendingOrder)",
+    "Payment: orderCode = 6 random digits, transferContent = PREFIX + orderCode",
+    "Payment: SePay webhook auth = 'Apikey {key}' header, timing-safe comparison",
+    "Payment: Webhook DTO uses @Allow() decorators (bypass Global ValidationPipe whitelist)",
+    "Payment: completeOrder() dedup by sepayTransId (Prisma @unique)",
+    "Payment: Response Pack purchase → bonusResponsesRemaining += packSize (atomic increment)",
+    "Payment: reminderSentAt reset to null on both plan downgrade and subscription renewal",
+    "Notification: WebSocket rooms = auth:{supabaseUserId}, Supabase JWT handshake verification"
   ],
   "coding_conventions": [
     "Import paths use .js extension (ESM compat)",
@@ -178,7 +195,7 @@
     "pgvector operations use $queryRawUnsafe with parameterized queries",
     "Fire-and-forget pattern for sendHumanReplyToChannel (.catch log, no await block)",
     "WS events: EventEmitter2 decoupled (Service emits → Gateway broadcasts to Socket.IO rooms)",
-    "WS room naming: tenant:{tenantId} — multi-tenant isolation",
+    "WS room naming: tenant:{tenantId} (conversations) + auth:{authId} (billing notifications)",
     "API prefix: /api/v1 globally, exclude webhook/* and channels/*/callback",
     "Response format: ResponseInterceptor wraps { success: true, data } globally",
     "Error format: GlobalExceptionFilter → { success: false, error: { statusCode, message, timestamp, path } }",
@@ -192,7 +209,8 @@
     "required": ["DATABASE_URL", "SUPABASE_URL", "SUPABASE_ANON_KEY", "OPENAI_API_KEY", "FB_APP_ID", "FB_APP_SECRET", "FB_VERIFY_TOKEN", "APP_BASE_URL"],
     "optional_zalo": ["ZALO_APP_ID", "ZALO_APP_SECRET", "ZALO_OA_SECRET_KEY"],
     "optional_security": ["TOKEN_ENCRYPTION_KEY (64-char hex, production only)", "CORS_ORIGINS"],
-    "notes": "APP_BASE_URL = ngrok HTTPS URL for dev, production domain for prod. FB_PAGE_ACCESS_TOKEN removed — OAuth handles it."
+    "optional_payment": ["SEPAY_API_KEY", "SEPAY_ACCOUNT_NO", "SEPAY_BANK_NAME", "SEPAY_ACCOUNT_NAME", "PAYMENT_CODE_PREFIX", "SEPAY_IP_WHITELIST"],
+    "notes": "APP_BASE_URL = ngrok HTTPS URL for dev, production domain for prod. SEPAY vars optional (payment feature disabled without them). NestJS ConfigModule caches .env at bootstrap — full restart required after changes."
   },
   "known_issues": [
     "src/tenant/ and src/agent/ (root level) are empty scaffolding dirs, real code is in src/modules/",

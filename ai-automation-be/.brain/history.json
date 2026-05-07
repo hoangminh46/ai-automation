@@ -628,6 +628,73 @@
       "open_questions": [
         "Should branding check use hasBrandingWatermark field instead of slug comparison?"
       ]
+    },
+    {
+      "id": "handoff-20260507-155000",
+      "saved_at": "2026-05-07T15:50:00+07:00",
+      "branch": "main",
+      "head_sha": "d73438d",
+      "base_sha": "d73438d",
+      "source": "working_tree",
+      "commit_range": "none (all uncommitted)",
+      "summary": "Payment Integration (VietQR + SePay) — all 6 phases complete and E2E tested. Full-stack: PaymentOrder model, SePay webhook, QR modal, polling, subscription activate, response pack, transaction history, expiry reminders, WebSocket notifications.",
+      "project_changes": [
+        "Phase 01: PaymentOrder model + PaymentService (create/complete/cancel, atomic Prisma transactions)",
+        "Phase 02: SepayWebhookController — API key auth (timingSafeEqual), IP whitelist, orderCode extraction (regex), amount verify, dedup by sepayTransId",
+        "Phase 03: PaymentController — 5 REST endpoints + buildQrUrl() + getBankInfo()",
+        "Phase 04: FE PaymentModal — QR display, 3s polling, countdown timer, copy-to-clipboard, error/retry states",
+        "Phase 05: NotificationGateway (Socket.IO + Supabase JWT handshake), ExpiryReminderService (cron 6h, reminderSentAt dedup), ExpiryCheckService (auto-downgrade to Free), ExpiryWarningBanner (yellow/red)",
+        "Phase 06: TransactionHistory (paginated table, 4 status badges), ResponsePackSelector (3 packs), PaymentModal supports RESPONSE_PACK orders, Usage page 'Mua thêm' CTA",
+        "Bug fix: SePay webhook DTO @Allow() decorators (Global ValidationPipe compatibility)",
+        "Bug fix: Added SEPAY_* env vars to .env (ConfigModule requires full restart)",
+        "SePay setup guide: docs/sepay-setup-guide.md (comprehensive)",
+        "Added sepayConfig to config/configs.ts + env.validation.ts"
+      ],
+      "commits": [],
+      "working_tree": {
+        "status": "dirty",
+        "key_files_be": [
+          "prisma/schema.prisma (PaymentOrder model added)",
+          "src/modules/payment/ (6 new files: service, controller, DTOs, webhook)",
+          "src/modules/notification/ (2 new files: gateway, module)",
+          "src/modules/plan/expiry-reminder.service.ts (NEW)",
+          "src/modules/plan/expiry-check.service.ts (MODIFIED — notification emit)",
+          "src/config/configs.ts (sepayConfig added)",
+          "src/main.ts (exclude webhook/sepay from prefix)",
+          "docs/sepay-setup-guide.md (NEW)"
+        ],
+        "key_files_fe": [
+          "src/lib/services/payment.service.ts (NEW — 5 API calls)",
+          "src/components/billing/payment-modal.tsx (NEW — QR + polling)",
+          "src/components/billing/expiry-warning-banner.tsx (NEW — yellow/red banners)",
+          "src/components/billing/transaction-history.tsx (NEW — paginated table)",
+          "src/components/billing/response-pack-selector.tsx (NEW — 3 packs)",
+          "src/app/dashboard/billing/page.tsx (REWRITTEN — integrated all components)",
+          "src/app/dashboard/usage/page.tsx (MODIFIED — Mua thêm CTA)",
+          "src/app/dashboard/layout.tsx (MODIFIED — ExpiryWarningBanner)"
+        ]
+      },
+      "decisions": [
+        "SePay VietQR over Stripe/VNPay: free tier, simple webhook, no redirect needed",
+        "6-digit orderCode (not UUID) for human-readable transfer content",
+        "1 PENDING order per seller at a time (ensureNoPendingOrder)",
+        "Webhook DTO uses @Allow() instead of validation decorators (external payload, manual validation)",
+        "WebSocket room auth:{authId} for billing notifications (separate from tenant:{tenantId} for conversations)",
+        "reminderSentAt field prevents notification spam (reset on renewal + downgrade)",
+        "Response Pack bonus doesn't expire — accumulated on bonusResponsesRemaining",
+        "NestJS ConfigModule caches .env at bootstrap — documented as gotcha"
+      ],
+      "next_steps": [
+        "Commit all payment changes (BE + FE)",
+        "Deploy with real SePay account (production)",
+        "Website Chat Widget Channel",
+        "Landing Page (aichatbot.vn)",
+        "Admin dashboard for manual order resolution"
+      ],
+      "open_questions": [
+        "SePay production setup: real bank account + webhook URL with HTTPS",
+        "Redis adapter for WebSocket scaling (currently single-instance)"
+      ]
     }
   ]
 }

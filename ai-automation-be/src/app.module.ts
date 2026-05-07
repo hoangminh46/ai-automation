@@ -11,6 +11,7 @@ import {
   openaiConfig,
   facebookConfig,
   zaloConfig,
+  sepayConfig,
 } from './config/index.js';
 import { CommonModule } from './common/common.module.js';
 import { AuthModule } from './auth/auth.module.js';
@@ -20,6 +21,8 @@ import { ConversationModule } from './modules/conversation/conversation.module.j
 import { KnowledgeModule } from './modules/knowledge/knowledge.module.js';
 import { ChannelModule } from './modules/channel/channel.module.js';
 import { PlanModule } from './modules/plan/plan.module.js';
+import { PaymentModule } from './modules/payment/payment.module.js';
+import { NotificationModule } from './modules/notification/notification.module.js';
 
 @Module({
   imports: [
@@ -33,6 +36,7 @@ import { PlanModule } from './modules/plan/plan.module.js';
         openaiConfig,
         facebookConfig,
         zaloConfig,
+        sepayConfig,
       ],
       validationOptions: {
         abortEarly: true,
@@ -53,6 +57,8 @@ import { PlanModule } from './modules/plan/plan.module.js';
     KnowledgeModule,
     ChannelModule,
     PlanModule,
+    PaymentModule,
+    NotificationModule,
   ],
 })
 export class AppModule {}

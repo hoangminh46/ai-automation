@@ -28,4 +28,12 @@ export const envValidationSchema = Joi.object({
 
   // Security
   ENCRYPTION_KEY: Joi.string().min(32).optional(),
+
+  // SePay Payment
+  SEPAY_API_KEY: Joi.string().optional(),
+  SEPAY_ACCOUNT_NO: Joi.string().optional(),
+  SEPAY_BANK_NAME: Joi.string().optional(),
+  SEPAY_ACCOUNT_NAME: Joi.string().optional(),
+  PAYMENT_CODE_PREFIX: Joi.string().optional(),
+  SEPAY_IP_WHITELIST: Joi.string().valid('true', 'false').optional(),
 });

@@ -23,6 +23,18 @@ enum SubscriptionStatus {
   CANCELLED
 }
 
+enum PaymentOrderStatus {
+  PENDING
+  COMPLETED
+  EXPIRED
+  CANCELLED
+}
+
+enum PaymentOrderType {
+  SUBSCRIPTION
+  RESPONSE_PACK
+}
+
 model Plan {
   id                   String   @id @default(uuid())
   slug                 String   @unique
@@ -39,7 +51,8 @@ model Plan {
   createdAt            DateTime @default(now()) @map("created_at")
   updatedAt            DateTime @updatedAt @map("updated_at")
 
-  subscriptions SellerSubscription[]
+  subscriptions  SellerSubscription[]
+  paymentOrders  PaymentOrder[]
 
   @@map("plans")
 }
@@ -54,6 +67,7 @@ model SellerSubscription {
   bonusResponsesRemaining Int                @default(0) @map("bonus_responses_remaining")
   currentPeriodStart      DateTime           @default(now()) @map("current_period_start")
   currentPeriodEnd        DateTime?          @map("current_period_end") // null = Free (không hết hạn)
+  reminderSentAt          DateTime?          @map("reminder_sent_at") // Đã gửi nhắc gia hạn (null = chưa gửi)
   createdAt               DateTime           @default(now()) @map("created_at")
   updatedAt               DateTime           @updatedAt @map("updated_at")
 
@@ -77,6 +91,29 @@ model ResponsePackPurchase {
   @@map("response_pack_purchases")
 }
 
+model PaymentOrder {
+  id               String             @id @default(uuid())
+  sellerId         String             @map("seller_id")
+  orderCode        String             @unique @map("order_code")
+  type             PaymentOrderType
+  planId           String?            @map("plan_id")
+  billingPeriod    BillingPeriod?
+  responsePackSize Int?               @map("response_pack_size")
+  amount           Int                // VND
+  transferContent  String             @map("transfer_content")
+  status           PaymentOrderStatus @default(PENDING)
+  sepayTransId     Int?               @unique @map("sepay_trans_id")
+  expiresAt        DateTime           @map("expires_at")
+  completedAt      DateTime?          @map("completed_at")
+  createdAt        DateTime           @default(now()) @map("created_at")
+
+  seller Seller @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  plan   Plan?  @relation(fields: [planId], references: [id])
+
+  @@index([sellerId, status])
+  @@map("payment_orders")
+}
+
 // ============================================
 // Auth & Multi-tenancy
 // ============================================
@@ -95,6 +132,7 @@ model Seller {
   assignedChats     Conversation[] // Hội thoại được phân công cho nhân sự này (Staff Assignee)
   subscription      SellerSubscription? // Gói cước hiện tại (1:1)
   responsePacks     ResponsePackPurchase[] // Lịch sử mua gói lẻ
+  paymentOrders     PaymentOrder[] // Đơn thanh toán
 
   @@map("sellers")
 }

@@ -20,6 +20,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useTenantStore } from "@/store/tenant-store";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { QuotaWarningBanner } from "@/components/billing/quota-warning-banner";
+import { ExpiryWarningBanner } from "@/components/billing/expiry-warning-banner";
 
 // Menu cho Sidebar
 const MENU_ITEMS = [
@@ -145,6 +146,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
         {/* Content Area (Các trang con sẽ đổ vào đây) */}
         <QuotaWarningBanner />
+        <ExpiryWarningBanner />
         {pathname.startsWith("/dashboard/chat") ? (
           <div className="flex-1 overflow-hidden bg-slate-50 dark:bg-slate-900">
             {children}

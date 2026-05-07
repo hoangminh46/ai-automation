@@ -1,60 +1,81 @@
 {
-  "updated_at": "2026-05-06T15:58:00+07:00",
+  "updated_at": "2026-05-07T15:50:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260506-155800-be",
+  "active_handoff_id": "handoff-20260507-155000",
   "working_on": {
-    "feature": "Billing & Plans System",
-    "current_plan_path": "plans/260506-0922-billing-plans-system",
-    "current_phase": "phase-06 (DONE — all 6 phases complete)",
+    "feature": "Payment Integration (VietQR + SePay)",
+    "current_plan_path": "plans/260507-1000-payment-vietqr-sepay",
+    "current_phase": "ALL PHASES COMPLETE",
     "status": "complete",
-    "description": "Full billing system: 4-tier plans, QuotaService, resource limits, monthly reset, branding injection, REST APIs, downgrade/expiry logic, FE Usage+Billing UI."
+    "description": "Full payment integration: 6 phases done, E2E tested with webhook simulation."
   },
   "git_snapshot": {
-    "head_sha": "25552fc",
-    "last_saved_head_sha": "08f7cdc",
-    "base_sha": "08f7cdc",
+    "head_sha": "ce42144",
+    "last_saved_head_sha": "ce42144",
+    "base_sha": "d73438d",
     "branch": "main",
-    "has_uncommitted_changes": true,
-    "changed_files": [
+    "has_uncommitted_changes": false,
+    "changed_files_be": [
+      ".brain/session.json",
+      ".brain/brain.json",
+      ".env",
+      ".env.example",
       "prisma/schema.prisma",
-      "prisma/seed-plans.ts",
-      "prisma/migrate-subscriptions.ts",
       "src/app.module.ts",
-      "src/modules/plan/*.ts",
-      "src/modules/plan/dto/*.ts",
-      "src/modules/agent/agent.service.ts",
-      "src/modules/conversation/conversation.service.ts",
-      "src/modules/channel/channel.service.ts",
-      "src/modules/knowledge/knowledge.service.ts",
-      "plans/260506-0922-billing-plans-system/*"
+      "src/config/configs.ts",
+      "src/config/env.validation.ts",
+      "src/config/index.ts",
+      "src/main.ts",
+      "src/modules/notification/notification.gateway.ts",
+      "src/modules/notification/notification.module.ts",
+      "src/modules/payment/dto/create-order.dto.ts",
+      "src/modules/payment/dto/sepay-webhook.dto.ts",
+      "src/modules/payment/payment.controller.ts",
+      "src/modules/payment/payment.module.ts",
+      "src/modules/payment/payment.service.ts",
+      "src/modules/payment/webhook/sepay-webhook.controller.ts",
+      "src/modules/plan/expiry-check.service.ts",
+      "src/modules/plan/expiry-reminder.service.ts",
+      "src/modules/plan/plan.module.ts",
+      "plans/260507-1000-payment-vietqr-sepay/plan.md",
+      "plans/260507-1000-payment-vietqr-sepay/phase-01-db-schema-service.md",
+      "plans/260507-1000-payment-vietqr-sepay/phase-02-sepay-webhook.md",
+      "plans/260507-1000-payment-vietqr-sepay/phase-03-payment-apis.md",
+      "plans/260507-1000-payment-vietqr-sepay/phase-04-fe-payment-modal.md",
+      "plans/260507-1000-payment-vietqr-sepay/phase-05-expiry-reminder.md",
+      "plans/260507-1000-payment-vietqr-sepay/phase-06-history-polish.md",
+      "docs/sepay-setup-guide.md"
     ],
-    "commit_range": "08f7cdc..25552fc",
-    "commits_since_last_save": [],
-    "staged_files": [],
-    "unstaged_files": [],
-    "untracked_files": []
+    "changed_files_fe": [
+      "src/lib/services/payment.service.ts",
+      "src/components/billing/payment-modal.tsx",
+      "src/components/billing/plan-comparison-table.tsx",
+      "src/components/billing/expiry-warning-banner.tsx",
+      "src/components/billing/transaction-history.tsx",
+      "src/components/billing/response-pack-selector.tsx",
+      "src/app/dashboard/billing/page.tsx",
+      "src/app/dashboard/usage/page.tsx",
+      "src/app/dashboard/layout.tsx"
+    ]
   },
-  "pending_tasks": [
-    "Payment Integration (sprint riêng — Stripe/VNPay)",
-    "Website Chat Widget",
-    "Landing Page implementation (aichatbot.vn)",
-    "Scale: Redis dedup + socket.io redis adapter"
-  ],
+  "pending_tasks": [],
   "recent_changes": [
-    "Phase 01: Plan model + seed-plans.ts (4 tiers, idempotent upsert)",
-    "Phase 02: QuotaService core (auto-assign Free, limit checks, response counting)",
-    "Phase 03: Resource limits for bots/team/knowledge + monthly reset cron",
-    "Phase 04: Branding injection (Free watermark) + REST APIs (plans, subscription, usage)",
-    "Phase 05: DowngradeService (LIFO deactivation) + ExpiryCheckService (6h cron)",
-    "Phase 06: FE Usage page + Billing page + QuotaWarningBanner + sidebar menu"
+    "Phase 01: PaymentOrder DB model + PaymentService (create/complete/cancel)",
+    "Phase 02: SepayWebhookController (auth, IP whitelist, orderCode extraction, amount verify, dedup)",
+    "Phase 03: PaymentController (5 endpoints) + buildQrUrl() + getBankInfo()",
+    "Phase 04: PaymentModal (QR display, polling 3s, countdown, copy, retry)",
+    "Phase 05: NotificationGateway (WS + Supabase JWT), ExpiryReminderService (cron 6h), ExpiryCheckService, ExpiryWarningBanner (yellow/red)",
+    "Phase 06: TransactionHistory (paginated table), ResponsePackSelector (3 packs), billing page integration",
+    "Bug fix: @Allow() on SePay webhook DTO (Global ValidationPipe compatibility)",
+    "Bug fix: Added SEPAY_* env vars to .env (ConfigModule requires restart)",
+    "E2E test: webhook simulation → order COMPLETED → subscription activated successfully"
   ],
   "uncommitted_summary": {
     "status": "dirty",
-    "summary": "All billing system Phase 01-06 implemented. Not yet committed.",
-    "files": [
-      "prisma/schema.prisma (Plan, SellerSubscription, ResponsePackPurchase models)",
-      "src/modules/plan/ (entire module — 10 new files)",
-      "plans/260506-0922-billing-plans-system/ (plan + 6 phase specs)"
-    ]
+    "summary": "All payment integration code (BE+FE) uncommitted. 6 phases complete, E2E tested.",
+    "files_count": {
+      "be": 29,
+      "fe": 9
+    }
   }
 }

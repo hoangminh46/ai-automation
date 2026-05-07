@@ -6,7 +6,7 @@ import { Zap, Bot, Users, Database, Check, X } from "lucide-react";
 interface PlanComparisonTableProps {
   plans: Plan[];
   currentPlanSlug: string;
-  onUpgrade: () => void;
+  onUpgrade: (plan: Plan) => void;
 }
 
 export function PlanComparisonTable({
@@ -60,7 +60,7 @@ export function PlanComparisonTable({
                   ) : (
                     plan.slug !== "free" && (
                       <button
-                        onClick={onUpgrade}
+                        onClick={() => onUpgrade(plan)}
                         className="inline-block text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors cursor-pointer"
                       >
                         Nâng cấp →

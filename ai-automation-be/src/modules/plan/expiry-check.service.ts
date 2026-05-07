@@ -3,6 +3,7 @@ import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../../common/prisma.service';
 import { PlanService } from './plan.service';
 import { DowngradeService } from './downgrade.service';
+import { NotificationGateway } from '../notification/notification.gateway';
 
 @Injectable()
 export class ExpiryCheckService {
@@ -12,6 +13,7 @@ export class ExpiryCheckService {
     private readonly prisma: PrismaService,
     private readonly planService: PlanService,
     private readonly downgradeService: DowngradeService,
+    private readonly notificationGateway: NotificationGateway,
   ) {}
 
   /**
@@ -29,12 +31,22 @@ export class ExpiryCheckService {
 
     this.logger.log('[ExpiryCheck] Starting subscription expiry scan...');
 
-    const expiredSubscriptions = await this.prisma.sellerSubscription.findMany({
+    const expiredSubscriptions: Array<{
+      id: string;
+      sellerId: string;
+      plan: { name: string };
+      seller: { authId: string };
+    }> = await this.prisma.sellerSubscription.findMany({
       where: {
         status: 'ACTIVE',
         currentPeriodEnd: { lt: now },
       },
-      select: { id: true, sellerId: true },
+      select: {
+        id: true,
+        sellerId: true,
+        plan: { select: { name: true } },
+        seller: { select: { authId: true } },
+      },
     });
 
     if (expiredSubscriptions.length === 0) {
@@ -50,6 +62,8 @@ export class ExpiryCheckService {
 
     for (const sub of expiredSubscriptions) {
       try {
+        const previousPlanName = sub.plan.name;
+
         // Update subscription: downgrade to Free plan (1:1 relation, cannot create new)
         await this.prisma.sellerSubscription.update({
           where: { id: sub.id },
@@ -61,6 +75,7 @@ export class ExpiryCheckService {
             bonusResponsesRemaining: 0,
             currentPeriodStart: now,
             currentPeriodEnd: null,
+            reminderSentAt: null, // Reset cho period mới
           },
         });
 
@@ -68,6 +83,16 @@ export class ExpiryCheckService {
         const deactivated = await this.downgradeService.handlePlanChange(
           sub.sellerId,
           freePlan.id,
+        );
+
+        // Notify seller qua WebSocket
+        this.notificationGateway.emitToSeller(
+          sub.seller.authId,
+          'subscription_expired',
+          {
+            sellerId: sub.sellerId,
+            previousPlan: previousPlanName,
+          },
         );
 
         this.logger.log(

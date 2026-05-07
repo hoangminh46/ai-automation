@@ -44,13 +44,22 @@ export default function UsagePage() {
             {cycleDays !== null && ` · Còn ${cycleDays} ngày trong chu kỳ`}
           </p>
         </div>
-        <Link
-          href="/dashboard/billing"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors shadow-sm"
-        >
-          <ArrowUpRight className="w-4 h-4" />
-          Nâng cấp
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard/billing#response-pack"
+            className="inline-flex items-center gap-2 px-4 py-2 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 font-medium text-sm rounded-xl transition-colors"
+          >
+            <Zap className="w-4 h-4" />
+            Mua thêm responses
+          </Link>
+          <Link
+            href="/dashboard/billing"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors shadow-sm"
+          >
+            <ArrowUpRight className="w-4 h-4" />
+            Nâng cấp
+          </Link>
+        </div>
       </div>
 
       {/* Usage Cards */}
