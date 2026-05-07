@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Store, ChevronDown, Plus, Crown, Check } from "lucide-react";
+import { Store, ChevronDown, Check, Settings } from "lucide-react";
 import { useTenantStore } from "@/store/tenant-store";
 import { planService, UsageStats } from "@/lib/services/plan.service";
 import Link from "next/link";
@@ -10,16 +10,11 @@ export function TenantSwitcher() {
   const tenants = useTenantStore(state => state.tenants);
   const activeTenant = useTenantStore(state => state.activeTenant);
   const setActiveTenant = useTenantStore(state => state.setActiveTenant);
-  const createNewTenant = useTenantStore(state => state.createNewTenant);
 
   const [isOpen, setIsOpen] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [createError, setCreateError] = useState("");
   const [usage, setUsage] = useState<UsageStats | null>(null);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   // Step 1: Fetch usage stats when dropdown opens (quota info)
   useEffect(() => {
@@ -33,43 +28,18 @@ export function TenantSwitcher() {
     function handleClickOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setIsOpen(false);
-        setIsCreating(false);
-        setNewName("");
-        setCreateError("");
       }
     }
     if (isOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  // Step 3: Auto-focus input when creating
-  useEffect(() => {
-    if (isCreating) inputRef.current?.focus();
-  }, [isCreating]);
-
   const tenantQuota = usage?.tenants;
-  const canCreate = tenantQuota ? tenantQuota.used < tenantQuota.limit : true;
   const quotaPercent = tenantQuota ? Math.round((tenantQuota.used / tenantQuota.limit) * 100) : 0;
 
   const handleSwitchTenant = (tenant: typeof tenants[0]) => {
     setActiveTenant(tenant);
     setIsOpen(false);
-  };
-
-  const handleCreate = async () => {
-    if (!newName.trim()) return;
-    setCreateError("");
-
-    const success = await createNewTenant(newName.trim());
-    if (success) {
-      setNewName("");
-      setIsCreating(false);
-      setIsOpen(false);
-      // Invalidate usage cache
-      setUsage(null);
-    } else {
-      setCreateError("Không thể tạo. Có thể đã đạt giới hạn.");
-    }
   };
 
   return (
@@ -91,7 +61,7 @@ export function TenantSwitcher() {
         <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
 
-      {/* Dropdown */}
+      {/* Dropdown — chỉ switch, không tạo mới */}
       {isOpen && (
         <div className="absolute top-full left-0 mt-2 w-72 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           {/* Tenant List */}
@@ -159,68 +129,16 @@ export function TenantSwitcher() {
             </div>
           )}
 
-          {/* Create New + Upgrade */}
+          {/* Link tới trang quản lý cửa hàng */}
           <div className="p-2 border-t border-slate-100 dark:border-slate-800">
-            {isCreating ? (
-              <div className="px-2 py-1.5">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleCreate();
-                    if (e.key === "Escape") { setIsCreating(false); setNewName(""); }
-                  }}
-                  placeholder="Tên cửa hàng mới..."
-                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                {createError && (
-                  <p className="text-xs text-red-500 mt-1">{createError}</p>
-                )}
-                <div className="flex gap-2 mt-2">
-                  <button
-                    onClick={handleCreate}
-                    disabled={!newName.trim()}
-                    className="flex-1 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Tạo
-                  </button>
-                  <button
-                    onClick={() => { setIsCreating(false); setNewName(""); setCreateError(""); }}
-                    className="px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
-                  >
-                    Huỷ
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <button
-                  onClick={() => canCreate ? setIsCreating(true) : null}
-                  disabled={!canCreate}
-                  className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    canCreate
-                      ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                      : "text-slate-400 dark:text-slate-600 cursor-not-allowed"
-                  }`}
-                  title={!canCreate ? "Đã đạt giới hạn. Nâng cấp gói để tạo thêm." : ""}
-                >
-                  <Plus className="w-4 h-4" />
-                  {canCreate ? "Tạo cửa hàng mới" : "Đã đạt giới hạn"}
-                </button>
-                {!canCreate && (
-                  <Link
-                    href="/dashboard/billing"
-                    onClick={() => setIsOpen(false)}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
-                  >
-                    <Crown className="w-4 h-4" />
-                    Nâng cấp gói
-                  </Link>
-                )}
-              </>
-            )}
+            <Link
+              href="/dashboard"
+              onClick={() => setIsOpen(false)}
+              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+              Quản lý cửa hàng
+            </Link>
           </div>
         </div>
       )}
