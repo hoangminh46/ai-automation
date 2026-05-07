@@ -62,7 +62,8 @@
       "Conversation -> Message": "1:N"
     },
     "source_file": "prisma/schema.prisma",
-    "last_verified_sha": "d73438d"
+    "notes": "Plan model includes maxTenants (Int, default 1) — per-plan tenant limits: Free=1, Basic=2, Standard=5, Premium=10",
+    "last_verified_sha": "ba92d40"
   },
   "auth_flow": {
     "strategy": "SupabaseAuthGuard (Native SDK)",
@@ -136,7 +137,8 @@
     "facebook_oauth_refactor": { "status": "done", "last_changed_sha": "2aef0b1", "notes": "Replaced manual token input with OAuth flow. HMAC-signed state, multi-page selection, encrypted token storage." },
     "security_enhancements": { "status": "done", "last_changed_sha": "2aef0b1", "notes": "AES-256-GCM token encryption (crypto.util.ts), HMAC-SHA256 OAuth state, rate limiting (@Throttle 5/min on OAuth endpoints), token revocation on disconnect." },
     "billing_plans_system": { "status": "done", "notes": "4-tier plans (Free/Basic/Standard/Premium), QuotaService (auto-assign, limit checks, monthly reset cron), branding injection (Free watermark), downgrade LIFO deactivation, expiry cron (6h), REST APIs, FE Usage+Billing UI." },
-    "payment_integration": { "status": "done", "last_changed_sha": "d73438d", "notes": "VietQR+SePay: PaymentOrder model, webhook auto-detect, QR code modal, polling, subscription activate, response pack purchase, transaction history, expiry reminder (cron 6h), WebSocket notifications, FE ExpiryWarningBanner." }
+    "payment_integration": { "status": "done", "last_changed_sha": "d73438d", "notes": "VietQR+SePay: PaymentOrder model, webhook auto-detect, QR code modal, polling, subscription activate, response pack purchase, transaction history, expiry reminder (cron 6h), WebSocket notifications, FE ExpiryWarningBanner." },
+    "tenant_quota_enforcement": { "status": "done", "notes": "maxTenants field in Plan model, checkTenantLimit() in QuotaService, tenants usage in getUsageStats(), TenantSwitcher dropdown with quota display + inline create + upgrade CTA." }
   },
   "business_rules": [
     "Tao Tenant -> auto-create OWNER TenantMember + default Agent (transaction)",
@@ -181,7 +183,10 @@
     "Payment: completeOrder() dedup by sepayTransId (Prisma @unique)",
     "Payment: Response Pack purchase → bonusResponsesRemaining += packSize (atomic increment)",
     "Payment: reminderSentAt reset to null on both plan downgrade and subscription renewal",
-    "Notification: WebSocket rooms = auth:{supabaseUserId}, Supabase JWT handshake verification"
+    "Notification: WebSocket rooms = auth:{supabaseUserId}, Supabase JWT handshake verification",
+    "Tenant limit: Plan.maxTenants enforced by QuotaService.checkTenantLimit() before tenant creation",
+    "Tenant limit: Usage API includes tenants.used/tenants.limit for FE quota display",
+    "Tenant limit: TenantModule imports PlanModule for QuotaService DI"
   ],
   "coding_conventions": [
     "Import paths use .js extension (ESM compat)",

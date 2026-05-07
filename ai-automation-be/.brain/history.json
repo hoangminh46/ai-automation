@@ -695,6 +695,55 @@
         "SePay production setup: real bank account + webhook URL with HTTPS",
         "Redis adapter for WebSocket scaling (currently single-instance)"
       ]
+    },
+    {
+      "id": "handoff-20260507-164900",
+      "saved_at": "2026-05-07T16:49:00+07:00",
+      "branch": "main",
+      "head_sha": "ba92d40",
+      "base_sha": "ce42144",
+      "source": "working_tree",
+      "commit_range": "none (all changes uncommitted)",
+      "summary": "Tenant quota enforcement + Tenant Switcher UI. Added maxTenants to Plan model, checkTenantLimit to QuotaService, tenants usage to API, TenantSwitcher dropdown component on FE. DB pushed + seeded successfully. ESLint/TSC clean on both BE and FE.",
+      "project_changes": [
+        "Plan.maxTenants field added (Free=1, Basic=2, Standard=5, Premium=10)",
+        "QuotaService.checkTenantLimit() enforces tenant creation limit",
+        "getUsageStats() now includes tenants.used/limit",
+        "TenantService injects QuotaService for limit check before create",
+        "TenantModule imports PlanModule for DI",
+        "TenantSwitcher component: dropdown with tenant list, quota progress bar, inline create, upgrade CTA",
+        "Layout.tsx replaced static placeholder with TenantSwitcher",
+        "FE Plan + UsageStats interfaces updated with maxTenants + tenants fields"
+      ],
+      "commits": [],
+      "working_tree": {
+        "summary": "8 files changed (5 BE + 3 FE). All code complete, lint clean.",
+        "key_files": [
+          "prisma/schema.prisma (maxTenants field)",
+          "prisma/seed-plans.ts (maxTenants values)",
+          "src/modules/plan/quota.service.ts (checkTenantLimit + tenants in usage)",
+          "src/modules/tenant/tenant.service.ts (QuotaService injection)",
+          "src/modules/tenant/tenant.module.ts (PlanModule import)",
+          "FE: src/components/tenant-switcher.tsx (NEW)",
+          "FE: src/app/dashboard/layout.tsx (TenantSwitcher integration)",
+          "FE: src/lib/services/plan.service.ts (maxTenants + tenants interface)"
+        ]
+      },
+      "decisions": [
+        "Tenant limits stored in Plan model (not hardcoded) — scalable for future plan changes",
+        "Number(plan.maxTenants) || 1 pattern used to handle Prisma nullable type safely",
+        "TenantSwitcher fetches usage on dropdown open (lazy load, not on page load)",
+        "Inline create form inside dropdown (no separate modal) — matches Slack/Notion UX pattern"
+      ],
+      "next_steps": [
+        "Test Tenant Switcher UI flow end-to-end",
+        "Commit all tenant quota changes",
+        "Future: Website Chat Widget Channel",
+        "Future: Landing Page (aichatbot.vn)"
+      ],
+      "open_questions": [
+        "Should TenantSwitcher show on mobile? (currently visible, may need responsive adjustments)"
+      ]
     }
   ]
 }

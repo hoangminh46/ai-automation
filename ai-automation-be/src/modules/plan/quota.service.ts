@@ -132,6 +132,34 @@ export class QuotaService {
   }
 
   /**
+   * Check tenant limit: COUNT tenants owned by seller.
+   * Throw 403 nếu đã đạt limit.
+   */
+  async checkTenantLimit(sellerId: string): Promise<void> {
+    const subscription = await this.getSubscription(sellerId);
+    const plan = subscription.plan;
+
+    const currentTenants = await this.prisma.tenant.count({
+      where: { sellerId },
+    });
+
+    const tenantLimit: number = Number(plan.maxTenants) || 1;
+
+    if (currentTenants >= tenantLimit) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.FORBIDDEN,
+          message:
+            `Đã đạt giới hạn ${tenantLimit} cửa hàng cho gói ${plan.name}. ` +
+            `Vui lòng nâng cấp plan để tạo thêm.`,
+          code: 'TENANT_LIMIT_REACHED',
+        },
+        HttpStatus.FORBIDDEN,
+      );
+    }
+  }
+
+  /**
    * Check bot limit: COUNT agents (isActive=true) across ALL tenants của seller.
    * Throw 403 nếu đã đạt limit.
    */
@@ -262,19 +290,28 @@ export class QuotaService {
     const subscription = await this.getSubscription(sellerId);
     const plan = subscription.plan;
 
-    const [botsUsed, teamUsed, knowledgeStats] = await Promise.all([
-      this.prisma.agent.count({
-        where: { tenant: { sellerId }, isActive: true },
-      }),
-      this.prisma.tenantMember.count({
-        where: { tenant: { sellerId }, isActive: true, role: { not: 'OWNER' } },
-      }),
-      this.prisma.knowledgeDocument.aggregate({
-        where: { tenant: { sellerId } },
-        _count: { id: true },
-        _sum: { fileSize: true },
-      }),
-    ]);
+    const [tenantsUsed, botsUsed, teamUsed, knowledgeStats] = await Promise.all(
+      [
+        this.prisma.tenant.count({
+          where: { sellerId },
+        }),
+        this.prisma.agent.count({
+          where: { tenant: { sellerId }, isActive: true },
+        }),
+        this.prisma.tenantMember.count({
+          where: {
+            tenant: { sellerId },
+            isActive: true,
+            role: { not: 'OWNER' },
+          },
+        }),
+        this.prisma.knowledgeDocument.aggregate({
+          where: { tenant: { sellerId } },
+          _count: { id: true },
+          _sum: { fileSize: true },
+        }),
+      ],
+    );
 
     const knowledgeFilesUsed = knowledgeStats._count.id;
     const knowledgeSizeUsedMb =
@@ -298,6 +335,10 @@ export class QuotaService {
         used: subscription.aiResponsesUsed,
         limit: plan.maxAiResponses,
         bonus: subscription.bonusResponsesRemaining,
+      },
+      tenants: {
+        used: tenantsUsed,
+        limit: Number(plan.maxTenants) || 1,
       },
       bots: {
         used: botsUsed,

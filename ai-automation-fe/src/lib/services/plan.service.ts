@@ -9,6 +9,7 @@ export interface Plan {
   maxTeamMembers: number;
   maxKnowledgeFiles: number;
   maxKnowledgeSizeMb: number;
+  maxTenants: number;
   hasBrandingWatermark: boolean;
   displayOrder: number;
 }
@@ -28,6 +29,7 @@ export interface Subscription {
 export interface UsageStats {
   plan: { slug: string; name: string };
   aiResponses: { used: number; limit: number; bonus: number };
+  tenants: { used: number; limit: number };
   bots: { used: number; limit: number };
   team: { used: number; limit: number };
   knowledge: {

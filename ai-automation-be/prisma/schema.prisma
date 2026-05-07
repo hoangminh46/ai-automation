@@ -45,6 +45,7 @@ model Plan {
   maxTeamMembers       Int      @map("max_team_members") // -1 = unlimited
   maxKnowledgeFiles    Int      @map("max_knowledge_files")
   maxKnowledgeSizeMb   Int      @map("max_knowledge_size_mb")
+  maxTenants           Int      @default(1) @map("max_tenants")
   hasBrandingWatermark Boolean  @default(false) @map("has_branding_watermark")
   displayOrder         Int      @default(0) @map("display_order")
   isActive             Boolean  @default(true) @map("is_active")

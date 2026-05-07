@@ -1,0 +1,229 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { Store, ChevronDown, Plus, Crown, Check } from "lucide-react";
+import { useTenantStore } from "@/store/tenant-store";
+import { planService, UsageStats } from "@/lib/services/plan.service";
+import Link from "next/link";
+
+export function TenantSwitcher() {
+  const tenants = useTenantStore(state => state.tenants);
+  const activeTenant = useTenantStore(state => state.activeTenant);
+  const setActiveTenant = useTenantStore(state => state.setActiveTenant);
+  const createNewTenant = useTenantStore(state => state.createNewTenant);
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [createError, setCreateError] = useState("");
+  const [usage, setUsage] = useState<UsageStats | null>(null);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Step 1: Fetch usage stats when dropdown opens (quota info)
+  useEffect(() => {
+    if (isOpen && !usage) {
+      planService.getUsage().then(setUsage).catch(() => {});
+    }
+  }, [isOpen, usage]);
+
+  // Step 2: Click outside to close
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+        setIsCreating(false);
+        setNewName("");
+        setCreateError("");
+      }
+    }
+    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
+  // Step 3: Auto-focus input when creating
+  useEffect(() => {
+    if (isCreating) inputRef.current?.focus();
+  }, [isCreating]);
+
+  const tenantQuota = usage?.tenants;
+  const canCreate = tenantQuota ? tenantQuota.used < tenantQuota.limit : true;
+  const quotaPercent = tenantQuota ? Math.round((tenantQuota.used / tenantQuota.limit) * 100) : 0;
+
+  const handleSwitchTenant = (tenant: typeof tenants[0]) => {
+    setActiveTenant(tenant);
+    setIsOpen(false);
+  };
+
+  const handleCreate = async () => {
+    if (!newName.trim()) return;
+    setCreateError("");
+
+    const success = await createNewTenant(newName.trim());
+    if (success) {
+      setNewName("");
+      setIsCreating(false);
+      setIsOpen(false);
+      // Invalidate usage cache
+      setUsage(null);
+    } else {
+      setCreateError("Không thể tạo. Có thể đã đạt giới hạn.");
+    }
+  };
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      {/* Trigger Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+      >
+        <Store className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+        <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 max-w-[140px] truncate">
+          {activeTenant ? activeTenant.name : "Chọn cửa hàng"}
+        </span>
+        {tenantQuota && (
+          <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded-full">
+            {tenantQuota.used}/{tenantQuota.limit}
+          </span>
+        )}
+        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+
+      {/* Dropdown */}
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-2 w-72 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          {/* Tenant List */}
+          <div className="max-h-48 overflow-y-auto p-2">
+            {tenants.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-4">Chưa có cửa hàng nào</p>
+            ) : (
+              tenants.map((tenant) => {
+                const isActive = activeTenant?.id === tenant.id;
+                return (
+                  <button
+                    key={tenant.id}
+                    onClick={() => handleSwitchTenant(tenant)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
+                      isActive
+                        ? "bg-blue-50 dark:bg-blue-900/20"
+                        : "hover:bg-slate-50 dark:hover:bg-slate-900"
+                    }`}
+                  >
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${
+                      isActive
+                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400"
+                        : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                    }`}>
+                      {tenant.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className={`flex-1 text-sm font-medium truncate ${
+                      isActive
+                        ? "text-blue-700 dark:text-blue-400"
+                        : "text-slate-700 dark:text-slate-300"
+                    }`}>
+                      {tenant.name}
+                    </span>
+                    {isActive && <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />}
+                  </button>
+                );
+              })
+            )}
+          </div>
+
+          {/* Quota Section */}
+          {tenantQuota && (
+            <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs text-slate-500 dark:text-slate-400">Cửa hàng</span>
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  {tenantQuota.used}/{tenantQuota.limit}
+                </span>
+              </div>
+              <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    quotaPercent >= 100
+                      ? "bg-red-500"
+                      : quotaPercent >= 80
+                        ? "bg-amber-500"
+                        : "bg-blue-500"
+                  }`}
+                  style={{ width: `${Math.min(quotaPercent, 100)}%` }}
+                />
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">
+                Gói {usage?.plan.name}
+              </p>
+            </div>
+          )}
+
+          {/* Create New + Upgrade */}
+          <div className="p-2 border-t border-slate-100 dark:border-slate-800">
+            {isCreating ? (
+              <div className="px-2 py-1.5">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleCreate();
+                    if (e.key === "Escape") { setIsCreating(false); setNewName(""); }
+                  }}
+                  placeholder="Tên cửa hàng mới..."
+                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                {createError && (
+                  <p className="text-xs text-red-500 mt-1">{createError}</p>
+                )}
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={handleCreate}
+                    disabled={!newName.trim()}
+                    className="flex-1 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Tạo
+                  </button>
+                  <button
+                    onClick={() => { setIsCreating(false); setNewName(""); setCreateError(""); }}
+                    className="px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+                  >
+                    Huỷ
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => canCreate ? setIsCreating(true) : null}
+                  disabled={!canCreate}
+                  className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    canCreate
+                      ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                      : "text-slate-400 dark:text-slate-600 cursor-not-allowed"
+                  }`}
+                  title={!canCreate ? "Đã đạt giới hạn. Nâng cấp gói để tạo thêm." : ""}
+                >
+                  <Plus className="w-4 h-4" />
+                  {canCreate ? "Tạo cửa hàng mới" : "Đã đạt giới hạn"}
+                </button>
+                {!canCreate && (
+                  <Link
+                    href="/dashboard/billing"
+                    onClick={() => setIsOpen(false)}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                  >
+                    <Crown className="w-4 h-4" />
+                    Nâng cấp gói
+                  </Link>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

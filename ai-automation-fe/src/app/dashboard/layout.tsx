@@ -10,7 +10,6 @@ import {
   Database, 
   LogOut, 
   PanelLeft,
-  ChevronDown,
   FlaskConical,
   Radio,
   BarChart3,
@@ -21,6 +20,7 @@ import { useTenantStore } from "@/store/tenant-store";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { QuotaWarningBanner } from "@/components/billing/quota-warning-banner";
 import { ExpiryWarningBanner } from "@/components/billing/expiry-warning-banner";
+import { TenantSwitcher } from "@/components/tenant-switcher";
 
 // Menu cho Sidebar
 const MENU_ITEMS = [
@@ -120,14 +120,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             <button className="p-2 -ml-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg lg:hidden">
               <PanelLeft className="w-5 h-5" />
             </button>
-            {/* Vùng này chuẩn bị cho Component chọn Cửa hàng (Tenant Selector) */}
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
-              <Store className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                {activeTenant ? activeTenant.name : "Tạo mới cửa hàng"}
-              </span>
-              <ChevronDown className="w-4 h-4 text-slate-400" />
-            </div>
+            {/* Tenant Switcher — dropdown with quota display */}
+            <TenantSwitcher />
           </div>
 
           {/* User Profile + Theme Toggle */}

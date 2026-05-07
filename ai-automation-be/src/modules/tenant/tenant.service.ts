@@ -7,12 +7,18 @@ import {
 import { PrismaService } from '../../common/prisma.service';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
+import { QuotaService } from '../plan/quota.service';
 
 @Injectable()
 export class TenantService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private quotaService: QuotaService,
+  ) {}
 
   async create(sellerId: string, createTenantDto: CreateTenantDto) {
+    await this.quotaService.checkTenantLimit(sellerId);
+
     const existing = await this.prisma.tenant.findUnique({
       where: { slug: createTenantDto.slug },
     });
