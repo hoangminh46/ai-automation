@@ -77,6 +77,68 @@
         "Có cần notification khi bot bị inactive mà channel vẫn có traffic?",
         "Future: Instagram/Website widget channel types"
       ]
+    },
+    {
+      "id": "handoff-20260508-165000",
+      "saved_at": "2026-05-08T16:50:00+07:00",
+      "branch": "main",
+      "head_sha": "c472debaafdd5856b4a61855ad832f68cafba543",
+      "base_sha": "04f2fc03cf1fd47ef1684c070f3f36e520ad9602",
+      "source": "commit",
+      "commit_range": "04f2fc0..c472deb",
+
+      "summary": "Fix payment module bugs: duplicate orders from React StrictMode, pending conflict UX (resume/cancel flow), transaction history auto-refresh on modal close. All committed to main.",
+
+      "project_changes": {
+        "backend": [
+          "GET /sellers/me/payment-orders/pending: new endpoint returning order + QR + bankInfo for resume flow",
+          "findPendingBySeller: new service method finding latest PENDING order by sellerId",
+          "Route order fix: /pending before /:id/status to prevent NestJS param conflict"
+        ],
+        "frontend": [
+          "PaymentModal: useRef guard preventing StrictMode double order creation",
+          "PaymentModal: pending_conflict state with Resume/Cancel buttons",
+          "PaymentModal: detect 409 Conflict with 'chưa hoàn tất' message for smart error UX",
+          "TransactionHistory: auto-refresh via React key prop on modal close",
+          "Removed unreliable onOrderChange callback, replaced with onClose refresh pattern",
+          "payment.service.ts: added getPendingOrder API method"
+        ]
+      },
+
+      "commits": [
+        {
+          "sha": "c472deb",
+          "message": "feat(payment): fix duplicate orders, pending conflict UX & tx history refresh",
+          "files_changed": 6,
+          "insertions": 144,
+          "deletions": 10
+        }
+      ],
+
+      "working_tree": {
+        "status": "clean",
+        "files": []
+      },
+
+      "decisions": [
+        "useRef guard for StrictMode: safe in production (guard is transparent when effect runs once)",
+        "Pending conflict: show resume/cancel options instead of generic error",
+        "Transaction history refresh: use React key prop (force remount) instead of prop-based refresh (unreliable due to closure stale callback in useEffect)",
+        "Refresh on modal close: simplest and most reliable approach, covers all cases"
+      ],
+
+      "next_steps": [
+        "Test full E2E payment: create order → bank transfer → webhook → subscription activated",
+        "Test pending_conflict UX: resume existing order vs cancel+retry",
+        "Restore plan prices before production (currently 2000/2300/2500 for testing)",
+        "Consider adding toast notifications on payment success",
+        "Continue manual E2E testing for Bot-Channel Binding (62 test cases)"
+      ],
+
+      "open_questions": [
+        "SePay webhook latency in production (real bank transfer delay)?",
+        "Should we add a 'cancel and create new' option directly in the payment modal timer view?"
+      ]
     }
   ]
 }

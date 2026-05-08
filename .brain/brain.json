@@ -1,8 +1,8 @@
 {
   "version": "1.0",
   "project_name": "AI Automation Suite",
-  "updated_at": "2026-05-08T15:22:00+07:00",
-  "last_verified_sha": "04f2fc03cf1fd47ef1684c070f3f36e520ad9602",
+  "updated_at": "2026-05-08T16:50:00+07:00",
+  "last_verified_sha": "c472debaafdd5856b4a61855ad832f68cafba543",
 
   "tech_stack": {
     "backend": {
@@ -57,7 +57,7 @@
   },
 
   "api_endpoints": {
-    "last_changed_sha": "04f2fc0",
+    "last_changed_sha": "c472deb",
     "key_endpoints": [
       "POST /tenants - Create tenant (auto-creates default bot)",
       "GET /tenants/:tenantId/agents - List agents with channels + knowledge",
@@ -69,7 +69,8 @@
       "GET /tenants/:tenantId/knowledge/documents - List with agentLinks",
       "POST /tenants/:tenantId/agents/:agentId/knowledge - Sync knowledge links",
       "POST /tenants/:tenantId/chat - Send message (routed by agent's knowledge)",
-      "POST /tenants/:tenantId/chat/test - Playground test (no DB persist)"
+      "POST /tenants/:tenantId/chat/test - Playground test (no DB persist)",
+      "GET /sellers/me/payment-orders/pending - Resume pending payment (QR + bankInfo)"
     ]
   },
 

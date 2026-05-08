@@ -1,60 +1,58 @@
 {
-  "updated_at": "2026-05-08T15:22:00+07:00",
+  "updated_at": "2026-05-08T16:50:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260508-152200",
+  "active_handoff_id": "handoff-20260508-165000",
 
   "working_on": {
-    "feature": "Bot-Channel Binding",
-    "current_plan_path": "plans/260508-1037-bot-channel-binding/plan.md",
-    "current_phase": "Phase 08 (Complete)",
-    "task": "All 8 phases complete. Manual E2E testing pending.",
-    "status": "feature_complete"
+    "feature": "SePay Payment Integration - Bug fixes & UX polish",
+    "current_phase": "Testing & fixing",
+    "task": "Fixed duplicate orders, pending conflict UX, transaction history auto-refresh",
+    "status": "committed"
   },
 
   "git_snapshot": {
-    "head_sha": "04f2fc03cf1fd47ef1684c070f3f36e520ad9602",
-    "last_saved_head_sha": "04f2fc03cf1fd47ef1684c070f3f36e520ad9602",
-    "base_sha": "d73438d",
+    "head_sha": "c472debaafdd5856b4a61855ad832f68cafba543",
+    "last_saved_head_sha": "c472debaafdd5856b4a61855ad832f68cafba543",
+    "base_sha": "04f2fc03cf1fd47ef1684c070f3f36e520ad9602",
     "branch": "main",
     "has_uncommitted_changes": false,
     "changed_files": [],
     "staged_files": [],
     "unstaged_files": [],
     "untracked_files": [],
-    "commit_range": "d73438d..04f2fc0",
+    "commit_range": "04f2fc0..c472deb",
     "commits_since_last_save": [
-      "04f2fc0 feat: Bot-Channel Binding - complete 8 phases"
+      "c472deb feat(payment): fix duplicate orders, pending conflict UX & tx history refresh",
+      "0b67ca5 chore: save-brain - Bot-Channel Binding complete (8/8 phases)"
     ]
   },
 
   "pending_tasks": [
-    "Manual E2E testing (62 test cases in manual_test_plan.md)",
-    "Test real FB/Zalo message auto-reply with active/inactive bot",
-    "Knowledge sync gap: create mode doesn't auto-assign knowledge (edit mode works)",
-    "Consider writing automated API tests for 15 business rules"
+    "Test full E2E payment flow: FE create order → real bank transfer → SePay webhook → order completed → subscription activated",
+    "Test pending_conflict UX: resume vs cancel+retry flow",
+    "Verify Ngrok webhook forwarding with real SePay transactions",
+    "Plan prices temporarily set to 2000/2300/2500 for testing - restore before production",
+    "Manual E2E testing for Bot-Channel Binding (62 test cases)"
   ],
 
   "recent_changes": [
     {
-      "sha": "04f2fc0",
-      "description": "Bot-Channel Binding feature complete (8 phases, 43 files, 2600 insertions)",
+      "sha": "c472deb",
+      "description": "Payment module bug fixes and UX improvements",
       "scope": [
-        "BE: Schema migration (Agent.isDefault, ChannelConnection.agentId, AgentKnowledge N:M)",
-        "BE: Agent CRUD with channelIds/knowledgeIds, delete guard, toggle active",
-        "BE: Channel assignBot endpoint, knowledge N:M service",
-        "BE: Message routing scoped by agent's knowledge links",
-        "FE: Agents page with channel checkboxes, knowledge checkboxes, badges",
-        "FE: Channels page with BotAssignment dropdown + confirm dialog",
-        "FE: Knowledge page with bot badges + filter-by-bot",
-        "FE: Chat null guard for deleted agents",
-        "Docs: 15 business rules spec, 8 phase plans"
+        "FE: Fix React StrictMode double-mount creating duplicate orders (useRef guard)",
+        "FE: Add pending_conflict state in PaymentModal (resume/cancel existing order)",
+        "FE: Fix transaction history not refreshing (key prop on modal close)",
+        "FE: Remove unreliable onOrderChange callback",
+        "BE: GET /sellers/me/payment-orders/pending endpoint (QR + bankInfo for resume)",
+        "BE: findPendingBySeller service method"
       ]
     }
   ],
 
   "uncommitted_summary": {
     "status": "clean",
-    "summary": "All changes committed and pushed to main",
+    "summary": "All changes committed to main",
     "files": []
   }
 }
