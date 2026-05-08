@@ -67,7 +67,7 @@ export function ResponsePackSelector({
       {selectedPack && (
         <PaymentModal
           isOpen={!!selectedPack}
-          onClose={() => setSelectedPack(null)}
+          onClose={() => { setSelectedPack(null); onSuccess(); }}
           onSuccess={() => {
             setSelectedPack(null);
             onSuccess();

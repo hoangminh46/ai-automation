@@ -78,6 +78,25 @@ export class PaymentController {
   }
 
   /**
+   * GET /sellers/me/payment-orders/pending
+   * Lấy đơn PENDING hiện tại (nếu có) kèm QR + bank info để user resume thanh toán.
+   * ⚠️ Route phải nằm TRƯỚC /:id/status, nếu không NestJS sẽ match 'pending' vào :id param.
+   */
+  @Get('sellers/me/payment-orders/pending')
+  @ApiOperation({ summary: 'Lấy đơn thanh toán đang chờ (nếu có)' })
+  async getPendingOrder(@CurrentUser() user: { sellerId: string }) {
+    const order = await this.paymentService.findPendingBySeller(user.sellerId);
+    if (!order) {
+      return null;
+    }
+    return {
+      order: this.formatOrder(order),
+      qrUrl: this.paymentService.buildQrUrl(order),
+      bankInfo: this.paymentService.getBankInfo(),
+    };
+  }
+
+  /**
    * GET /sellers/me/payment-orders/:id/status
    * Lightweight status polling (FE gọi mỗi 3s).
    */

@@ -25,6 +25,7 @@ export default function BillingPage() {
   const refreshAll = useUsageStore(state => state.refreshAll);
 
   const [selectedPlan, setSelectedPlan] = useState<SelectedPlan | null>(null);
+  const [txRefreshKey, setTxRefreshKey] = useState(0);
 
   useEffect(() => {
     fetchUsage(true);
@@ -40,6 +41,7 @@ export default function BillingPage() {
 
   const handlePaymentSuccess = () => {
     setSelectedPlan(null);
+    setTxRefreshKey((k) => k + 1);
     refreshAll();
   };
 
@@ -96,7 +98,7 @@ export default function BillingPage() {
 
       {/* Response Pack */}
       <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
-        <ResponsePackSelector onSuccess={refreshAll} />
+        <ResponsePackSelector onSuccess={() => { refreshAll(); setTxRefreshKey((k) => k + 1); }} />
       </div>
 
       {/* Transaction History */}
@@ -110,7 +112,7 @@ export default function BillingPage() {
           </p>
         </div>
         <div className="p-6">
-          <TransactionHistory />
+          <TransactionHistory key={txRefreshKey} />
         </div>
       </div>
 
@@ -118,7 +120,7 @@ export default function BillingPage() {
       {selectedPlan && (
         <PaymentModal
           isOpen={!!selectedPlan}
-          onClose={() => setSelectedPlan(null)}
+          onClose={() => { setSelectedPlan(null); setTxRefreshKey((k) => k + 1); }}
           onSuccess={handlePaymentSuccess}
           planSlug={selectedPlan.slug}
           planName={selectedPlan.name}

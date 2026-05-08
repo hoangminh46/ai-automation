@@ -262,6 +262,21 @@ export class PaymentService {
   }
 
   /**
+   * Tìm PENDING order theo sellerId.
+   * Dùng bởi FE resume flow — hiển thị lại QR cho đơn đang chờ.
+   */
+  async findPendingBySeller(sellerId: string): Promise<PaymentOrder | null> {
+    return this.prisma.paymentOrder.findFirst({
+      where: {
+        sellerId,
+        status: 'PENDING',
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
    * Hoàn tất order: PENDING → COMPLETED.
    *
    * Dùng Prisma transaction để đảm bảo atomicity:

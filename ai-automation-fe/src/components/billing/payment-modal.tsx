@@ -26,7 +26,7 @@ interface PaymentModalProps {
   packSize?: number;
 }
 
-type ModalState = "loading" | "payment" | "success" | "error" | "expired";
+type ModalState = "loading" | "payment" | "success" | "error" | "expired" | "pending_conflict";
 
 const POLL_INTERVAL = 3000;
 const ORDER_TIMEOUT_MS = 30 * 60 * 1000;
@@ -46,6 +46,7 @@ export function PaymentModal({
   const [timeLeft, setTimeLeft] = useState(ORDER_TIMEOUT_MS);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [orderKey, setOrderKey] = useState(0);
+  const [cancellingPending, setCancellingPending] = useState(false);
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -58,8 +59,13 @@ export function PaymentModal({
   }, []);
 
   // Step 1: Create order via useEffect + .then() (conforms to project lint)
+  // useRef guard: React StrictMode remounts effects → without guard, 2 orders are created
+  const creatingRef = useRef(false);
+
   useEffect(() => {
     if (!isOpen) return;
+    if (creatingRef.current) return;
+    creatingRef.current = true;
 
     const createOrder =
       orderType === "RESPONSE_PACK" && packSize
@@ -74,11 +80,18 @@ export function PaymentModal({
         const remaining = expiresAt - Date.now();
         setTimeLeft(remaining > 0 ? remaining : 0);
       })
-      .catch((err) => {
-        setError(
-          err instanceof Error ? err.message : "Không thể tạo đơn thanh toán"
-        );
-        setState("error");
+      .catch((err: unknown) => {
+        const axiosErr = err as { response?: { status?: number; data?: { error?: { message?: string } } } };
+        const message = axiosErr?.response?.data?.error?.message
+          || (err instanceof Error ? err.message : "Không thể tạo đơn thanh toán");
+        const isPendingConflict = axiosErr?.response?.status === 409
+          && message.includes("chưa hoàn tất");
+
+        setError(message);
+        setState(isPendingConflict ? "pending_conflict" : "error");
+      })
+      .finally(() => {
+        creatingRef.current = false;
       });
 
     return cleanup;
@@ -147,6 +160,47 @@ export function PaymentModal({
     setOrderKey((k) => k + 1);
   };
 
+  const handleResumePending = () => {
+    setState("loading");
+    paymentService
+      .getPendingOrder()
+      .then((data) => {
+        if (data) {
+          setOrderData(data);
+          setState("payment");
+          const expiresAt = new Date(data.order.expiresAt).getTime();
+          const remaining = expiresAt - Date.now();
+          setTimeLeft(remaining > 0 ? remaining : 0);
+        } else {
+          handleRetry();
+        }
+      })
+      .catch(() => {
+        setError("Không thể tải đơn thanh toán. Vui lòng thử lại.");
+        setState("error");
+      });
+  };
+
+  const handleCancelAndRetry = () => {
+    setCancellingPending(true);
+    paymentService
+      .getPendingOrder()
+      .then((data) => {
+        if (data) {
+          return paymentService.cancelOrder(data.order.id);
+        }
+      })
+      .then(() => {
+        setCancellingPending(false);
+        handleRetry();
+      })
+      .catch(() => {
+        setCancellingPending(false);
+        setError("Không thể huỷ đơn cũ. Vui lòng thử lại.");
+        setState("error");
+      });
+  };
+
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
     setCopiedField(field);
@@ -213,6 +267,45 @@ export function PaymentModal({
               >
                 Thử lại
               </button>
+            </div>
+          )}
+
+          {/* Pending Conflict */}
+          {state === "pending_conflict" && (
+            <div className="flex flex-col items-center py-10 gap-5">
+              <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-950 flex items-center justify-center">
+                <AlertCircle className="w-8 h-8 text-amber-500" />
+              </div>
+              <div className="text-center space-y-1">
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Bạn đang có đơn thanh toán chưa hoàn tất
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Vui lòng tiếp tục thanh toán hoặc huỷ đơn cũ để tạo đơn mới.
+                </p>
+              </div>
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={handleCancelAndRetry}
+                  disabled={cancellingPending}
+                  className="flex-1 px-4 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-medium text-sm rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+                >
+                  {cancellingPending ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Đang huỷ...
+                    </span>
+                  ) : (
+                    "Huỷ đơn cũ"
+                  )}
+                </button>
+                <button
+                  onClick={handleResumePending}
+                  className="flex-1 px-4 py-2.5 bg-blue-600 text-white font-medium text-sm rounded-xl hover:bg-blue-700 transition-colors"
+                >
+                  Tiếp tục thanh toán
+                </button>
+              </div>
             </div>
           )}
 

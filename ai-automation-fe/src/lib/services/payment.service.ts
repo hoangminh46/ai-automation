@@ -64,6 +64,11 @@ export const paymentService = {
     return response.data;
   },
 
+  getPendingOrder: async (): Promise<CreateOrderResponse | null> => {
+    const response = await api.get("/sellers/me/payment-orders/pending");
+    return response.data;
+  },
+
   getOrderHistory: async (limit = 50): Promise<PaymentOrder[]> => {
     const response = await api.get("/sellers/me/payment-orders", {
       params: { limit },
