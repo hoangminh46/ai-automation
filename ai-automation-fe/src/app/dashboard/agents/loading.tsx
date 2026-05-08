@@ -1,5 +1,5 @@
-import { LoadingScreen } from "@/components/ui/loading-screen";
+import { AgentsSkeleton } from "@/components/skeletons/agents-skeleton";
 
 export default function AgentsLoading() {
-  return <LoadingScreen text="Đang tải Binh đoàn Bot AI..." />;
+  return <AgentsSkeleton />;
 }

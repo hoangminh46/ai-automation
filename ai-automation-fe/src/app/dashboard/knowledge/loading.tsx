@@ -1,5 +1,5 @@
-import { LoadingScreen } from "@/components/ui/loading-screen";
+import { KnowledgeSkeleton } from "@/components/skeletons/knowledge-skeleton";
 
 export default function KnowledgeLoading() {
-  return <LoadingScreen text="Đang tải Tri thức RAG..." />;
+  return <KnowledgeSkeleton />;
 }

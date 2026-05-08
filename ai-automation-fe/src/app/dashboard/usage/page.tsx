@@ -1,25 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Zap, Bot, Users, Database, Calendar, ArrowUpRight } from "lucide-react";
-import { planService, UsageStats } from "@/lib/services/plan.service";
+import { useUsageStore } from "@/store/usage-store";
 import { UsageProgressBar } from "@/components/billing/usage-progress-bar";
+import { UsageSkeleton } from "@/components/skeletons/usage-skeleton";
 import Link from "next/link";
 
 export default function UsagePage() {
-  const [usage, setUsage] = useState<UsageStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const usage = useUsageStore(state => state.usage);
+  const isLoading = useUsageStore(state => state.isLoading);
+  const hasLoadedUsage = useUsageStore(state => state.hasLoadedUsage);
+  const error = useUsageStore(state => state.error);
+  const fetchUsage = useUsageStore(state => state.fetchUsage);
 
   useEffect(() => {
-    planService
-      .getUsage()
-      .then(setUsage)
-      .catch((err) => setError(err.message || "Không thể tải dữ liệu"))
-      .finally(() => setLoading(false));
-  }, []);
+    fetchUsage(true);
+  }, [fetchUsage]);
 
-  if (loading) return <UsageSkeleton />;
+  if (!hasLoadedUsage || isLoading) return <UsageSkeleton />;
   if (error) {
     return (
       <div className="text-center py-16 text-red-500 dark:text-red-400">
@@ -187,24 +186,3 @@ export default function UsagePage() {
   );
 }
 
-function UsageSkeleton() {
-  return (
-    <div className="space-y-8 animate-pulse">
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <div className="h-8 w-48 bg-slate-200 dark:bg-slate-800 rounded-lg" />
-          <div className="h-4 w-64 bg-slate-200 dark:bg-slate-800 rounded-lg" />
-        </div>
-        <div className="h-10 w-28 bg-slate-200 dark:bg-slate-800 rounded-xl" />
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {[...Array(4)].map((_, i) => (
-          <div
-            key={i}
-            className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 h-40"
-          />
-        ))}
-      </div>
-    </div>
-  );
-}

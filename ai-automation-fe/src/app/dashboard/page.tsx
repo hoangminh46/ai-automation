@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Store, ArrowRight, Bot, MessageSquare, Zap, Pencil, Check, X, Plus, Crown } from "lucide-react";
 import { useTenantStore } from "@/store/tenant-store";
-import { planService, UsageStats } from "@/lib/services/plan.service";
-import { LoadingScreen } from "@/components/ui/loading-screen";
+import { useUsageStore } from "@/store/usage-store";
+import { DashboardSkeleton } from "@/components/skeletons/dashboard-skeleton";
 import Link from "next/link";
 
 export default function DashboardPage() {
-  const { tenants, activeTenant, hasLoaded, fetchTenants, createNewTenant } = useTenantStore();
+  const { tenants, activeTenant, hasLoaded, isLoading, fetchTenants, createNewTenant } = useTenantStore();
   const updateTenantName = useTenantStore(state => state.updateTenantName);
   const [shopName, setShopName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,13 +24,28 @@ export default function DashboardPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState("");
 
-  // Quota state
-  const [usage, setUsage] = useState<UsageStats | null>(null);
+  // Quota state (shared store)
+  const usage = useUsageStore(state => state.usage);
+  const fetchUsage = useUsageStore(state => state.fetchUsage);
+  const refreshTenants = useTenantStore(state => state.refreshTenants);
 
   useEffect(() => {
-    fetchTenants();
-    planService.getUsage().then(setUsage).catch(() => {});
-  }, [fetchTenants]);
+    fetchTenants(true);
+    fetchUsage(true);
+  }, []);
+
+  // Refresh data khi đổi cửa hàng (activeTenant thay đổi)
+  const activeTenantId = activeTenant?.id;
+  const [isPending, startTransition] = useTransition();
+  useEffect(() => {
+    if (!activeTenantId) return;
+    startTransition(async () => {
+      await Promise.all([
+        refreshTenants(),
+        fetchUsage(true),
+      ]);
+    });
+  }, [activeTenantId, refreshTenants, fetchUsage]);
 
   const tenantQuota = usage?.tenants;
   const canCreate = tenantQuota ? tenantQuota.used < tenantQuota.limit : true;
@@ -55,7 +70,7 @@ export default function DashboardPage() {
     if (success) {
       setCreateName("");
       setShowCreateModal(false);
-      planService.getUsage().then(setUsage).catch(() => {});
+      fetchUsage(true);
     } else {
       setCreateError("Không thể tạo. Có thể đã đạt giới hạn gói.");
     }
@@ -87,9 +102,9 @@ export default function DashboardPage() {
     if (e.key === "Escape") cancelEditing();
   };
 
-  // 1. Loading
-  if (!hasLoaded) {
-    return <LoadingScreen text="Đang đồng bộ phân hệ Cửa Hàng..." />;
+  // 1. Loading (lần đầu hoặc đổi cửa hàng)
+  if (!hasLoaded || isLoading || isPending) {
+    return <DashboardSkeleton />;
   }
 
   // 2. Onboarding (first-time user, no tenants)

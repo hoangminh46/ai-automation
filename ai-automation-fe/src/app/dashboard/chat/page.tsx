@@ -6,7 +6,7 @@ import { useConversationStore } from "@/store/conversation-store";
 import { chatService } from "@/lib/services/chat.service";
 import type { ConversationListItem } from "@/lib/services/chat.service";
 import { useSocket } from "@/hooks/useSocket";
-import { LoadingScreen } from "@/components/ui/loading-screen";
+import { ChatSkeleton } from "@/components/skeletons/chat-skeleton";
 import { AlertCircle, RefreshCcw } from "lucide-react";
 import { ConversationList } from "@/components/chat/ConversationList";
 import { ChatWindow } from "@/components/chat/ChatWindow";
@@ -46,8 +46,8 @@ export default function ChatCrmPage() {
   // Step 1: Fetch conversation list when tenant is available
   useEffect(() => {
     if (!tenantId) return;
-    fetchConversations(tenantId);
-  }, [tenantId, fetchConversations]);
+    fetchConversations(tenantId, true);
+  }, [tenantId]);
 
   // Step 1a: Resync data khi socket reconnect (tránh mất messages trong lúc disconnect)
   useEffect(() => {
@@ -297,7 +297,7 @@ export default function ChatCrmPage() {
   );
 
   if (!tenantHasLoaded) {
-    return <LoadingScreen text="Đang tải..." />;
+    return <ChatSkeleton />;
   }
 
   if (!activeTenant) {

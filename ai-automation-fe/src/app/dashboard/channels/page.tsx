@@ -1,38 +1,57 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTenantStore } from "@/store/tenant-store";
+import { useChannelStore } from "@/store/channel-store";
 import FacebookChannelSection from "./FacebookChannelSection";
 import ZaloChannelSection from "./ZaloChannelSection";
-import {
-  channelService,
-  type ChannelConnection,
-} from "@/lib/services/channel.service";
-import { LoadingScreen } from "@/components/ui/loading-screen";
+import { ChannelsSkeleton } from "@/components/skeletons/channels-skeleton";
 import {
   AlertCircle,
   CheckCircle2,
-  Loader2,
 } from "lucide-react";
 
 export default function ChannelsPage() {
   const activeTenant = useTenantStore((state) => state.activeTenant);
   const tenantHasLoaded = useTenantStore((state) => state.hasLoaded);
 
-  const [channels, setChannels] = useState<ChannelConnection[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const channels = useChannelStore((state) => state.channels);
+  const isLoading = useChannelStore((state) => state.isLoading);
+  const loadedForTenantId = useChannelStore((state) => state.loadedForTenantId);
+  const error = useChannelStore((state) => state.error);
+  const fetchChannels = useChannelStore((state) => state.fetchChannels);
 
+  const searchParams = useSearchParams();
 
-
-  // OAuth callback toast (for both Zalo and Facebook)
+  // Derive initial OAuth state from URL params (computed at mount, not in effect)
   const [oauthToast, setOauthToast] = useState<{
     type: "success" | "error";
     message: string;
-  } | null>(null);
-  const [fbPendingSession, setFbPendingSession] = useState<string | null>(null);
-  const searchParams = useSearchParams();
+  } | null>(() => {
+    const zaloStatus = searchParams.get("zalo");
+    const fbStatus = searchParams.get("facebook");
+    if (!zaloStatus && !fbStatus) return null;
+
+    if (zaloStatus === "connected")
+      return { type: "success", message: `Kết nối ${searchParams.get("oa_name") || "Zalo OA"} thành công!` };
+    if (zaloStatus === "error")
+      return { type: "error", message: `Kết nối Zalo thất bại: ${searchParams.get("reason") || "Không rõ lỗi"}` };
+    if (fbStatus === "connected")
+      return { type: "success", message: `Kết nối ${searchParams.get("page_name") || "Facebook Page"} thành công!` };
+    if (fbStatus === "select_page")
+      return { type: "success", message: "Vui lòng chọn Facebook Page muốn kết nối." };
+    if (fbStatus === "error")
+      return { type: "error", message: `Kết nối Facebook thất bại: ${searchParams.get("reason") || "Không rõ lỗi"}` };
+    return null;
+  });
+
+  const [fbPendingSession, setFbPendingSession] = useState<string | null>(() => {
+    if (searchParams.get("facebook") === "select_page") {
+      return searchParams.get("session_id");
+    }
+    return null;
+  });
 
   const tenantId = activeTenant?.id;
   const fbConnection = channels.find(
@@ -42,86 +61,33 @@ export default function ChannelsPage() {
     (c) => c.channelType === "ZALO" && c.isActive,
   );
 
-
-
-  const fetchChannels = useCallback(async () => {
+  useEffect(() => {
     if (!tenantId) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await channelService.listChannels(tenantId);
-      setChannels(data);
-    } catch (err) {
-      const axiosErr = err as { response?: { data?: { message?: string } } };
-      const msg =
-        axiosErr.response?.data?.message ||
-        (err instanceof Error ? err.message : "Không thể tải danh sách kênh");
-      setError(msg);
-    } finally {
-      setIsLoading(false);
-    }
+    fetchChannels(tenantId);
   }, [tenantId]);
 
-  useEffect(() => {
-    fetchChannels();
-  }, [fetchChannels]);
-
-  // Handle OAuth callback query params (Zalo + Facebook)
+  // Side effects only: cleanup URL, auto-dismiss toast, trigger refetch after OAuth
   useEffect(() => {
     const zaloStatus = searchParams.get("zalo");
     const fbStatus = searchParams.get("facebook");
-
     if (!zaloStatus && !fbStatus) return;
 
-    if (zaloStatus === "connected") {
-      const oaName = searchParams.get("oa_name") || "Zalo OA";
-      setOauthToast({
-        type: "success",
-        message: `Kết nối ${oaName} thành công!`,
-      });
-      fetchChannels();
-    } else if (zaloStatus === "error") {
-      const reason = searchParams.get("reason") || "Không rõ lỗi";
-      setOauthToast({
-        type: "error",
-        message: `Kết nối Zalo thất bại: ${reason}`,
-      });
+    // Force refresh channels after successful OAuth connection
+    const shouldRefetch = zaloStatus === "connected" || fbStatus === "connected";
+    if (shouldRefetch && tenantId) {
+      fetchChannels(tenantId, true);
     }
 
-    if (fbStatus === "connected") {
-      const pageName = searchParams.get("page_name") || "Facebook Page";
-      setOauthToast({
-        type: "success",
-        message: `Kết nối ${pageName} thành công!`,
-      });
-      fetchChannels();
-    } else if (fbStatus === "select_page") {
-      const sessionIdParam = searchParams.get("session_id");
-      if (sessionIdParam) {
-        setFbPendingSession(sessionIdParam);
-        setOauthToast({
-          type: "success",
-          message: "Vui lòng chọn Facebook Page muốn kết nối.",
-        });
-      }
-    } else if (fbStatus === "error") {
-      const reason = searchParams.get("reason") || "Không rõ lỗi";
-      setOauthToast({
-        type: "error",
-        message: `Kết nối Facebook thất bại: ${reason}`,
-      });
-    }
-
+    // Clean OAuth params from URL
     window.history.replaceState({}, "", "/dashboard/channels");
 
+    // Auto-dismiss toast after 6 seconds (setState in callback = OK)
     const timer = setTimeout(() => setOauthToast(null), 6000);
     return () => clearTimeout(timer);
-  }, [searchParams, fetchChannels]);
+  }, [searchParams, tenantId, fetchChannels]);
 
-
-
-  if (!tenantHasLoaded) {
-    return <LoadingScreen />;
+  if (!tenantHasLoaded || (activeTenant && loadedForTenantId !== activeTenant.id)) {
+    return <ChannelsSkeleton />;
   }
 
   if (!activeTenant) {
@@ -175,34 +141,26 @@ export default function ChannelsPage() {
         </div>
       )}
 
-      {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {/* Channel Cards — 2-col grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            {/* ── Facebook Channel Section ── */}
-            <FacebookChannelSection
-              tenantId={tenantId!}
-              fbConnection={fbConnection}
-              onRefresh={async () => {
-                setFbPendingSession(null);
-                await fetchChannels();
-              }}
-              pendingSessionId={fbPendingSession}
-            />
+      {/* Channel Cards — 2-col grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        {/* ── Facebook Channel Section ── */}
+        <FacebookChannelSection
+          tenantId={tenantId!}
+          fbConnection={fbConnection}
+          onRefresh={async () => {
+            setFbPendingSession(null);
+            await fetchChannels(tenantId!, true);
+          }}
+          pendingSessionId={fbPendingSession}
+        />
 
-            {/* ── Zalo OA Channel Section ── */}
-            <ZaloChannelSection
-              tenantId={tenantId!}
-              zaloConnection={zaloConnection}
-              onRefresh={fetchChannels}
-            />
-          </div>
-        </div>
-      )}
+        {/* ── Zalo OA Channel Section ── */}
+        <ZaloChannelSection
+          tenantId={tenantId!}
+          zaloConnection={zaloConnection}
+          onRefresh={() => fetchChannels(tenantId!, true)}
+        />
+      </div>
     </div>
   );
 }

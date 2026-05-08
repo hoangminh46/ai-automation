@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Clock, AlertTriangle, X } from "lucide-react";
-import { planService, UsageStats } from "@/lib/services/plan.service";
+import { useUsageStore } from "@/store/usage-store";
 import Link from "next/link";
 
 const DISMISS_KEY = "expiry-warning-dismissed";
@@ -28,16 +28,14 @@ function isDismissedRecently(): boolean {
  * WS chỉ trigger refresh data.
  */
 export function ExpiryWarningBanner() {
-  const [usage, setUsage] = useState<UsageStats | null>(null);
+  const usage = useUsageStore(state => state.usage);
+  const fetchUsage = useUsageStore(state => state.fetchUsage);
   const [dismissed, setDismissed] = useState(() => isDismissedRecently());
   const [wsExpired, setWsExpired] = useState(false);
 
   useEffect(() => {
-    planService
-      .getUsage()
-      .then(setUsage)
-      .catch(() => {});
-  }, []);
+    fetchUsage();
+  }, [fetchUsage]);
 
   // WebSocket listener: lắng nghe real-time events
   useEffect(() => {
@@ -62,19 +60,12 @@ export function ExpiryWarningBanner() {
       });
 
       socket.on("subscription_expiring_soon", () => {
-        // Refresh usage data
-        planService
-          .getUsage()
-          .then(setUsage)
-          .catch(() => {});
+        fetchUsage(true);
       });
 
       socket.on("subscription_expired", () => {
         setWsExpired(true);
-        planService
-          .getUsage()
-          .then(setUsage)
-          .catch(() => {});
+        fetchUsage(true);
       });
 
       cleanup = () => socket.disconnect();

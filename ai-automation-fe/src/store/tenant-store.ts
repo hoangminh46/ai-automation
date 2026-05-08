@@ -8,7 +8,8 @@ interface TenantState {
   hasLoaded: boolean; // Flag chặn việc call lại API liên tục
   
   // Hành động
-  fetchTenants: () => Promise<void>;
+  fetchTenants: (force?: boolean) => Promise<void>;
+  refreshTenants: () => Promise<void>;
   setActiveTenant: (tenant: Tenant) => void;
   createNewTenant: (name: string) => Promise<boolean>;
   updateTenantName: (tenantId: string, name: string) => Promise<boolean>;
@@ -30,22 +31,40 @@ export const useTenantStore = create<TenantState>((set, get) => ({
     });
   },
 
-  fetchTenants: async () => {
-    // Nếu đã load rồi thì bỏ qua để tiết kiệm API Calls
-    if (get().hasLoaded) return;
+  fetchTenants: async (force = false) => {
+    if (!force && get().hasLoaded) return;
     
-    set({ isLoading: true });
+    set({ isLoading: !get().hasLoaded });
     try {
       const data = await tenantService.getTenants();
+      const currentActive = get().activeTenant;
+      const updatedActive = get().hasLoaded && currentActive
+        ? data.find(t => t.id === currentActive.id) ?? data[0] ?? null
+        : data[0] ?? null;
+
       set({ 
         tenants: data, 
-        activeTenant: data.length > 0 ? data[0] : null,
+        activeTenant: updatedActive,
         hasLoaded: true 
       });
     } catch (error) {
       console.error("Lỗi lấy danh sách Tenant:", error);
     } finally {
       set({ isLoading: false });
+    }
+  },
+
+  refreshTenants: async () => {
+    try {
+      const data = await tenantService.getTenants();
+      const currentActive = get().activeTenant;
+      const updatedActive = currentActive
+        ? data.find(t => t.id === currentActive.id) ?? data[0] ?? null
+        : data[0] ?? null;
+
+      set({ tenants: data, activeTenant: updatedActive, hasLoaded: true });
+    } catch (error) {
+      console.error("Lỗi refresh Tenant:", error);
     }
   },
 

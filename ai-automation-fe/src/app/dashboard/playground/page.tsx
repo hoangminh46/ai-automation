@@ -15,7 +15,7 @@ import {
 import { useTenantStore } from "@/store/tenant-store";
 import { useAgentStore } from "@/store/agent-store";
 import { Agent, agentService, ChatMessage } from "@/lib/services/agent.service";
-import { LoadingScreen } from "@/components/ui/loading-screen";
+import { PlaygroundSkeleton } from "@/components/skeletons/playground-skeleton";
 
 const MAX_SESSION_MESSAGES = 20;
 const MAX_HISTORY_CONTEXT = 10;
@@ -56,7 +56,7 @@ export default function PlaygroundPage() {
   useEffect(() => {
     if (!tenantId) return;
     fetchAgents(tenantId);
-  }, [tenantId, fetchAgents]);
+  }, [tenantId]);
 
   // Auto-select first active agent
   useEffect(() => {
@@ -174,7 +174,7 @@ export default function PlaygroundPage() {
     !tenantHasLoaded ||
     (activeTenant && loadedForTenantId !== activeTenant.id)
   ) {
-    return <LoadingScreen text="Đang tải Playground..." />;
+    return <PlaygroundSkeleton />;
   }
 
   if (!activeTenant) {

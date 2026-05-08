@@ -5,7 +5,7 @@ import { Bot, Plus, AlertCircle } from "lucide-react";
 import { useTenantStore } from "@/store/tenant-store";
 import { useAgentStore } from "@/store/agent-store";
 import { Agent, CreateAgentPayload } from "@/lib/services/agent.service";
-import { LoadingScreen } from "@/components/ui/loading-screen";
+import { AgentsSkeleton } from "@/components/skeletons/agents-skeleton";
 import { AgentCard } from "@/components/agent/agent-card";
 import { AgentEmptyState } from "@/components/agent/agent-empty-state";
 import { AgentFormModal } from "@/components/agent/agent-form-modal";
@@ -37,7 +37,7 @@ export default function AgentsPage() {
   useEffect(() => {
     if (!tenantId) return;
     fetchAgents(tenantId);
-  }, [tenantId, fetchAgents]);
+  }, [tenantId]);
 
   // Handlers
   const handleOpenCreate = useCallback(() => {
@@ -97,7 +97,7 @@ export default function AgentsPage() {
 
   // 1. Chờ cả tenant và agent data load xong
   if (!tenantHasLoaded || (activeTenant && loadedForTenantId !== activeTenant.id)) {
-    return <LoadingScreen text="Đang tải Binh đoàn Bot AI..." />;
+    return <AgentsSkeleton />;
   }
 
   // 2. Tenant đã load nhưng chưa tạo cửa hàng

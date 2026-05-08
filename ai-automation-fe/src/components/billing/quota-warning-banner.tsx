@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AlertTriangle, X } from "lucide-react";
-import { planService, UsageStats } from "@/lib/services/plan.service";
+import { useUsageStore } from "@/store/usage-store";
 import Link from "next/link";
 
 function isDismissedRecently(): boolean {
@@ -15,17 +15,8 @@ function isDismissedRecently(): boolean {
 }
 
 export function QuotaWarningBanner() {
-  const [usage, setUsage] = useState<UsageStats | null>(null);
+  const usage = useUsageStore(state => state.usage);
   const [dismissed, setDismissed] = useState(() => isDismissedRecently());
-
-  useEffect(() => {
-    if (dismissed) return;
-
-    planService
-      .getUsage()
-      .then(setUsage)
-      .catch(() => {});
-  }, [dismissed]);
 
   if (dismissed || !usage) return null;
 

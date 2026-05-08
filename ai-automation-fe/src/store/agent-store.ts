@@ -7,7 +7,7 @@ interface AgentState {
   loadedForTenantId: string | null;
   error: string | null;
 
-  fetchAgents: (tenantId: string) => Promise<void>;
+  fetchAgents: (tenantId: string, force?: boolean) => Promise<void>;
   createAgent: (tenantId: string, payload: CreateAgentPayload) => Promise<boolean>;
   updateAgent: (tenantId: string, agentId: string, payload: UpdateAgentPayload) => Promise<boolean>;
   deleteAgent: (tenantId: string, agentId: string) => Promise<boolean>;
@@ -25,12 +25,18 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     set({ agents: [], isLoading: false, loadedForTenantId: null, error: null });
   },
 
-  fetchAgents: async (tenantId: string) => {
-    // Nếu đã load cho đúng tenant này rồi thì bỏ qua
-    if (get().loadedForTenantId === tenantId) return;
+  fetchAgents: async (tenantId: string, force = false) => {
+    // Skip nếu đã load cho tenant này VÀ không force
+    if (!force && get().loadedForTenantId === tenantId) return;
 
-    // Reset data cũ + bật loading (atomic, không có trạng thái trung gian)
-    set({ agents: [], isLoading: true, error: null, loadedForTenantId: null });
+    // Stale-while-revalidate: giữ data cũ nếu cùng tenant, chỉ bật loading lần đầu
+    const isFirstLoad = get().loadedForTenantId !== tenantId;
+    set({
+      agents: isFirstLoad ? [] : get().agents,
+      isLoading: isFirstLoad,
+      error: null,
+      loadedForTenantId: isFirstLoad ? null : tenantId,
+    });
     try {
       const data = await agentService.getAgents(tenantId);
       set({ agents: data, loadedForTenantId: tenantId });

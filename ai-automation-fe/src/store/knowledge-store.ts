@@ -10,7 +10,7 @@ interface KnowledgeState {
   loadedForTenantId: string | null;
   error: string | null;
 
-  fetchDocuments: (tenantId: string) => Promise<void>;
+  fetchDocuments: (tenantId: string, force?: boolean) => Promise<void>;
   uploadDocument: (tenantId: string, file: File) => Promise<boolean>;
   deleteDocument: (tenantId: string, documentId: string) => Promise<boolean>;
   resetKnowledgeStore: () => void;
@@ -31,14 +31,15 @@ export const useKnowledgeStore = create<KnowledgeState>((set, get) => ({
     });
   },
 
-  fetchDocuments: async (tenantId: string) => {
-    if (get().loadedForTenantId === tenantId) return;
+  fetchDocuments: async (tenantId: string, force = false) => {
+    if (!force && get().loadedForTenantId === tenantId) return;
 
+    const isFirstLoad = get().loadedForTenantId !== tenantId;
     set({
-      documents: [],
-      isLoading: true,
+      documents: isFirstLoad ? [] : get().documents,
+      isLoading: isFirstLoad,
       error: null,
-      loadedForTenantId: null,
+      loadedForTenantId: isFirstLoad ? null : tenantId,
     });
     try {
       const data = await knowledgeService.getDocuments(tenantId);

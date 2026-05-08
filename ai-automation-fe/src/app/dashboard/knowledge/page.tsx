@@ -5,7 +5,7 @@ import { Database, AlertCircle, FileText } from "lucide-react";
 import { useTenantStore } from "@/store/tenant-store";
 import { useKnowledgeStore } from "@/store/knowledge-store";
 import { KnowledgeDocument } from "@/lib/services/knowledge.service";
-import { LoadingScreen } from "@/components/ui/loading-screen";
+import { KnowledgeSkeleton } from "@/components/skeletons/knowledge-skeleton";
 import { UploadZone } from "@/components/knowledge/upload-zone";
 import { DocumentTable } from "@/components/knowledge/document-table";
 import { KnowledgeDeleteDialog } from "@/components/knowledge/delete-dialog";
@@ -29,7 +29,7 @@ export default function KnowledgePage() {
   useEffect(() => {
     if (!tenantId) return;
     fetchDocuments(tenantId);
-  }, [tenantId, fetchDocuments]);
+  }, [tenantId]);
 
   const handleUpload = useCallback(
     async (file: File): Promise<boolean> => {
@@ -60,7 +60,7 @@ export default function KnowledgePage() {
     !tenantHasLoaded ||
     (activeTenant && loadedForTenantId !== activeTenant.id)
   ) {
-    return <LoadingScreen text="Đang tải Tri thức RAG..." />;
+    return <KnowledgeSkeleton />;
   }
 
   // 2. Tenant đã load nhưng chưa tạo cửa hàng

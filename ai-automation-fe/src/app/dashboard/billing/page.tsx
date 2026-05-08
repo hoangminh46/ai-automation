@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { CreditCard } from "lucide-react";
-import { planService, Plan, UsageStats } from "@/lib/services/plan.service";
+import { useUsageStore } from "@/store/usage-store";
 import { PlanComparisonTable } from "@/components/billing/plan-comparison-table";
+import { BillingSkeleton } from "@/components/skeletons/billing-skeleton";
 import { PaymentModal } from "@/components/billing/payment-modal";
 import { TransactionHistory } from "@/components/billing/transaction-history";
 import { ResponsePackSelector } from "@/components/billing/response-pack-selector";
+import type { Plan } from "@/lib/services/plan.service";
 
 interface SelectedPlan {
   slug: string;
@@ -14,22 +16,20 @@ interface SelectedPlan {
 }
 
 export default function BillingPage() {
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [usage, setUsage] = useState<UsageStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const usage = useUsageStore(state => state.usage);
+  const plans = useUsageStore(state => state.plans);
+  const isLoading = useUsageStore(state => state.isLoading);
+  const hasLoadedUsage = useUsageStore(state => state.hasLoadedUsage);
+  const fetchUsage = useUsageStore(state => state.fetchUsage);
+  const fetchPlans = useUsageStore(state => state.fetchPlans);
+  const refreshAll = useUsageStore(state => state.refreshAll);
+
   const [selectedPlan, setSelectedPlan] = useState<SelectedPlan | null>(null);
 
-  const [refreshKey, setRefreshKey] = useState(0);
-
   useEffect(() => {
-    Promise.all([planService.getPlans(), planService.getUsage()])
-      .then(([plansData, usageData]) => {
-        setPlans(plansData);
-        setUsage(usageData);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [refreshKey]);
+    fetchUsage(true);
+    fetchPlans(true);
+  }, [fetchUsage, fetchPlans]);
 
   const handleUpgrade = (plan: Plan) => {
     setSelectedPlan({
@@ -40,10 +40,10 @@ export default function BillingPage() {
 
   const handlePaymentSuccess = () => {
     setSelectedPlan(null);
-    setRefreshKey((k) => k + 1);
+    refreshAll();
   };
 
-  if (loading) return <BillingSkeleton />;
+  if (!hasLoadedUsage || isLoading) return <BillingSkeleton />;
   if (!usage || plans.length === 0) return null;
 
   return (
@@ -96,9 +96,7 @@ export default function BillingPage() {
 
       {/* Response Pack */}
       <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
-        <ResponsePackSelector
-          onSuccess={() => setRefreshKey((k) => k + 1)}
-        />
+        <ResponsePackSelector onSuccess={refreshAll} />
       </div>
 
       {/* Transaction History */}
@@ -126,19 +124,6 @@ export default function BillingPage() {
           planName={selectedPlan.name}
         />
       )}
-    </div>
-  );
-}
-
-function BillingSkeleton() {
-  return (
-    <div className="space-y-8 animate-pulse">
-      <div className="space-y-2">
-        <div className="h-8 w-40 bg-slate-200 dark:bg-slate-800 rounded-lg" />
-        <div className="h-4 w-56 bg-slate-200 dark:bg-slate-800 rounded-lg" />
-      </div>
-      <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
-      <div className="h-96 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
     </div>
   );
 }

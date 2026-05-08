@@ -1,5 +1,5 @@
-import { LoadingScreen } from "@/components/ui/loading-screen";
+import { PlaygroundSkeleton } from "@/components/skeletons/playground-skeleton";
 
 export default function PlaygroundLoading() {
-  return <LoadingScreen text="Đang tải Playground..." />;
+  return <PlaygroundSkeleton />;
 }
