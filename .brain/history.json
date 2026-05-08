@@ -1,0 +1,82 @@
+{
+  "entries": [
+    {
+      "id": "handoff-20260508-152200",
+      "saved_at": "2026-05-08T15:22:00+07:00",
+      "branch": "main",
+      "head_sha": "04f2fc03cf1fd47ef1684c070f3f36e520ad9602",
+      "base_sha": "d73438d",
+      "source": "commit",
+      "commit_range": "d73438d..04f2fc0",
+
+      "summary": "Hoàn thành toàn bộ feature Bot-Channel Binding (8/8 phases). Schema migration, BE API, FE UI cho Agents/Channels/Knowledge/Chat. Đã commit + push lên main. TSC + ESLint + Build đều pass. Đang chờ manual E2E test.",
+
+      "project_changes": {
+        "database": [
+          "Agent: thêm isDefault boolean, isActive default false",
+          "ChannelConnection: thêm agentId FK (nullable, onDelete: SetNull)",
+          "AgentKnowledge: bảng junction mới cho N:M Agent ↔ KnowledgeDocument"
+        ],
+        "backend": [
+          "Agent CRUD: channelIds/knowledgeIds trong create/update",
+          "Agent delete: guard isDefault, cascade SET NULL channels",
+          "Channel: PATCH assign-bot endpoint",
+          "AgentKnowledgeService: syncKnowledge method",
+          "KnowledgeSearch: scoped theo agent's linked documents",
+          "Tenant: auto-create default bot khi tạo tenant mới"
+        ],
+        "frontend": [
+          "Agents page: channel checkboxes, knowledge checkboxes, badge mặc định, delete guard",
+          "Channels page: BotAssignment dropdown, confirm dialog, warning states",
+          "Knowledge page: bot badges trên documents, filter-by-bot dropdown",
+          "Chat: null guard cho agent name (Chưa gán bot fallback)",
+          "Types: ConversationListItem.agent nullable, KnowledgeDocument.agentLinks"
+        ],
+        "docs": [
+          "docs/bot-channel-spec.md: 15 business rules",
+          "plans/260508-1037-bot-channel-binding/: 8 phase plans"
+        ]
+      },
+
+      "commits": [
+        {
+          "sha": "04f2fc0",
+          "message": "feat: Bot-Channel Binding - complete 8 phases",
+          "files_changed": 43,
+          "insertions": 2600,
+          "deletions": 77
+        }
+      ],
+
+      "working_tree": {
+        "status": "clean",
+        "files": []
+      },
+
+      "decisions": [
+        "1:N Bot→Channel (1 bot serves N channels, 1 channel has 1 bot)",
+        "Knowledge thuộc Tenant level, bot chọn qua N:M junction AgentKnowledge",
+        "Delete bot → SET NULL trên channels (không xoá channel)",
+        "Delete bot → CASCADE xoá AgentKnowledge rows (knowledge docs giữ nguyên)",
+        "Mỗi tenant có 1 default bot (isDefault=true, không cho xoá)",
+        "Channel mới → không auto-assign bot",
+        "Reassign bot trên channel → confirm dialog bắt buộc",
+        "Bot inactive + channel → không auto-reply, tin nhắn hiện Chat cho nhân viên"
+      ],
+
+      "next_steps": [
+        "Chạy 62 manual test cases (xem manual_test_plan.md)",
+        "Test gửi tin nhắn thật từ FB/Zalo với bot active/inactive",
+        "Fix knowledge sync gap: create mode agent không sync knowledge (chỉ edit mode)",
+        "Cân nhắc viết automated API tests cho 15 business rules",
+        "Dọn file test-snapshot.js nếu còn sót"
+      ],
+
+      "open_questions": [
+        "Khi quota hết bot (VD: Free plan chỉ 1 bot), FE có block nút tạo bot không?",
+        "Có cần notification khi bot bị inactive mà channel vẫn có traffic?",
+        "Future: Instagram/Website widget channel types"
+      ]
+    }
+  ]
+}

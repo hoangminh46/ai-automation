@@ -1,0 +1,129 @@
+{
+  "version": "1.0",
+  "project_name": "AI Automation Suite",
+  "updated_at": "2026-05-08T15:22:00+07:00",
+  "last_verified_sha": "04f2fc03cf1fd47ef1684c070f3f36e520ad9602",
+
+  "tech_stack": {
+    "backend": {
+      "runtime": "Node.js v22",
+      "framework": "NestJS",
+      "orm": "Prisma 7.7",
+      "database": "PostgreSQL (Supabase)",
+      "auth": "Supabase Auth (Google OAuth + email/password)",
+      "ai": "Gemini 2.5 Flash via OpenAI-compatible API",
+      "realtime": "Socket.IO",
+      "payment": "SePay (VN QR payment)"
+    },
+    "frontend": {
+      "framework": "Next.js 15 (App Router)",
+      "language": "TypeScript",
+      "state": "Zustand",
+      "styling": "Tailwind CSS",
+      "http": "Axios",
+      "icons": "Lucide React"
+    },
+    "infrastructure": {
+      "hosting": "Supabase (DB) + ngrok (dev tunnel)",
+      "ci_cd": "none yet"
+    }
+  },
+
+  "database_schema": {
+    "last_changed_sha": "04f2fc0",
+    "key_models": [
+      "Seller (user/owner)",
+      "Tenant (store/shop)",
+      "TenantMember (seller-tenant membership)",
+      "Agent (AI bot - has isDefault, isActive flags)",
+      "ChannelConnection (FB/Zalo - has agentId FK to Agent)",
+      "Customer",
+      "Conversation (has agentId FK)",
+      "Message",
+      "KnowledgeDocument (tenant-level)",
+      "KnowledgeChunk (vector embeddings)",
+      "AgentKnowledge (N:M junction: Agent ↔ KnowledgeDocument)",
+      "Plan (subscription tiers)",
+      "TenantPlan (tenant subscription)",
+      "UsageRecord (quota tracking)",
+      "PaymentOrder (SePay integration)"
+    ],
+    "key_relations": {
+      "Agent_Channel": "1:N - One bot serves many channels, one channel has one bot (agentId on ChannelConnection, onDelete: SetNull)",
+      "Agent_Knowledge": "N:M via AgentKnowledge junction table (onDelete: Cascade both sides)",
+      "Tenant_Agent": "1:N - Tenant owns agents, auto-creates default bot",
+      "Tenant_Knowledge": "1:N - Knowledge belongs to tenant, not bot"
+    }
+  },
+
+  "api_endpoints": {
+    "last_changed_sha": "04f2fc0",
+    "key_endpoints": [
+      "POST /tenants - Create tenant (auto-creates default bot)",
+      "GET /tenants/:tenantId/agents - List agents with channels + knowledge",
+      "POST /tenants/:tenantId/agents - Create agent (channelIds, knowledgeIds)",
+      "PATCH /tenants/:tenantId/agents/:agentId - Update agent",
+      "DELETE /tenants/:tenantId/agents/:agentId - Delete (blocked if isDefault)",
+      "PATCH /tenants/:tenantId/agents/:agentId/toggle-active - Toggle active",
+      "PATCH /tenants/:tenantId/channels/:channelId/assign-bot - Assign/unassign bot",
+      "GET /tenants/:tenantId/knowledge/documents - List with agentLinks",
+      "POST /tenants/:tenantId/agents/:agentId/knowledge - Sync knowledge links",
+      "POST /tenants/:tenantId/chat - Send message (routed by agent's knowledge)",
+      "POST /tenants/:tenantId/chat/test - Playground test (no DB persist)"
+    ]
+  },
+
+  "features": {
+    "bot_channel_binding": {
+      "status": "complete",
+      "last_changed_sha": "04f2fc0",
+      "description": "Full bot-channel-knowledge binding with 15 business rules",
+      "spec_file": "docs/bot-channel-spec.md",
+      "plan_dir": "plans/260508-1037-bot-channel-binding/",
+      "phases_completed": 8,
+      "phases_total": 8
+    },
+    "billing_management": {
+      "status": "complete",
+      "description": "Plan CRUD, subscription, usage tracking, SePay payment"
+    },
+    "chat_crm": {
+      "status": "complete",
+      "description": "Real-time chat with WebSocket, human takeover, bot handover"
+    },
+    "knowledge_rag": {
+      "status": "complete",
+      "description": "Document upload, chunking, vector search, agent-scoped RAG"
+    },
+    "channel_integration": {
+      "status": "complete",
+      "description": "Facebook Messenger + Zalo OA OAuth, webhook handling"
+    }
+  },
+
+  "business_rules": {
+    "bot_channel": {
+      "source": "docs/bot-channel-spec.md",
+      "rules_count": 15,
+      "key_rules": [
+        "1 channel = 1 bot only",
+        "1 bot = N channels",
+        "Each tenant has 1 undeletable default bot",
+        "Delete bot → channels unlinked (agentId=null), knowledge preserved",
+        "New channel → no auto-assign bot",
+        "Reassign bot → confirm dialog",
+        "Bot inactive + channel → no auto-reply",
+        "Knowledge belongs to tenant, not bot (N:M via AgentKnowledge)",
+        "Default bot counts toward quota"
+      ]
+    }
+  },
+
+  "coding_conventions": {
+    "language": "Vietnamese comments for business logic, English for technical",
+    "api_pattern": "NestJS Controller → Service → Prisma",
+    "frontend_pattern": "Zustand stores + service layer + page components",
+    "error_handling": "Axios error typed as { response?: { data?: { message?: string } } }",
+    "auth": "Supabase Bearer token → SupabaseAuthGuard → request.user = { authId, email, sellerId }"
+  }
+}
