@@ -12,6 +12,7 @@ import {
   Loader2,
   ShieldCheck,
 } from "lucide-react";
+import { BotAssignment } from "@/components/channel/bot-assignment";
 
 function FacebookIcon({ className }: { className?: string }) {
   return (
@@ -302,6 +303,9 @@ export default function FacebookChannelSection({
                 </span>
               </div>
             </div>
+
+              {/* Bot Assignment */}
+              <BotAssignment channel={fbConnection} />
 
             {/* Disconnect */}
             {!showDisconnectConfirm ? (

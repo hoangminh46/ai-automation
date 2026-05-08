@@ -9,6 +9,7 @@ import {
   Loader2,
   Clock,
   Layers,
+  Bot,
 } from "lucide-react";
 import { KnowledgeDocument, DocumentStatus } from "@/lib/services/knowledge.service";
 
@@ -111,7 +112,7 @@ export function DocumentTable({ documents, onDelete }: DocumentTableProps) {
             key={doc.id}
             className="grid grid-cols-1 md:grid-cols-[1fr_100px_100px_120px_80px_80px] gap-2 md:gap-4 px-5 py-4 items-center hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors group"
           >
-            {/* File name + icon */}
+            {/* File name + icon + bot badges */}
             <div className="flex items-center gap-3 min-w-0">
               <FileIcon fileType={doc.fileType} />
               <div className="min-w-0">
@@ -123,6 +124,24 @@ export function DocumentTable({ documents, onDelete }: DocumentTableProps) {
                     {doc.errorMessage}
                   </p>
                 )}
+                {/* Bot badges */}
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {doc.agentLinks && doc.agentLinks.length > 0 ? (
+                    doc.agentLinks.map((link) => (
+                      <span
+                        key={link.agent.id}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60"
+                      >
+                        <Bot className="w-2.5 h-2.5" />
+                        {link.agent.name}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 italic">
+                      (chưa gán bot nào)
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 

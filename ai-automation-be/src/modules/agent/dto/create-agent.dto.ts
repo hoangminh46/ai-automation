@@ -7,6 +7,8 @@ import {
   Min,
   Max,
   IsBoolean,
+  IsArray,
+  IsUUID,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -52,4 +54,13 @@ export class CreateAgentDto {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'IDs của channels cần gán cho bot',
+    example: ['uuid-1', 'uuid-2'],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  channelIds?: string[];
 }

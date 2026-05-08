@@ -203,12 +203,15 @@ model Agent {
   temperature Float    @default(0.7)
   maxTokens   Int      @default(500) @map("max_tokens")
   isActive    Boolean  @default(true) @map("is_active")
+  isDefault   Boolean  @default(false) @map("is_default")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  conversations Conversation[]
-  tools         AgentTool[]
+  tenant         Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  conversations  Conversation[]
+  tools          AgentTool[]
+  channels       ChannelConnection[]
+  knowledgeLinks AgentKnowledge[]
 
   @@index([tenantId])
   @@map("agents")
@@ -244,23 +247,22 @@ model ChannelConnection {
   id               String      @id @default(uuid())
   tenantId         String      @map("tenant_id")
   channelType      ChannelType @map("channel_type")
-  // FB: page ID
   externalId       String      @map("external_id")
   externalName     String?     @map("external_name")
-  // Encrypted access token (AES-256)
   accessTokenEnc   String?     @map("access_token_enc")
-  // Zalo OA: refresh token để tự động gia hạn access_token (hết hạn sau 1 giờ)
   refreshTokenEnc  String?     @map("refresh_token_enc")
-  // Thời điểm access token hết hạn (null = không hết hạn, VD: FB long-lived token)
   tokenExpiresAt   DateTime?   @map("token_expires_at")
+  agentId          String?     @map("agent_id")
   isActive         Boolean     @default(true) @map("is_active")
   createdAt        DateTime    @default(now()) @map("created_at")
   updatedAt        DateTime    @updatedAt @map("updated_at")
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  agent  Agent?  @relation(fields: [agentId], references: [id], onDelete: SetNull)
 
   @@unique([channelType, externalId])
   @@index([tenantId])
+  @@index([agentId])
   @@map("channel_connections")
 }
 
@@ -287,11 +289,31 @@ model KnowledgeDocument {
   createdAt    DateTime       @default(now()) @map("created_at")
   updatedAt    DateTime       @updatedAt @map("updated_at")
 
-  tenant Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  chunks KnowledgeChunk[]
+  tenant     Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  chunks     KnowledgeChunk[]
+  agentLinks AgentKnowledge[]
 
   @@index([tenantId])
   @@map("knowledge_documents")
+}
+
+// ============================================
+// Agent ↔ Knowledge (Many-to-Many)
+// ============================================
+
+model AgentKnowledge {
+  id          String   @id @default(uuid())
+  agentId     String   @map("agent_id")
+  knowledgeId String   @map("knowledge_id")
+  assignedAt  DateTime @default(now()) @map("assigned_at")
+
+  agent     Agent             @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  knowledge KnowledgeDocument @relation(fields: [knowledgeId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, knowledgeId])
+  @@index([agentId])
+  @@index([knowledgeId])
+  @@map("agent_knowledge")
 }
 
 model KnowledgeChunk {
@@ -359,7 +381,7 @@ enum ConversationStatus {
 model Conversation {
   id                    String             @id @default(uuid())
   tenantId              String             @map("tenant_id")
-  agentId               String             @map("agent_id")
+  agentId               String?            @map("agent_id")
   customerId            String             @map("customer_id")
   // Người trực chat (Tham chiếu Seller ID)
   assigneeId            String?            @map("assignee_id")
@@ -371,7 +393,7 @@ model Conversation {
   updatedAt             DateTime           @updatedAt @map("updated_at")
 
   tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  agent    Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agent    Agent?    @relation(fields: [agentId], references: [id], onDelete: SetNull)
   customer Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
   assignee Seller?   @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
   messages Message[]

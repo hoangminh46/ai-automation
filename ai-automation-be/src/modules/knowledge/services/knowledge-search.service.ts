@@ -33,12 +33,47 @@ export class KnowledgeSearchService {
     tenantId: string,
     query: string,
     topK = DEFAULT_TOP_K,
+    agentId?: string,
   ): Promise<SearchResult[]> {
     // Step 1: Embed query
     const queryVector = await this.embedding.embedOne(query);
     const embeddingStr = `[${queryVector.join(',')}]`;
 
-    // Step 2: pgvector cosine similarity search (pre-filtered by tenant)
+    // Step 2: pgvector cosine similarity search
+    // Bot-scoped: chỉ query knowledge đã gán cho agent
+    if (agentId) {
+      const results = await this.prisma.$queryRawUnsafe<SearchResult[]>(
+        `SELECT
+          kc.id,
+          kc.content,
+          kc.document_id AS "documentId",
+          1 - (kc.embedding <=> $1::vector) AS similarity
+        FROM knowledge_chunks kc
+        INNER JOIN knowledge_documents kd ON kd.id = kc.document_id
+        INNER JOIN agent_knowledge ak ON ak.knowledge_id = kd.id
+        WHERE kd.tenant_id = $2
+          AND ak.agent_id = $3
+          AND kd.status = 'READY'
+          AND 1 - (kc.embedding <=> $1::vector) > $4
+        ORDER BY kc.embedding <=> $1::vector
+        LIMIT $5`,
+        embeddingStr,
+        tenantId,
+        agentId,
+        SIMILARITY_THRESHOLD,
+        topK,
+      );
+
+      if (results.length > 0) {
+        this.logger.log(
+          `[Search] tenant=${tenantId} agent=${agentId} query="${query.slice(0, 50)}..." → ${results.length} chunks (top=${results[0].similarity.toFixed(3)})`,
+        );
+      }
+
+      return results;
+    }
+
+    // Tenant-wide fallback (legacy / playground)
     const results = await this.prisma.$queryRawUnsafe<SearchResult[]>(
       `SELECT
         kc.id,
@@ -74,8 +109,9 @@ export class KnowledgeSearchService {
   async buildKnowledgeContext(
     tenantId: string,
     query: string,
+    agentId?: string,
   ): Promise<string | null> {
-    const chunks = await this.search(tenantId, query);
+    const chunks = await this.search(tenantId, query, DEFAULT_TOP_K, agentId);
 
     if (chunks.length === 0) return null;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Pencil, Trash2, Power, MessageSquare, Sparkles } from "lucide-react";
+import { Bot, Pencil, Trash2, Power, MessageSquare, Sparkles, Star, Globe } from "lucide-react";
 import { Agent } from "@/lib/services/agent.service";
 
 interface AgentCardProps {
@@ -10,9 +10,15 @@ interface AgentCardProps {
   onToggleActive: (agent: Agent) => void;
 }
 
-
+const CHANNEL_LABELS: Record<string, { label: string; color: string }> = {
+  FACEBOOK: { label: "FB", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
+  ZALO: { label: "Zalo", color: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400" },
+};
 
 export function AgentCard({ agent, onEdit, onDelete, onToggleActive }: AgentCardProps) {
+  const channelCount = agent.channels?.length ?? 0;
+  const knowledgeCount = agent.knowledgeLinks?.length ?? 0;
+
   return (
     <div className="group relative bg-white dark:bg-slate-950 rounded-2xl border border-slate-200/60 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-blue-200 dark:hover:border-blue-900/60 transition-all duration-300 overflow-hidden">
       {/* Active indicator bar */}
@@ -25,7 +31,7 @@ export function AgentCard({ agent, onEdit, onDelete, onToggleActive }: AgentCard
       />
 
       <div className="p-6">
-        {/* Header: Bot icon + Name + Status */}
+        {/* Header: Bot icon + Name + Status + Default badge */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3 min-w-0">
             <div
@@ -44,9 +50,17 @@ export function AgentCard({ agent, onEdit, onDelete, onToggleActive }: AgentCard
               />
             </div>
             <div className="min-w-0">
-              <h3 className="font-semibold text-slate-900 dark:text-white truncate">
-                {agent.name}
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-slate-900 dark:text-white truncate">
+                  {agent.name}
+                </h3>
+                {agent.isDefault && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400 border border-amber-200 dark:border-amber-800 shrink-0">
+                    <Star className="w-3 h-3 fill-current" />
+                    Mặc định
+                  </span>
+                )}
+              </div>
               <span
                 className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full mt-1 ${
                   agent.isActive
@@ -64,6 +78,31 @@ export function AgentCard({ agent, onEdit, onDelete, onToggleActive }: AgentCard
             </div>
           </div>
         </div>
+
+        {/* Channel chips */}
+        {channelCount > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {agent.channels.map((ch) => {
+              const cfg = CHANNEL_LABELS[ch.channelType] ?? { label: ch.channelType, color: "bg-slate-100 text-slate-600" };
+              return (
+                <span
+                  key={ch.id}
+                  className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md ${cfg.color}`}
+                >
+                  <Globe className="w-3 h-3" />
+                  {ch.externalName || cfg.label}
+                </span>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Knowledge count */}
+        {knowledgeCount > 0 && (
+          <p className="text-xs text-slate-400 dark:text-slate-500 mb-3">
+            📚 {knowledgeCount} tài liệu
+          </p>
+        )}
 
         {/* Greeting preview */}
         <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-800">
@@ -109,13 +148,15 @@ export function AgentCard({ agent, onEdit, onDelete, onToggleActive }: AgentCard
           >
             <Pencil className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => onDelete(agent)}
-            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 rounded-lg transition-all"
-            title="Xóa Bot"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          {!agent.isDefault && (
+            <button
+              onClick={() => onDelete(agent)}
+              className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 rounded-lg transition-all"
+              title="Xóa Bot"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
     </div>

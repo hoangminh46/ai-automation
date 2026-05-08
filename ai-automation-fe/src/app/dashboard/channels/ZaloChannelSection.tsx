@@ -13,6 +13,7 @@ import {
   Loader2,
   ShieldCheck,
 } from "lucide-react";
+import { BotAssignment } from "@/components/channel/bot-assignment";
 
 function ZaloIcon({ className }: { className?: string }) {
   return (
@@ -174,6 +175,9 @@ export default function ZaloChannelSection({
                 </span>
               </div>
             </div>
+
+              {/* Bot Assignment */}
+              <BotAssignment channel={zaloConnection} />
 
             {/* Disconnect */}
             {!showDisconnectConfirm ? (

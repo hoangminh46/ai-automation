@@ -14,6 +14,8 @@ interface AgentDeleteDialogProps {
 export function AgentDeleteDialog({ isOpen, agent, onClose, onConfirm, isDeleting }: AgentDeleteDialogProps) {
   if (!isOpen || !agent) return null;
 
+  const channelCount = agent.channels?.length ?? 0;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
@@ -37,6 +39,14 @@ export function AgentDeleteDialog({ isOpen, agent, onClose, onConfirm, isDeletin
             Bot <strong className="text-slate-700 dark:text-slate-200">&quot;{agent.name}&quot;</strong> sẽ bị xóa vĩnh viễn cùng toàn bộ cấu hình.
             Thao tác này không thể hoàn tác.
           </p>
+
+          {channelCount > 0 && (
+            <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl">
+              <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
+                ⚠️ Bot đang kết nối với {channelCount} kênh. Xoá sẽ ngắt kết nối tất cả.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Actions */}

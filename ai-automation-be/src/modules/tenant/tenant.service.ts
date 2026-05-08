@@ -44,6 +44,7 @@ export class TenantService {
               persona:
                 'Bạn là một nhân viên tư vấn bán hàng chuyên nghiệp. Trả lời ngắn gọn, thân thiện, và nhiệt tình bằng tiếng Việt.',
               greeting: 'Xin chào! Tôi có thể giúp gì cho bạn?',
+              isDefault: true,
             },
           },
         },

@@ -138,7 +138,7 @@ export function ChatWindow({
               </span>
               <span className="text-[10px] text-slate-400">·</span>
               <span className="text-[10px] text-slate-400 dark:text-slate-500">
-                Bot: {conversation.agent.name}
+                Bot: {conversation.agent?.name ?? "Chưa gán bot"}
               </span>
             </div>
           </div>

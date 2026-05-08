@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Delete,
   Body,
   Param,
@@ -12,6 +13,7 @@ import { SupabaseAuthGuard } from '../../common/guards/auth.guard.js';
 import { TenantGuard } from '../../common/guards/tenant.guard.js';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
+import { AssignBotDto } from './dto/assign-bot.dto.js';
 
 @ApiTags('Channels')
 @ApiBearerAuth()
@@ -24,6 +26,16 @@ export class ChannelController {
   @Get()
   listChannels(@Param('tenantId') tenantId: string) {
     return this.channelService.listChannels(tenantId);
+  }
+
+  @ApiOperation({ summary: 'Gán hoặc bỏ gán bot cho kênh' })
+  @Patch(':channelId/assign-bot')
+  assignBot(
+    @Param('tenantId') tenantId: string,
+    @Param('channelId') channelId: string,
+    @Body() dto: AssignBotDto,
+  ) {
+    return this.channelService.assignBot(tenantId, channelId, dto.agentId);
   }
 
   // ─── Facebook ───────────────────────────────────────────────────

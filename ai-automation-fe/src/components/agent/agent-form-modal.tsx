@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { X, Bot, Sparkles } from "lucide-react";
-import { Agent, CreateAgentPayload } from "@/lib/services/agent.service";
+import { useState, useEffect } from "react";
+import { X, Bot, Sparkles, Globe, BookOpen, Lock } from "lucide-react";
+import { Agent, CreateAgentPayload, agentService } from "@/lib/services/agent.service";
+import { useChannelStore } from "@/store/channel-store";
+import { useKnowledgeStore } from "@/store/knowledge-store";
+import { useAgentStore } from "@/store/agent-store";
+import { useTenantStore } from "@/store/tenant-store";
 
 interface AgentFormModalProps {
   isOpen: boolean;
@@ -12,13 +16,9 @@ interface AgentFormModalProps {
   isSubmitting: boolean;
 }
 
-
-
 export function AgentFormModal({ isOpen, agent, onClose, onSubmit, isSubmitting }: AgentFormModalProps) {
   if (!isOpen) return null;
 
-  // Key-based remount: khi agent thay đổi (null → agent hoặc agent A → agent B),
-  // React sẽ tạo lại AgentFormInner với initial state mới
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
@@ -49,11 +49,32 @@ function AgentFormInner({
   isSubmitting: boolean;
 }) {
   const isEditMode = !!agent;
+  const activeTenant = useTenantStore((s) => s.activeTenant);
+  const tenantId = activeTenant?.id;
 
-  // State khởi tạo trực tiếp từ props — không cần useEffect sync
+  const channels = useChannelStore((s) => s.channels);
+  const fetchChannels = useChannelStore((s) => s.fetchChannels);
+  const documents = useKnowledgeStore((s) => s.documents);
+  const fetchDocuments = useKnowledgeStore((s) => s.fetchDocuments);
+  const agents = useAgentStore((s) => s.agents);
+
+  // Form fields
   const [name, setName] = useState(agent?.name ?? "");
   const [persona, setPersona] = useState(agent?.persona ?? "");
   const [greeting, setGreeting] = useState(agent?.greeting ?? "");
+
+  // Channel + Knowledge selections
+  const agentChannelIds = agent?.channels?.map((ch) => ch.id) ?? [];
+  const agentKnowledgeIds = agent?.knowledgeLinks?.map((lk) => lk.knowledge.id) ?? [];
+  const [selectedChannelIds, setSelectedChannelIds] = useState<string[]>(agentChannelIds);
+  const [selectedKnowledgeIds, setSelectedKnowledgeIds] = useState<string[]>(agentKnowledgeIds);
+
+  useEffect(() => {
+    if (tenantId) {
+      fetchChannels(tenantId);
+      fetchDocuments(tenantId);
+    }
+  }, [tenantId, fetchChannels, fetchDocuments]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,12 +82,49 @@ function AgentFormInner({
 
     const payload: CreateAgentPayload = {
       name: name.trim(),
+      channelIds: selectedChannelIds,
     };
 
     if (persona.trim()) payload.persona = persona.trim();
     if (greeting.trim()) payload.greeting = greeting.trim();
 
     await onSubmit(payload);
+
+    // Sync knowledge after agent is created/updated
+    if (tenantId && agent) {
+      try {
+        await agentService.syncKnowledge(tenantId, agent.id, {
+          knowledgeIds: selectedKnowledgeIds,
+        });
+      } catch (err) {
+        console.error("Lỗi sync knowledge:", err);
+      }
+    }
+  };
+
+  const toggleChannel = (channelId: string) => {
+    setSelectedChannelIds((prev) =>
+      prev.includes(channelId)
+        ? prev.filter((id) => id !== channelId)
+        : [...prev, channelId]
+    );
+  };
+
+  const toggleKnowledge = (docId: string) => {
+    setSelectedKnowledgeIds((prev) =>
+      prev.includes(docId)
+        ? prev.filter((id) => id !== docId)
+        : [...prev, docId]
+    );
+  };
+
+  // Xác định channel nào đã gán bot khác
+  const getChannelAssignment = (channelId: string) => {
+    if (selectedChannelIds.includes(channelId)) return null;
+    const otherAgent = agents.find(
+      (a) => a.id !== agent?.id && a.channels?.some((ch) => ch.id === channelId)
+    );
+    return otherAgent ?? null;
   };
 
   const nameError = name.length > 0 && name.trim().length < 2 ? "Tên Bot phải từ 2 ký tự" : "";
@@ -159,6 +217,104 @@ function AgentFormInner({
           />
         </div>
 
+        {/* Channel checkboxes */}
+        <div className="space-y-3">
+          <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+            <Globe className="w-4 h-4 text-blue-500" />
+            Kết nối kênh
+          </label>
+          {channels.length === 0 ? (
+            <p className="text-xs text-slate-400 dark:text-slate-500 italic py-2">
+              Chưa có kênh nào. Hãy kết nối Facebook/Zalo trước.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {channels.map((ch) => {
+                const assignedTo = getChannelAssignment(ch.id);
+                const isDisabled = !!assignedTo;
+                const isChecked = selectedChannelIds.includes(ch.id);
+
+                return (
+                  <label
+                    key={ch.id}
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                      isDisabled
+                        ? "border-slate-100 dark:border-slate-800 opacity-60 cursor-not-allowed"
+                        : isChecked
+                          ? "border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10"
+                          : "border-slate-200 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-800"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      disabled={isDisabled}
+                      onChange={() => toggleChannel(ch.id)}
+                      className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 disabled:opacity-50"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">
+                        {ch.externalName || ch.channelType}
+                      </span>
+                      <span className={`ml-2 text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+                        ch.channelType === "FACEBOOK"
+                          ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                          : "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400"
+                      }`}>
+                        {ch.channelType === "FACEBOOK" ? "FB" : "Zalo"}
+                      </span>
+                    </div>
+                    {isDisabled && (
+                      <span className="flex items-center gap-1 text-[10px] text-slate-400 shrink-0">
+                        <Lock className="w-3 h-3" />
+                        {assignedTo.name}
+                      </span>
+                    )}
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Knowledge checkboxes */}
+        <div className="space-y-3">
+          <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-emerald-500" />
+            Chọn Knowledge
+          </label>
+          {documents.length === 0 ? (
+            <p className="text-xs text-slate-400 dark:text-slate-500 italic py-2">
+              Chưa có tài liệu nào. Hãy upload ở trang Knowledge trước.
+            </p>
+          ) : (
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {documents.filter((d) => d.status === "READY").map((doc) => {
+                const isChecked = selectedKnowledgeIds.includes(doc.id);
+                return (
+                  <label
+                    key={doc.id}
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                      isChecked
+                        ? "border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-900/10"
+                        : "border-slate-200 dark:border-slate-800 hover:border-emerald-200 dark:hover:border-emerald-800"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => toggleKnowledge(doc.id)}
+                      className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
+                    />
+                    <span className="text-sm text-slate-700 dark:text-slate-300 font-medium truncate">
+                      {doc.fileName}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {/* Submit */}
         <div className="flex items-center gap-3 pt-3">

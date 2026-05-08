@@ -9,6 +9,12 @@ export interface ChannelConnection {
   tokenExpiresAt: string | null;
   createdAt: string;
   updatedAt: string;
+  agent: {
+    id: string;
+    name: string;
+    isActive: boolean;
+    isDefault: boolean;
+  } | null;
 }
 
 export const channelService = {
@@ -69,6 +75,18 @@ export const channelService = {
   disconnectZalo: async (tenantId: string): Promise<ChannelConnection> => {
     const response = await api.delete(
       `/tenants/${tenantId}/channels/zalo/disconnect`,
+    );
+    return response.data;
+  },
+
+  assignBot: async (
+    tenantId: string,
+    channelId: string,
+    agentId: string | null,
+  ): Promise<ChannelConnection> => {
+    const response = await api.patch(
+      `/tenants/${tenantId}/channels/${channelId}/assign-bot`,
+      { agentId },
     );
     return response.data;
   },

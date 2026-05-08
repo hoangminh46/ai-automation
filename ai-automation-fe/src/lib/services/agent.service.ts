@@ -1,5 +1,20 @@
 import { api } from "../axios";
 
+export interface AgentChannel {
+  id: string;
+  channelType: "FACEBOOK" | "ZALO";
+  externalName: string | null;
+  isActive: boolean;
+}
+
+export interface AgentKnowledgeLink {
+  knowledge: {
+    id: string;
+    fileName: string;
+    status: string;
+  };
+}
+
 export interface Agent {
   id: string;
   tenantId: string;
@@ -10,9 +25,12 @@ export interface Agent {
   temperature: number;
   maxTokens: number;
   isActive: boolean;
+  isDefault: boolean;
   createdAt: string;
   updatedAt: string;
   tools: AgentTool[];
+  channels: AgentChannel[];
+  knowledgeLinks: AgentKnowledgeLink[];
 }
 
 export interface AgentTool {
@@ -29,9 +47,14 @@ export interface CreateAgentPayload {
   persona?: string;
   greeting?: string;
   isActive?: boolean;
+  channelIds?: string[];
 }
 
 export type UpdateAgentPayload = Partial<CreateAgentPayload>;
+
+export interface AssignKnowledgePayload {
+  knowledgeIds: string[];
+}
 
 export interface ChatMessage {
   role: "CUSTOMER" | "BOT" | "HUMAN_AGENT";
@@ -71,6 +94,11 @@ export const agentService = {
 
   deleteAgent: async (tenantId: string, agentId: string): Promise<void> => {
     await api.delete(`/tenants/${tenantId}/agents/${agentId}`);
+  },
+
+  syncKnowledge: async (tenantId: string, agentId: string, payload: AssignKnowledgePayload): Promise<{ count: number }> => {
+    const response = await api.put(`/tenants/${tenantId}/agents/${agentId}/knowledge`, payload);
+    return response.data;
   },
 
   testChatWithAgent: async (

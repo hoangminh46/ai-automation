@@ -31,13 +31,14 @@ export default function AgentsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Toggle warning
+  const [toggleWarning, setToggleWarning] = useState<{ agentId: string; targetActive: boolean } | null>(null);
 
-  // Khi vào trang hoặc đổi Tenant: fetch data (store tự skip nếu đã load cho tenant này)
   const tenantId = activeTenant?.id;
   useEffect(() => {
     if (!tenantId) return;
     fetchAgents(tenantId);
-  }, [tenantId]);
+  }, [tenantId, fetchAgents]);
 
   // Handlers
   const handleOpenCreate = useCallback(() => {
@@ -51,28 +52,47 @@ export default function AgentsPage() {
   }, []);
 
   const handleOpenDelete = useCallback((agent: Agent) => {
+    if (agent.isDefault) return;
     setSelectedAgent(agent);
     setIsDeleteOpen(true);
   }, []);
 
   const handleToggleActive = useCallback(
-    async (agent: Agent) => {
-      if (!activeTenant) return;
-      await toggleAgentActive(activeTenant.id, agent.id, !agent.isActive);
+    (agent: Agent) => {
+      if (agent.isActive) {
+        setToggleWarning({ agentId: agent.id, targetActive: false });
+      } else {
+        if (!activeTenant) return;
+        toggleAgentActive(activeTenant.id, agent.id, true);
+      }
     },
     [activeTenant, toggleAgentActive]
   );
+
+  const confirmToggle = useCallback(async () => {
+    if (!activeTenant || !toggleWarning) return;
+    await toggleAgentActive(activeTenant.id, toggleWarning.agentId, toggleWarning.targetActive);
+    setToggleWarning(null);
+  }, [activeTenant, toggleWarning, toggleAgentActive]);
 
   const handleFormSubmit = useCallback(
     async (payload: CreateAgentPayload) => {
       if (!activeTenant) return;
       setIsSubmitting(true);
-      
+
       let success: boolean;
       if (selectedAgent) {
         success = await updateAgent(activeTenant.id, selectedAgent.id, payload);
       } else {
         success = await createAgent(activeTenant.id, payload);
+      }
+
+      if (success) {
+        // Knowledge sync for new agents (create returns updated agent in store)
+        if (!selectedAgent && payload.channelIds) {
+          // Knowledge sẽ sync trong form modal cho edit mode
+        }
+        await fetchAgents(activeTenant.id, true);
       }
 
       setIsSubmitting(false);
@@ -81,7 +101,7 @@ export default function AgentsPage() {
         setSelectedAgent(null);
       }
     },
-    [activeTenant, selectedAgent, createAgent, updateAgent]
+    [activeTenant, selectedAgent, createAgent, updateAgent, fetchAgents]
   );
 
   const handleDeleteConfirm = useCallback(async () => {
@@ -188,6 +208,45 @@ export default function AgentsPage() {
         onConfirm={handleDeleteConfirm}
         isDeleting={isDeleting}
       />
+
+      {/* Toggle inactive warning dialog */}
+      {toggleWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => setToggleWarning(null)}
+          />
+          <div className="relative bg-white dark:bg-slate-950 rounded-2xl shadow-2xl border border-slate-200/60 dark:border-slate-800 w-full max-w-sm animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 text-center">
+              <div className="w-14 h-14 bg-amber-50 dark:bg-amber-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-7 h-7 text-amber-500" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                Tạm dừng Bot?
+              </h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                Bot sẽ <strong className="text-slate-700 dark:text-slate-200">không tự động trả lời</strong> tin nhắn dù có kênh kết nối. Tin nhắn mới sẽ được chuyển sang trạng thái chờ xử lý.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 p-4 pt-0">
+              <button
+                type="button"
+                onClick={() => setToggleWarning(null)}
+                className="flex-1 py-2.5 px-4 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl font-medium text-sm transition-all"
+              >
+                Huỷ
+              </button>
+              <button
+                type="button"
+                onClick={confirmToggle}
+                className="flex-1 flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-medium py-2.5 px-4 rounded-xl transition-all text-sm"
+              >
+                Xác nhận tạm dừng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,13 +4,16 @@ import {
   Post,
   Body,
   Patch,
+  Put,
   Param,
   Delete,
   UseGuards,
 } from '@nestjs/common';
 import { AgentService } from './agent.service';
+import { AgentKnowledgeService } from './agent-knowledge.service';
 import { CreateAgentDto } from './dto/create-agent.dto';
 import { UpdateAgentDto } from './dto/update-agent.dto';
+import { AssignKnowledgeDto } from './dto/assign-knowledge.dto';
 import { SupabaseAuthGuard } from '../../common/guards/auth.guard';
 import { TenantGuard } from '../../common/guards/tenant.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -21,7 +24,10 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 @UseGuards(SupabaseAuthGuard, TenantGuard)
 @Controller('tenants/:tenantId/agents')
 export class AgentController {
-  constructor(private readonly agentService: AgentService) {}
+  constructor(
+    private readonly agentService: AgentService,
+    private readonly agentKnowledgeService: AgentKnowledgeService,
+  ) {}
 
   @ApiOperation({ summary: 'Tạo bot AI mới cho cửa hàng' })
   @Post()
@@ -76,5 +82,30 @@ export class AgentController {
     @Param('id') id: string,
   ) {
     return this.agentService.remove(user.sellerId, tenantId, id);
+  }
+
+  // ─── Knowledge N:M ──────────────────────────────────────────────
+
+  @ApiOperation({ summary: 'Gán knowledge cho bot (sync toàn bộ)' })
+  @Put(':agentId/knowledge')
+  syncKnowledge(
+    @Param('tenantId') tenantId: string,
+    @Param('agentId') agentId: string,
+    @Body() dto: AssignKnowledgeDto,
+  ) {
+    return this.agentKnowledgeService.syncKnowledge(
+      tenantId,
+      agentId,
+      dto.knowledgeIds,
+    );
+  }
+
+  @ApiOperation({ summary: 'Lấy danh sách knowledge đang gán cho bot' })
+  @Get(':agentId/knowledge')
+  getAgentKnowledge(
+    @Param('tenantId') tenantId: string,
+    @Param('agentId') agentId: string,
+  ) {
+    return this.agentKnowledgeService.getAgentKnowledge(tenantId, agentId);
   }
 }

@@ -93,7 +93,7 @@ export function CustomerPanel({
               Bot
             </span>
             <span className="text-slate-700 dark:text-slate-300 text-xs font-medium truncate max-w-[120px]">
-              {conversation.agent.name}
+              {conversation.agent?.name ?? "Chưa gán bot"}
             </span>
           </div>
 

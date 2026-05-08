@@ -11,6 +11,7 @@ export interface KnowledgeDocument {
   errorMessage: string | null;
   chunkCount: number | null;
   createdAt: string;
+  agentLinks?: { agent: { id: string; name: string } }[];
 }
 
 export const knowledgeService = {

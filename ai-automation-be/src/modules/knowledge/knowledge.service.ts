@@ -168,6 +168,16 @@ export class KnowledgeService {
         errorMessage: true,
         chunkCount: true,
         createdAt: true,
+        agentLinks: {
+          include: {
+            agent: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
   }

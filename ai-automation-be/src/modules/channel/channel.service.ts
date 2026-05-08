@@ -54,6 +54,7 @@ interface AgentConfig {
   temperature: number;
   maxTokens: number;
   greeting: string;
+  isActive: boolean;
 }
 
 @Injectable()
@@ -606,6 +607,60 @@ export class ChannelService implements OnModuleDestroy {
         tokenExpiresAt: true,
         createdAt: true,
         updatedAt: true,
+        agent: {
+          select: {
+            id: true,
+            name: true,
+            isActive: true,
+            isDefault: true,
+          },
+        },
+      },
+    });
+  }
+
+  async assignBot(
+    tenantId: string,
+    channelId: string,
+    agentId: string | null | undefined,
+  ) {
+    const channel = await this.prisma.channelConnection.findFirst({
+      where: { id: channelId, tenantId },
+    });
+    if (!channel) {
+      throw new NotFoundException('Không tìm thấy kênh trong cửa hàng này');
+    }
+
+    // Bỏ gán bot (agentId = null)
+    if (!agentId) {
+      return this.prisma.channelConnection.update({
+        where: { id: channelId },
+        data: { agentId: null },
+        include: {
+          agent: {
+            select: { id: true, name: true, isActive: true, isDefault: true },
+          },
+        },
+      });
+    }
+
+    // Validate agent thuộc cùng tenant
+    const agent = await this.prisma.agent.findFirst({
+      where: { id: agentId, tenantId },
+    });
+    if (!agent) {
+      throw new NotFoundException(
+        'Bot không tồn tại hoặc không thuộc cửa hàng này',
+      );
+    }
+
+    return this.prisma.channelConnection.update({
+      where: { id: channelId },
+      data: { agentId },
+      include: {
+        agent: {
+          select: { id: true, name: true, isActive: true, isDefault: true },
+        },
       },
     });
   }
@@ -753,6 +808,9 @@ export class ChannelService implements OnModuleDestroy {
           externalId: incoming.pageId,
         },
       },
+      include: {
+        agent: true,
+      },
     });
 
     if (!connection || !connection.isActive) {
@@ -790,16 +848,9 @@ export class ChannelService implements OnModuleDestroy {
       customerName,
     );
 
-    // Step 4: Lấy default agent
-    const agent = await this.prisma.agent.findFirst({
-      where: { tenantId, isActive: true },
-      orderBy: { createdAt: 'asc' },
-    });
-
-    if (!agent) {
-      this.logger.error(`[Routing] No active agent for tenant ${tenantId}`);
-      return;
-    }
+    // Step 4: Lấy agent từ channel binding (thay vì pick đầu tiên)
+    const agent = connection.agent as AgentConfig | null;
+    const hasActiveAgent = !!(agent && agent.isActive);
 
     // Step 4b: Resolve sellerId cho quota check (per-seller billing)
     const sellerId = await this.quotaService.getSellerIdFromTenant(tenantId);
@@ -807,16 +858,17 @@ export class ChannelService implements OnModuleDestroy {
     // Step 5: Tìm hoặc tạo Conversation
     const conversation = await this.resolveConversation(
       tenantId,
-      agent.id,
+      agent?.id ?? undefined,
       customer.id,
       incoming.senderId,
       channelType,
+      hasActiveAgent,
     );
 
-    // Step 6: Nếu OPEN → lưu tin nhắn nhưng không gọi bot
-    if (conversation.status === 'OPEN') {
+    // Step 6: Nếu không có bot active hoặc OPEN → lưu tin nhắn, không gọi LLM
+    if (!hasActiveAgent || conversation.status === 'OPEN') {
       this.logger.log(
-        `[Routing] Conversation ${conversation.id} is OPEN, skip bot reply`,
+        `[Routing] Conversation ${conversation.id}: ${!hasActiveAgent ? 'no active agent' : 'OPEN status'}, skip bot reply`,
       );
       await this.saveCustomerMessage(tenantId, conversation.id, incoming);
       return;
@@ -950,12 +1002,13 @@ export class ChannelService implements OnModuleDestroy {
     });
     const history = recentHistory.reverse();
 
-    // Knowledge search (graceful fallback)
+    // Knowledge search — bot-scoped (graceful fallback)
     let knowledgeContext: string | null = null;
     try {
       knowledgeContext = await this.knowledgeSearch.buildKnowledgeContext(
         tenantId,
         userMessage,
+        agent.id,
       );
     } catch (error) {
       this.logger.warn(
@@ -1010,10 +1063,11 @@ export class ChannelService implements OnModuleDestroy {
 
   private async resolveConversation(
     tenantId: string,
-    agentId: string,
+    agentId: string | undefined,
     customerId: string,
     channelSenderId: string,
     channelType: 'FACEBOOK' | 'ZALO' = 'FACEBOOK',
+    hasActiveAgent = true,
   ) {
     const existing = await this.prisma.conversation.findFirst({
       where: {
@@ -1034,7 +1088,7 @@ export class ChannelService implements OnModuleDestroy {
         customerId,
         channelType,
         channelConversationId: channelSenderId,
-        status: 'BOT_HANDLING',
+        status: hasActiveAgent ? 'BOT_HANDLING' : 'OPEN',
         lastMessageAt: new Date(),
       },
     });

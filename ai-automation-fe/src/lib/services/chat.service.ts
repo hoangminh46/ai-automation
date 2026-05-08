@@ -37,7 +37,7 @@ export interface ConversationListItem {
   lastMessageAt: string | null;
   createdAt: string;
   updatedAt: string;
-  agent: { id: string; name: string };
+  agent: { id: string; name: string } | null;
   customer: { id: string; name: string };
   _count: { messages: number };
 }

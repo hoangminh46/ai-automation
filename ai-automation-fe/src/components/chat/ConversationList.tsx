@@ -199,7 +199,9 @@ function ConversationItem({
           {/* Agent info */}
           <div className="flex items-center gap-1 mt-0.5 text-xs text-slate-400 dark:text-slate-500">
             <Bot className="w-3 h-3 shrink-0" />
-            <span className="truncate">{conversation.agent.name}</span>
+            <span className="truncate">
+              {conversation.agent?.name ?? "Chưa gán bot"}
+            </span>
           </div>
 
           <div className="flex items-center justify-between mt-1.5">
