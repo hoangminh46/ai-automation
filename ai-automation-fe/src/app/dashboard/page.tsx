@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { Store, ArrowRight, Bot, MessageSquare, Zap, Pencil, Check, X, Plus, Crown } from "lucide-react";
+import { Store, ArrowRight, Bot, MessageSquare, Zap, Pencil, Check, X, Plus, Crown, Users } from "lucide-react";
 import { useTenantStore } from "@/store/tenant-store";
 import { useUsageStore } from "@/store/usage-store";
 import { DashboardSkeleton } from "@/components/skeletons/dashboard-skeleton";
+import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
 import Link from "next/link";
 
 export default function DashboardPage() {
@@ -256,55 +257,83 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Grid Thông Số */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-800 flex flex-col justify-between shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-xl">
-              <MessageSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <span className="text-sm font-medium text-green-600 bg-green-50 dark:bg-green-900/30 px-2.5 py-1 rounded-full">Khả dụng</span>
-          </div>
-          <div>
-            <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Quota Tin Nhắn</h3>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-slate-900 dark:text-white">{activeTenant?.messageQuota || 0}</span>
-              <span className="text-slate-400 text-sm">tin</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-800 flex flex-col justify-between shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl">
-              <Zap className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Tin đã tiêu thụ</h3>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-slate-900 dark:text-white">{activeTenant?.messageUsed || 0}</span>
-              <span className="text-slate-400 text-sm">tin</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-800 flex flex-col justify-between shadow-sm">
+      {/* Grid Thông Số Cửa Hàng */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Bot AI */}
+        <Link href="/dashboard/agents" className="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-800 flex flex-col justify-between shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition-all group">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-purple-50 dark:bg-purple-900/30 rounded-xl">
               <Bot className="w-6 h-6 text-purple-600 dark:text-purple-400" />
             </div>
+            {activeTenant?.agents && activeTenant.agents.filter(a => a.isActive).length > 0 && (
+              <span className="text-xs font-medium text-green-600 bg-green-50 dark:bg-green-900/30 px-2.5 py-1 rounded-full">
+                {activeTenant.agents.filter(a => a.isActive).length} đang hoạt động
+              </span>
+            )}
           </div>
           <div>
-            <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Số Bot đang trực</h3>
+            <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Bot AI</h3>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-slate-900 dark:text-white">--</span>
+              <span className="text-3xl font-bold text-slate-900 dark:text-white">{activeTenant?.agents?.length || 0}</span>
               <span className="text-slate-400 text-sm">bot</span>
             </div>
-            <p className="text-xs text-slate-400 mt-2">Chưa kết nối API Agent</p>
+          </div>
+          <p className="text-xs text-blue-500 dark:text-blue-400 mt-3 opacity-100 transition-opacity">Quản lý Bot →</p>
+        </Link>
+
+        {/* Kênh kết nối */}
+        <Link href="/dashboard/channels" className="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-800 flex flex-col justify-between shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition-all group">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-xl">
+              <MessageSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            </div>
+          </div>
+          <div>
+            <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Kênh kết nối</h3>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-slate-900 dark:text-white">{activeTenant?._count?.channelConnections || 0}</span>
+              <span className="text-slate-400 text-sm">kênh</span>
+            </div>
+          </div>
+          <p className="text-xs text-blue-500 dark:text-blue-400 mt-3 opacity-100 transition-opacity">Quản lý Kênh →</p>
+        </Link>
+
+        {/* Tài liệu tri thức */}
+        <Link href="/dashboard/knowledge" className="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-800 flex flex-col justify-between shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition-all group">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-xl">
+              <Zap className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+            </div>
+          </div>
+          <div>
+            <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Tài liệu tri thức</h3>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-slate-900 dark:text-white">{activeTenant?._count?.knowledgeDocuments || 0}</span>
+              <span className="text-slate-400 text-sm">tài liệu</span>
+            </div>
+          </div>
+          <p className="text-xs text-blue-500 dark:text-blue-400 mt-3 opacity-100 transition-opacity">Quản lý Knowledge →</p>
+        </Link>
+
+        {/* Khách hàng */}
+        <div className="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-800 flex flex-col justify-between shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded-xl">
+              <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
+            </div>
+          </div>
+          <div>
+            <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Khách hàng</h3>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-slate-900 dark:text-white">{activeTenant?._count?.customers || 0}</span>
+              <span className="text-slate-400 text-sm">người</span>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Charts */}
+      {activeTenant && <DashboardCharts tenantId={activeTenant.id} />}
 
       {/* Create Modal */}
       {showCreateModal && (

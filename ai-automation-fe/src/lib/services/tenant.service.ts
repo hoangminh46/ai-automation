@@ -1,5 +1,12 @@
 import { api } from "../axios";
 
+export interface TenantStats {
+  dailyConversations: { date: string; count: number }[];
+  dailyCustomers: { date: string; count: number }[];
+  channelDistribution: { channel: string; count: number }[];
+  botPerformance: { botId: string; botName: string; count: number }[];
+}
+
 export interface Tenant {
   id: string;
   name: string;
@@ -9,6 +16,13 @@ export interface Tenant {
   createdAt: string;
   updatedAt: string;
   settings?: Record<string, unknown>;
+  agents?: { id: string; name: string; isActive: boolean }[];
+  _count?: {
+    channelConnections: number;
+    knowledgeDocuments: number;
+    customers: number;
+    conversations: number;
+  };
 }
 
 export const tenantService = {
@@ -40,6 +54,11 @@ export const tenantService = {
 
   updateTenant: async (tenantId: string, payload: { name?: string; slug?: string }): Promise<Tenant> => {
     const response = await api.patch(`/tenants/${tenantId}`, payload);
+    return response.data;
+  },
+
+  getStats: async (tenantId: string, days = 30): Promise<TenantStats> => {
+    const response = await api.get(`/tenants/${tenantId}/stats?days=${days}`);
     return response.data;
   },
 };

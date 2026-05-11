@@ -1,58 +1,64 @@
 {
-  "updated_at": "2026-05-08T16:50:00+07:00",
+  "updated_at": "2026-05-11T15:25:00+07:00",
   "current_branch": "main",
-  "active_handoff_id": "handoff-20260508-165000",
+  "active_handoff_id": "handoff-20260511-152500",
 
   "working_on": {
-    "feature": "SePay Payment Integration - Bug fixes & UX polish",
-    "current_phase": "Testing & fixing",
-    "task": "Fixed duplicate orders, pending conflict UX, transaction history auto-refresh",
+    "feature": "Dashboard Analytics Charts",
+    "current_phase": "Committed",
+    "task": "BE stats API + FE Recharts dashboard (conversations, customers, channels, bot performance)",
     "status": "committed"
   },
 
   "git_snapshot": {
-    "head_sha": "c472debaafdd5856b4a61855ad832f68cafba543",
-    "last_saved_head_sha": "c472debaafdd5856b4a61855ad832f68cafba543",
-    "base_sha": "04f2fc03cf1fd47ef1684c070f3f36e520ad9602",
+    "head_sha": "e76e3afa282d93499449d270276fb1b266753586",
+    "last_saved_head_sha": "e76e3afa282d93499449d270276fb1b266753586",
+    "base_sha": "c472debaafdd5856b4a61855ad832f68cafba543",
     "branch": "main",
     "has_uncommitted_changes": false,
     "changed_files": [],
     "staged_files": [],
     "unstaged_files": [],
     "untracked_files": [],
-    "commit_range": "04f2fc0..c472deb",
+    "commit_range": "d615444..e76e3af",
     "commits_since_last_save": [
-      "c472deb feat(payment): fix duplicate orders, pending conflict UX & tx history refresh",
-      "0b67ca5 chore: save-brain - Bot-Channel Binding complete (8/8 phases)"
+      "e76e3af feat(dashboard): analytics charts + stats API + save-brain"
     ]
   },
 
   "pending_tasks": [
-    "Test full E2E payment flow: FE create order → real bank transfer → SePay webhook → order completed → subscription activated",
-    "Test pending_conflict UX: resume vs cancel+retry flow",
-    "Verify Ngrok webhook forwarding with real SePay transactions",
-    "Plan prices temporarily set to 2000/2300/2500 for testing - restore before production",
+    "Commit Dashboard Analytics changes (7 files, +781 lines)",
+    "Add date range selector (presets: 7d/14d/30d/90d + custom)",
+    "Add KPI summary row (total conversations, customers, bot response rate)",
+    "Auto-aggregation by granularity (day/week/month) based on range",
+    "Test charts with real production data",
+    "Test full E2E payment flow (still pending from previous session)",
     "Manual E2E testing for Bot-Channel Binding (62 test cases)"
   ],
 
   "recent_changes": [
     {
-      "sha": "c472deb",
-      "description": "Payment module bug fixes and UX improvements",
+      "sha": "d615444",
+      "description": "Save-brain only (no code changes)"
+    },
+    {
+      "type": "working_tree",
+      "description": "Dashboard Analytics Charts - full-stack implementation",
       "scope": [
-        "FE: Fix React StrictMode double-mount creating duplicate orders (useRef guard)",
-        "FE: Add pending_conflict state in PaymentModal (resume/cancel existing order)",
-        "FE: Fix transaction history not refreshing (key prop on modal close)",
-        "FE: Remove unreliable onOrderChange callback",
-        "BE: GET /sellers/me/payment-orders/pending endpoint (QR + bankInfo for resume)",
-        "BE: findPendingBySeller service method"
+        "BE: GET /tenants/:id/stats?days=30 endpoint — daily conversations, daily customers, channel distribution, bot performance",
+        "BE: TenantService.getStats() with Prisma groupBy + date fill",
+        "BE: findById now includes _count (channels, knowledge, customers, conversations)",
+        "FE: DashboardCharts component with 4 Recharts charts (Area, Pie, Bar, Horizontal Bar)",
+        "FE: Dashboard page redesigned — 4 stat cards (Bot AI, Kênh, Tài liệu, Khách hàng) with links",
+        "FE: TenantStats interface + getStats() API in tenant.service.ts",
+        "FE: Added recharts@^3.8.1 dependency"
       ]
     }
   ],
 
   "uncommitted_summary": {
     "status": "clean",
-    "summary": "All changes committed to main",
+    "summary": "All changes committed and pushed to main (e76e3af)",
     "files": []
   }
 }

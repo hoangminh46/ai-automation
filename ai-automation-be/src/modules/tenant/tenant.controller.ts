@@ -5,6 +5,7 @@ import {
   Body,
   Patch,
   Param,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { TenantService } from './tenant.service';
@@ -52,5 +53,19 @@ export class TenantController {
     @Body() updateTenantDto: UpdateTenantDto,
   ) {
     return this.tenantService.update(user.sellerId, id, updateTenantDto);
+  }
+
+  @ApiOperation({ summary: 'Thống kê cửa hàng (charts)' })
+  @Get(':id/stats')
+  getStats(
+    @CurrentUser() user: { sellerId: string },
+    @Param('id') id: string,
+    @Query('days') days?: string,
+  ) {
+    return this.tenantService.getStats(
+      user.sellerId,
+      id,
+      days ? parseInt(days, 10) : 30,
+    );
   }
 }

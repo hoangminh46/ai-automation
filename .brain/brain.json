@@ -1,8 +1,8 @@
 {
   "version": "1.0",
   "project_name": "AI Automation Suite",
-  "updated_at": "2026-05-08T16:50:00+07:00",
-  "last_verified_sha": "c472debaafdd5856b4a61855ad832f68cafba543",
+  "updated_at": "2026-05-11T15:25:00+07:00",
+  "last_verified_sha": "d615444e37bfaa32a89576080f266ec3d13f0db3",
 
   "tech_stack": {
     "backend": {
@@ -21,7 +21,8 @@
       "state": "Zustand",
       "styling": "Tailwind CSS",
       "http": "Axios",
-      "icons": "Lucide React"
+      "icons": "Lucide React",
+      "charts": "Recharts 3.8"
     },
     "infrastructure": {
       "hosting": "Supabase (DB) + ngrok (dev tunnel)",
@@ -57,7 +58,7 @@
   },
 
   "api_endpoints": {
-    "last_changed_sha": "c472deb",
+    "last_changed_sha": "d615444",
     "key_endpoints": [
       "POST /tenants - Create tenant (auto-creates default bot)",
       "GET /tenants/:tenantId/agents - List agents with channels + knowledge",
@@ -70,7 +71,8 @@
       "POST /tenants/:tenantId/agents/:agentId/knowledge - Sync knowledge links",
       "POST /tenants/:tenantId/chat - Send message (routed by agent's knowledge)",
       "POST /tenants/:tenantId/chat/test - Playground test (no DB persist)",
-      "GET /sellers/me/payment-orders/pending - Resume pending payment (QR + bankInfo)"
+      "GET /sellers/me/payment-orders/pending - Resume pending payment (QR + bankInfo)",
+      "GET /tenants/:tenantId/stats?days=N - Dashboard analytics (daily conversations, customers, channel dist, bot perf)"
     ]
   },
 
@@ -99,6 +101,16 @@
     "channel_integration": {
       "status": "complete",
       "description": "Facebook Messenger + Zalo OA OAuth, webhook handling"
+    },
+    "dashboard_analytics": {
+      "status": "in_progress",
+      "last_changed_sha": "working_tree",
+      "description": "Dashboard charts: daily conversations (Area), customer growth (Bar), channel distribution (Pie), bot performance (Horizontal Bar). BE stats API with Prisma groupBy. FE uses Recharts 3.8.",
+      "components": [
+        "BE: GET /tenants/:id/stats endpoint",
+        "FE: DashboardCharts component (4 charts)",
+        "FE: Redesigned stat cards (Bot AI, Kênh, Tài liệu, Khách hàng)"
+      ]
     }
   },
 

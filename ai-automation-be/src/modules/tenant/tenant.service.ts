@@ -60,6 +60,14 @@ export class TenantService {
       },
       include: {
         agents: { select: { id: true, name: true, isActive: true } },
+        _count: {
+          select: {
+            channelConnections: true,
+            knowledgeDocuments: true,
+            customers: true,
+            conversations: true,
+          },
+        },
       },
     });
   }
@@ -93,5 +101,92 @@ export class TenantService {
       where: { id },
       data: updateTenantDto,
     });
+  }
+
+  async getStats(sellerId: string, tenantId: string, days = 30) {
+    const tenant = await this.prisma.tenant.findFirst({
+      where: { id: tenantId, members: { some: { sellerId } } },
+    });
+    if (!tenant) throw new NotFoundException('Không tìm thấy cửa hàng');
+
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+    since.setHours(0, 0, 0, 0);
+
+    // Step 1: Raw queries for daily aggregations (grouped by date)
+    const [conversationsByDay, customersByDay, channelDist, botPerf] =
+      await Promise.all([
+        this.prisma.conversation.groupBy({
+          by: ['createdAt'],
+          where: { tenantId, createdAt: { gte: since } },
+          _count: true,
+        }),
+        this.prisma.customer.groupBy({
+          by: ['createdAt'],
+          where: { tenantId, createdAt: { gte: since } },
+          _count: true,
+        }),
+        this.prisma.conversation.groupBy({
+          by: ['channelType'],
+          where: { tenantId },
+          _count: true,
+        }),
+        this.prisma.conversation.groupBy({
+          by: ['agentId'],
+          where: { tenantId, agentId: { not: null } },
+          _count: true,
+        }),
+      ]);
+
+    // Step 2: Aggregate daily counts by date string (YYYY-MM-DD)
+    const convMap = new Map<string, number>();
+    for (const row of conversationsByDay) {
+      const key = row.createdAt.toISOString().slice(0, 10);
+      convMap.set(key, (convMap.get(key) || 0) + row._count);
+    }
+
+    const custMap = new Map<string, number>();
+    for (const row of customersByDay) {
+      const key = row.createdAt.toISOString().slice(0, 10);
+      custMap.set(key, (custMap.get(key) || 0) + row._count);
+    }
+
+    // Step 3: Fill missing days with 0 (includes today)
+    const dailyConversations: { date: string; count: number }[] = [];
+    const dailyCustomers: { date: string; count: number }[] = [];
+    for (let i = 0; i <= days; i++) {
+      const d = new Date(since);
+      d.setDate(d.getDate() + i);
+      const key = d.toISOString().slice(0, 10);
+      dailyConversations.push({ date: key, count: convMap.get(key) || 0 });
+      dailyCustomers.push({ date: key, count: custMap.get(key) || 0 });
+    }
+
+    // Step 4: Resolve agent names for bot performance
+    const agentIds = botPerf
+      .map((r) => r.agentId)
+      .filter((id): id is string => !!id);
+    const agents =
+      agentIds.length > 0
+        ? await this.prisma.agent.findMany({
+            where: { id: { in: agentIds } },
+            select: { id: true, name: true },
+          })
+        : [];
+    const agentMap = new Map(agents.map((a) => [a.id, a.name]));
+
+    return {
+      dailyConversations,
+      dailyCustomers,
+      channelDistribution: channelDist.map((r) => ({
+        channel: r.channelType || 'UNKNOWN',
+        count: r._count,
+      })),
+      botPerformance: botPerf.map((r) => ({
+        botId: r.agentId,
+        botName: agentMap.get(r.agentId!) || 'Không rõ',
+        count: r._count,
+      })),
+    };
   }
 }
