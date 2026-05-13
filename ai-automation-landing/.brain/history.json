@@ -1,0 +1,25 @@
+[
+  {
+    "id": "handoff-20260513-172600",
+    "saved_at": "2026-05-13T10:26:30Z",
+    "branch": "main",
+    "head_sha": "0272d0f095ead9b49d803f3b7800ec30d0cfdb9f",
+    "summary": "Completed Landing Page UI with Interactive Chat & Dark Mode",
+    "project_changes": [
+      "New ChatMockup.tsx component for interactive demos",
+      "Comprehensive Dark Mode system with instant switching",
+      "Layout synchronization for feature cards",
+      "SEO & Metadata initialization"
+    ],
+    "decisions": [
+      "Used 'Transition Suppression' hack for dark mode to solve browser rendering lag.",
+      "Kept scroll header logic separate in Header.astro for clean lifecycle management.",
+      "Used auto-rows-fr for grid layout to avoid inconsistent card heights."
+    ],
+    "next_steps": [
+      "Validate the site across different browsers (Safari/Firefox)",
+      "Add remaining pages (Privacy, Terms) if required",
+      "Set up CI/CD for deployment"
+    ]
+  }
+]

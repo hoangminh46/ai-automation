@@ -1,0 +1,41 @@
+{
+  "tech_stack": {
+    "framework": "Astro",
+    "ui_library": "React",
+    "styling": "Tailwind CSS v4",
+    "dependencies": {
+      "astro": "latest",
+      "react": "latest",
+      "tailwindcss": "v4"
+    }
+  },
+  "features": [
+    {
+      "name": "Interactive Chat Mockup",
+      "status": "completed",
+      "description": "Automated typing and cycling chat scenarios to demonstrate AI capabilities.",
+      "last_verified_sha": "0272d0f"
+    },
+    {
+      "name": "Snappy Dark Mode",
+      "status": "completed",
+      "description": "Instant theme switching using transition suppression hack and localStorage persistence.",
+      "last_verified_sha": "0272d0f"
+    },
+    {
+      "name": "Feature Grid",
+      "status": "completed",
+      "description": "Uniform height cards using CSS grid auto-rows-fr.",
+      "last_verified_sha": "0272d0f"
+    }
+  ],
+  "coding_conventions": [
+    "Dark Mode uses .dark class on <html> root",
+    "Theme toggle uses disable-transitions class to prevent lag",
+    "Standardized surface color tokens (50-950) in global.css"
+  ],
+  "business_rules": [
+    "Bot responses are counted for pricing, staff messages are not.",
+    "Free trial requires no credit card."
+  ]
+}
