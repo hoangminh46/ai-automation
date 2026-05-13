@@ -1,0 +1,353 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import FeatureCard from '../components/FeatureCard.astro';
+import StepCard from '../components/StepCard.astro';
+import PricingCard from '../components/PricingCard.astro';
+import FAQAccordion from '../components/FAQAccordion.tsx';
+import ChatMockup from '../components/ChatMockup.tsx';
+import { SITE, CTA, STATS, FEATURES, STEPS, PLANS, FAQS } from '../consts';
+---
+
+<BaseLayout>
+  <Header />
+
+  <main id="main-content">
+    <!-- ===== HERO SECTION ===== -->
+    <section id="hero" class="relative overflow-hidden pt-28 pb-16 md:pt-36 md:pb-24">
+      <!-- Background gradient blobs -->
+      <div class="pointer-events-none absolute inset-0 -z-10">
+        <div class="absolute -top-40 left-1/2 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-primary-100/60 dark:bg-primary-900/20 blur-3xl"></div>
+        <div class="absolute top-20 right-0 h-[400px] w-[400px] rounded-full bg-accent-400/10 dark:bg-accent-600/10 blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 h-[300px] w-[300px] rounded-full bg-primary-50/40 dark:bg-primary-900/10 blur-3xl"></div>
+      </div>
+
+      <div class="mx-auto max-w-7xl px-6">
+        <!-- 2-Column: Text Left + Mockup Right -->
+        <div class="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+          <!-- Left Column: Text Content -->
+          <div class="text-center lg:text-left">
+            <!-- Headline -->
+            <h1 class="animate-fade-up text-4xl font-extrabold leading-tight tracking-tight text-surface-900 dark:text-white md:text-5xl lg:text-6xl lg:leading-[1.1]">
+              Tự động <span class="bg-gradient-to-r from-primary-600 to-accent-500 dark:from-primary-400 dark:to-accent-400 bg-clip-text text-transparent">chốt đơn 24/7</span> bằng AI thông minh
+            </h1>
+
+            <!-- Sub-headline -->
+            <p class="animate-fade-up mx-auto mt-6 max-w-xl text-lg leading-relaxed text-surface-700/80 dark:text-surface-400 lg:mx-0" style="animation-delay: 0.15s">
+              Chatbot AI học từ tài liệu của bạn, tự động trả lời khách hàng trên Facebook, Zalo — chính xác như nhân viên giỏi nhất.
+            </p>
+
+            <!-- CTA Buttons -->
+            <div class="animate-fade-up mt-8 flex flex-col items-center gap-4 sm:flex-row lg:justify-start" style="animation-delay: 0.3s">
+              <a
+                href={CTA.trial.href}
+                class="group inline-flex items-center gap-2 rounded-xl bg-primary-600 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-primary-600/25 transition-all hover:bg-primary-700 hover:shadow-xl hover:shadow-primary-600/30 hover:-translate-y-0.5"
+              >
+                {CTA.trial.label}
+                <svg class="h-5 w-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </a>
+              <a
+                href={CTA.demo.href}
+                class="inline-flex items-center gap-2 rounded-xl border border-surface-200 dark:border-dark-border-light bg-white dark:bg-dark-card px-8 py-4 text-base font-semibold text-surface-700 dark:text-surface-300 shadow-sm transition-all hover:border-primary-300 dark:hover:border-primary-600 hover:text-primary-600 dark:hover:text-primary-400 hover:shadow-md hover:-translate-y-0.5"
+              >
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {CTA.demo.label}
+              </a>
+            </div>
+
+            <!-- Platform Badges -->
+            <div class="animate-fade-up mt-8 flex flex-wrap items-center justify-center gap-4 lg:justify-start" style="animation-delay: 0.45s">
+              <span class="text-sm text-surface-700/50 dark:text-surface-500">Hỗ trợ trên</span>
+              <div class="flex items-center gap-3">
+                <!-- Facebook -->
+                <div class="flex items-center gap-1.5 rounded-full bg-surface-100 dark:bg-dark-card px-3 py-1.5">
+                  <svg class="h-4 w-4 text-[#1877F2]" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                  <span class="text-xs font-medium text-surface-700 dark:text-surface-300">Messenger</span>
+                </div>
+                <!-- Zalo -->
+                <div class="flex items-center gap-1.5 rounded-full bg-surface-100 dark:bg-dark-card px-3 py-1.5">
+                  <svg class="h-4 w-4 text-[#0068FF]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 16.346c-.156.468-.832.858-1.34.97-.347.078-.8.14-2.326-.5-1.953-.818-3.21-2.8-3.307-2.93-.097-.13-.79-1.052-.79-2.006s.5-1.423.678-1.617c.178-.195.39-.243.52-.243.13 0 .26 0 .373.007.12.006.28-.045.438.334.163.39.556 1.357.605 1.455.05.098.082.212.016.342-.065.13-.098.212-.195.325-.098.114-.206.254-.294.34-.097.098-.198.204-.085.4.114.195.505.832 1.084 1.348.743.664 1.37.87 1.565.968.195.098.31.082.423-.05.114-.13.487-.568.617-.763.13-.195.26-.163.438-.098.178.065 1.13.534 1.325.63.195.098.325.147.373.228.05.082.05.47-.106.938z"/></svg>
+                  <span class="text-xs font-medium text-surface-700 dark:text-surface-300">Zalo</span>
+                </div>
+                <!-- Website -->
+                <div class="flex items-center gap-1.5 rounded-full bg-surface-100 dark:bg-dark-card px-3 py-1.5">
+                  <svg class="h-4 w-4 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                  <span class="text-xs font-medium text-surface-700 dark:text-surface-300">Website</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Chat Mockup -->
+          <div class="animate-fade-up relative mx-auto w-full max-w-md lg:max-w-none" style="animation-delay: 0.3s">
+            <ChatMockup client:visible />
+
+            <!-- Decorative elements -->
+            <div class="absolute -top-4 -right-4 h-20 w-20 rounded-2xl bg-gradient-to-br from-accent-400/20 to-primary-400/20 blur-xl"></div>
+            <div class="absolute -bottom-4 -left-4 h-16 w-16 rounded-2xl bg-gradient-to-br from-primary-400/20 to-accent-400/20 blur-xl"></div>
+          </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="animate-fade-up mt-16 grid grid-cols-1 gap-8 sm:grid-cols-3" style="animation-delay: 0.6s">
+          {STATS.map((stat) => (
+            <div class="flex flex-col items-center gap-1 text-center">
+              <span class="text-3xl font-extrabold text-surface-900 dark:text-white md:text-4xl">{stat.value}</span>
+              <span class="text-sm text-surface-700/60 dark:text-surface-400">{stat.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FEATURES SECTION ===== -->
+    <section id="features" class="bg-surface-50 dark:bg-dark-bg py-section">
+      <div class="mx-auto max-w-7xl px-6">
+        <!-- Section Header -->
+        <div class="reveal mx-auto max-w-2xl text-center">
+          <p class="text-sm font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400">Tính năng</p>
+          <h2 class="mt-3 text-3xl font-bold text-surface-900 dark:text-white md:text-4xl">Tất cả công cụ bạn cần để bán hàng hiệu quả hơn</h2>
+          <p class="mt-4 text-surface-700/70 dark:text-surface-400">Từ trả lời tin nhắn đến quản lý khách hàng — AI Chatbot lo tất cả, bạn chỉ cần tập trung vào sản phẩm.</p>
+        </div>
+
+        <!-- Feature Cards Grid -->
+        <div class="mt-12 grid auto-rows-fr grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map((feature, i) => (
+            <div class="reveal h-full" style={`animation-delay: ${i * 0.1}s`}>
+              <FeatureCard icon={feature.icon} title={feature.title} description={feature.description} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== HOW IT WORKS SECTION ===== -->
+    <section id="how-it-works" class="py-section dark:bg-dark-card">
+      <div class="mx-auto max-w-7xl px-6">
+        <!-- Section Header -->
+        <div class="reveal mx-auto max-w-2xl text-center">
+          <p class="text-sm font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400">Cách hoạt động</p>
+          <h2 class="mt-3 text-3xl font-bold text-surface-900 dark:text-white md:text-4xl">3 bước đơn giản để bắt đầu</h2>
+          <p class="mt-4 text-surface-700/70 dark:text-surface-400">Không cần kỹ thuật. Không cần code. Chỉ cần 2 phút.</p>
+        </div>
+
+        <!-- Steps -->
+        <div class="reveal relative mt-16">
+          <!-- Connector line (desktop only) -->
+          <div class="absolute top-8 left-[calc(16.67%+32px)] right-[calc(16.67%+32px)] hidden h-0.5 bg-gradient-to-r from-primary-200 dark:from-primary-800 via-primary-300 dark:via-primary-700 to-primary-200 dark:to-primary-800 lg:block" aria-hidden="true"></div>
+
+          <div class="grid grid-cols-1 gap-12 lg:grid-cols-3 lg:gap-8">
+            {STEPS.map((step) => (
+              <StepCard
+                number={step.number}
+                title={step.title}
+                description={step.description}
+                icon={step.icon}
+              />
+            ))}
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="reveal mt-12 text-center">
+          <a
+            href={CTA.trial.href}
+            class="group inline-flex items-center gap-2 rounded-xl bg-primary-600 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-primary-600/25 transition-all hover:bg-primary-700 hover:shadow-xl hover:-translate-y-0.5"
+          >
+            Bắt đầu ngay — chỉ mất 2 phút
+            <svg class="h-5 w-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PRICING SECTION ===== -->
+    <section id="pricing" class="bg-surface-50 dark:bg-dark-bg py-section">
+      <div class="mx-auto max-w-7xl px-6">
+        <!-- Section Header -->
+        <div class="reveal mx-auto max-w-2xl text-center">
+          <p class="text-sm font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400">Bảng giá</p>
+          <h2 class="mt-3 text-3xl font-bold text-surface-900 dark:text-white md:text-4xl">Gói phù hợp cho mọi quy mô</h2>
+          <p class="mt-4 text-surface-700/70 dark:text-surface-400">Tất cả gói đều kết nối unlimited kênh. Nâng/hạ gói bất kỳ lúc nào.</p>
+        </div>
+
+        <!-- Pricing Cards -->
+        <div class="reveal mt-12 grid grid-cols-1 items-start gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {PLANS.map((plan) => (
+            <PricingCard
+              name={plan.name}
+              price={plan.price}
+              period={plan.period}
+              description={plan.description}
+              highlighted={plan.highlighted}
+              cta={plan.cta}
+              features={[...plan.features]}
+              ctaHref={CTA.trial.href}
+            />
+          ))}
+        </div>
+
+        <!-- Note -->
+        <p class="reveal mt-8 text-center text-sm text-surface-700/50 dark:text-surface-500">
+          Đơn vị tính: AI Responses — chỉ đếm lượt bot trả lời, tin nhắn nhân viên gửi không đếm.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== SOCIAL PROOF ===== -->
+    <section class="relative overflow-hidden bg-gradient-to-br from-primary-600 to-primary-800 py-16">
+      <div class="pointer-events-none absolute inset-0">
+        <div class="absolute -top-20 left-1/4 h-[300px] w-[300px] rounded-full bg-white/5 blur-3xl"></div>
+        <div class="absolute -bottom-20 right-1/4 h-[300px] w-[300px] rounded-full bg-white/5 blur-3xl"></div>
+      </div>
+      <div class="reveal relative z-10 mx-auto max-w-5xl px-6">
+        <div class="grid grid-cols-1 gap-8 text-center sm:grid-cols-3">
+          <div class="flex flex-col items-center gap-2">
+            <span class="text-4xl font-extrabold text-white md:text-5xl">50%</span>
+            <span class="text-sm text-white/70">Tăng tỷ lệ chốt đơn</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <span class="text-4xl font-extrabold text-white md:text-5xl">80%</span>
+            <span class="text-sm text-white/70">Tiết kiệm thời gian CSKH</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <span class="text-4xl font-extrabold text-white md:text-5xl">2 phút</span>
+            <span class="text-sm text-white/70">Setup xong, bắt đầu dùng</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FAQ ===== -->
+    <section id="faq" class="py-section dark:bg-dark-card">
+      <div class="mx-auto max-w-7xl px-6">
+        <div class="reveal mx-auto max-w-2xl text-center">
+          <p class="text-sm font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400">FAQ</p>
+          <h2 class="mt-3 text-3xl font-bold text-surface-900 dark:text-white md:text-4xl">Câu hỏi thường gặp</h2>
+          <p class="mt-4 text-surface-700/70 dark:text-surface-400">Chưa tìm thấy câu trả lời? Liên hệ hỗ trợ qua chat.</p>
+        </div>
+        <div class="reveal mt-12">
+          <FAQAccordion client:visible items={[...FAQS]} />
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FINAL CTA ===== -->
+    <section class="reveal relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 py-24">
+      <div class="pointer-events-none absolute inset-0">
+        <div class="absolute -top-20 -right-20 h-[400px] w-[400px] rounded-full bg-white/5 blur-3xl"></div>
+        <div class="absolute -bottom-20 -left-20 h-[400px] w-[400px] rounded-full bg-white/5 blur-3xl"></div>
+        <div class="absolute top-1/2 left-1/2 h-[200px] w-[200px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-400/10 blur-3xl"></div>
+      </div>
+
+      <div class="relative z-10 mx-auto max-w-3xl px-6 text-center">
+        <h2 class="text-3xl font-bold text-white md:text-5xl">
+          Sẵn sàng tự động hóa việc bán hàng?
+        </h2>
+        <p class="mt-4 text-lg text-white/80 md:text-xl">
+          Hơn 100+ shop đã tin dùng. Bắt đầu miễn phí — không cần thẻ tín dụng.
+        </p>
+
+        <!-- Dual CTA -->
+        <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <a
+            href={CTA.trial.href}
+            class="group inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-base font-semibold text-primary-700 shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5"
+          >
+            {CTA.trial.label}
+            <svg class="h-5 w-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </a>
+          <a
+            href={CTA.demo.href}
+            class="inline-flex items-center gap-2 rounded-xl border border-white/30 px-8 py-4 text-base font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:-translate-y-0.5"
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {CTA.demo.label}
+          </a>
+        </div>
+
+        <!-- Trust badges -->
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-white/60">
+          <span class="flex items-center gap-1.5">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+            Miễn phí 7 ngày
+          </span>
+          <span class="flex items-center gap-1.5">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+            Không cần thẻ tín dụng
+          </span>
+          <span class="flex items-center gap-1.5">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+            Hủy bất kỳ lúc nào
+          </span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+
+  <!-- JSON-LD: WebSite schema -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": SITE.name,
+    "url": SITE.url,
+    "description": SITE.description,
+    "inLanguage": "vi"
+  })} />
+
+  <!-- JSON-LD: Organization schema -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": SITE.name,
+    "url": SITE.url,
+    "logo": SITE.url + "/favicon.svg",
+    "description": SITE.description
+  })} />
+
+  <!-- JSON-LD: SoftwareApplication schema -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": SITE.name,
+    "description": SITE.description,
+    "url": SITE.url,
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "AggregateOffer",
+      "lowPrice": "0",
+      "highPrice": "1199000",
+      "priceCurrency": "VND",
+      "offerCount": "4"
+    }
+  })} />
+  <!-- JSON-LD: FAQPage schema -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": FAQS.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  })} />
+</BaseLayout>
