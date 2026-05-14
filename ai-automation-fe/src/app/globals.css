@@ -26,6 +26,22 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.message-content {
+  word-break: normal;
+  overflow-wrap: anywhere;
+  line-break: auto;
+  text-wrap: pretty;
+}
+
+.message-content a {
+  color: inherit;
+}
+
+.message-content p,
+.message-content ul {
+  min-width: 0;
+}
+
 /* ── Global Slim Scrollbar ── */
 
 /* Firefox */

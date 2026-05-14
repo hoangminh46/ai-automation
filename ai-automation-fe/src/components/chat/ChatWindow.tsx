@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from "react";
+import React, { Fragment, useRef, useEffect, useState } from "react";
 import {
   Bot,
   User,
@@ -25,6 +25,179 @@ interface ChatWindowProps {
   isLoadingMessages: boolean;
   onSendMessage?: (content: string) => Promise<void>;
   sendError?: string | null;
+}
+
+const MESSAGE_GROUP_WINDOW_MS = 5 * 60 * 1000;
+
+function normalizeUrl(candidate: string): string {
+  return candidate.startsWith("http://") || candidate.startsWith("https://")
+    ? candidate
+    : `https://${candidate}`;
+}
+
+function splitTrailingPunctuation(value: string): [string, string] {
+  const match = value.match(/^(.+?)([),.!?:;]+)?$/);
+  return [match?.[1] ?? value, match?.[2] ?? ""];
+}
+
+function renderInlineContent(text: string, keyPrefix: string): React.ReactNode[] {
+  const result: React.ReactNode[] = [];
+  const linkRegex =
+    /((?:https?:\/\/|www\.)[^\s]+|(?:[\w.+-]+@[\w-]+(?:\.[\w-]+)+))/gi;
+
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  let partIndex = 0;
+
+  const pushTextWithBold = (value: string) => {
+    if (!value) return;
+
+    const boldRegex = /\*\*(.+?)\*\*/g;
+    let boldLastIndex = 0;
+    let boldMatch: RegExpExecArray | null;
+
+    while ((boldMatch = boldRegex.exec(value)) !== null) {
+      const before = value.slice(boldLastIndex, boldMatch.index);
+      if (before) {
+        result.push(
+          <Fragment key={`${keyPrefix}-text-${partIndex++}`}>
+            {before}
+          </Fragment>,
+        );
+      }
+
+      result.push(
+        <strong key={`${keyPrefix}-bold-${partIndex++}`} className="font-semibold">
+          {boldMatch[1]}
+        </strong>,
+      );
+      boldLastIndex = boldMatch.index + boldMatch[0].length;
+    }
+
+    const tail = value.slice(boldLastIndex);
+    if (tail) {
+      result.push(
+        <Fragment key={`${keyPrefix}-text-${partIndex++}`}>
+          {tail}
+        </Fragment>,
+      );
+    }
+  };
+
+  while ((match = linkRegex.exec(text)) !== null) {
+    const before = text.slice(lastIndex, match.index);
+    pushTextWithBold(before);
+
+    const [rawLink, trailing] = splitTrailingPunctuation(match[0]);
+    const isEmail = rawLink.includes("@") && !rawLink.includes("/");
+    const href = isEmail ? `mailto:${rawLink}` : normalizeUrl(rawLink);
+
+    result.push(
+      <a
+        key={`${keyPrefix}-link-${partIndex++}`}
+        href={href}
+        target={isEmail ? undefined : "_blank"}
+        rel={isEmail ? undefined : "noreferrer noopener"}
+        className="font-medium underline underline-offset-2 decoration-current/60 break-normal"
+      >
+        {rawLink}
+      </a>,
+    );
+
+    if (trailing) {
+      pushTextWithBold(trailing);
+    }
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  pushTextWithBold(text.slice(lastIndex));
+  return result;
+}
+
+function renderMessageBody(content: string): React.ReactNode {
+  const normalized = content.replace(/\r\n/g, "\n").trim();
+  const blocks = normalized.split(/\n{2,}/).filter(Boolean);
+
+  return blocks.map((block, blockIndex) => {
+    const lines = block.split("\n").map((line) => line.trimEnd());
+    const isBulletList =
+      lines.length > 1 &&
+      lines.every((line) => /^([*-]|•)\s+/.test(line.trim()));
+
+    if (isBulletList) {
+      return (
+        <ul
+          key={`list-${blockIndex}`}
+          className="my-2 space-y-1.5 pl-5 marker:text-current/70 list-disc"
+        >
+          {lines.map((line, lineIndex) => (
+            <li key={`list-${blockIndex}-${lineIndex}`} className="pl-1">
+              {renderInlineContent(
+                line.replace(/^([*-]|•)\s+/, ""),
+                `list-${blockIndex}-${lineIndex}`,
+              )}
+            </li>
+          ))}
+        </ul>
+      );
+    }
+
+    return (
+      <p key={`paragraph-${blockIndex}`} className={blockIndex > 0 ? "mt-3" : ""}>
+        {lines.map((line, lineIndex) => (
+          <Fragment key={`paragraph-${blockIndex}-${lineIndex}`}>
+            {lineIndex > 0 && <br />}
+            {renderInlineContent(line, `paragraph-${blockIndex}-${lineIndex}`)}
+          </Fragment>
+        ))}
+      </p>
+    );
+  });
+}
+
+function shouldGroupMessages(
+  previous: MessageItem | undefined,
+  current: MessageItem | undefined,
+): boolean {
+  if (!previous || !current) return false;
+  if (previous.role !== current.role) return false;
+
+  const previousConfig = getRoleConfig(previous.role);
+  const currentConfig = getRoleConfig(current.role);
+
+  if (previousConfig.align === "center" || currentConfig.align === "center") {
+    return false;
+  }
+
+  const previousTime = new Date(previous.createdAt).getTime();
+  const currentTime = new Date(current.createdAt).getTime();
+
+  return (
+    Number.isFinite(previousTime) &&
+    Number.isFinite(currentTime) &&
+    Math.abs(currentTime - previousTime) <= MESSAGE_GROUP_WINDOW_MS
+  );
+}
+
+function getBubbleShape(
+  isRight: boolean,
+  groupedWithPrev: boolean,
+  groupedWithNext: boolean,
+) {
+  if (isRight) {
+    return [
+      "rounded-tl-2xl rounded-bl-2xl",
+      groupedWithPrev ? "rounded-tr-md" : "rounded-tr-2xl",
+      groupedWithNext ? "rounded-br-md" : "rounded-br-lg",
+    ].join(" ");
+  }
+
+  return [
+    "rounded-tr-2xl rounded-br-2xl",
+    groupedWithPrev ? "rounded-tl-md" : "rounded-tl-2xl",
+    groupedWithNext ? "rounded-bl-md" : "rounded-bl-lg",
+  ].join(" ");
 }
 
 function getRoleConfig(role: MessageItem["role"]) {
@@ -152,7 +325,7 @@ export function ChatWindow({
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-4 space-y-3 bg-slate-50/50 dark:bg-slate-900/50">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-4 bg-slate-50/50 dark:bg-slate-900/50">
         {isLoadingMessages ? (
           <div className="flex flex-col items-center justify-center h-full">
             <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-3" />
@@ -166,13 +339,17 @@ export function ChatWindow({
             </p>
           </div>
         ) : (
-          messages.map((msg) => {
+          messages.filter((msg) => msg.content).map((msg, index, visibleMessages) => {
             if (!msg.content) return null;
             const config = getRoleConfig(msg.role);
+            const previousMessage = visibleMessages[index - 1];
+            const nextMessage = visibleMessages[index + 1];
+            const groupedWithPrev = shouldGroupMessages(previousMessage, msg);
+            const groupedWithNext = shouldGroupMessages(msg, nextMessage);
 
             if (config.align === "center") {
               return (
-                <div key={msg.id} className="flex justify-center">
+                <div key={msg.id} className={`flex justify-center ${index === 0 ? "" : "mt-4"}`}>
                   <div
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full ${config.bubbleBg} ${config.textColor}`}
                   >
@@ -188,39 +365,51 @@ export function ChatWindow({
             return (
               <div
                 key={msg.id}
-                className={`flex gap-2.5 ${isRight ? "justify-end" : "justify-start"}`}
+                className={`flex gap-2.5 ${isRight ? "justify-end" : "justify-start"} ${
+                  index === 0 ? "" : groupedWithPrev ? "mt-1.5" : "mt-4"
+                }`}
               >
-                {!isRight && (
+                {!isRight ? (
                   <div
-                    className={`w-8 h-8 rounded-full ${config.iconBg} flex items-center justify-center shrink-0 mt-1`}
+                    className={`w-8 h-8 shrink-0 mt-1 ${groupedWithNext ? "invisible" : ""}`}
                   >
-                    {config.icon}
+                    <div
+                      className={`w-8 h-8 rounded-full ${config.iconBg} flex items-center justify-center`}
+                    >
+                      {config.icon}
+                    </div>
                   </div>
-                )}
+                ) : null}
 
                 <div
-                  className={`max-w-[70%] min-w-0 ${isRight ? "items-end" : "items-start"} flex flex-col`}
+                  className={`max-w-[min(85%,38rem)] sm:max-w-[min(75%,42rem)] min-w-0 ${
+                    isRight ? "items-end" : "items-start"
+                  } flex flex-col`}
                 >
-                  <span
-                    className={`text-[10px] font-medium mb-1 px-1 ${
-                      isRight
-                        ? "text-right text-slate-400"
-                        : "text-left text-slate-400"
-                    }`}
-                  >
-                    {config.label}
-                  </span>
+                  {!groupedWithPrev && (
+                    <span
+                      className={`text-[10px] font-medium mb-1 px-1 ${
+                        isRight
+                          ? "text-right text-slate-400"
+                          : "text-left text-slate-400"
+                      }`}
+                    >
+                      {config.label}
+                    </span>
+                  )}
 
                   <div
-                    className={`${config.bubbleBg} ${config.textColor} px-4 py-2.5 shadow-sm overflow-hidden ${
-                      isRight
-                        ? "rounded-2xl rounded-tr-md"
-                        : "rounded-2xl rounded-tl-md"
-                    }`}
+                    className={`${config.bubbleBg} ${
+                      config.textColor
+                    } max-w-full min-w-0 px-4 py-2.5 shadow-sm ${getBubbleShape(
+                      isRight,
+                      groupedWithPrev,
+                      groupedWithNext,
+                    )}`}
                   >
-                    <p className="text-sm whitespace-pre-wrap break-all leading-relaxed">
-                      {msg.content}
-                    </p>
+                    <div className="message-content text-sm leading-relaxed">
+                      {renderMessageBody(msg.content)}
+                    </div>
 
                     {msg.promptTokens != null && (
                       <div
@@ -238,18 +427,24 @@ export function ChatWindow({
                     )}
                   </div>
 
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 px-1">
-                    {formatDateTime(msg.createdAt)}
-                  </span>
+                  {!groupedWithNext && (
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 px-1">
+                      {formatDateTime(msg.createdAt)}
+                    </span>
+                  )}
                 </div>
 
-                {isRight && (
+                {isRight ? (
                   <div
-                    className={`w-8 h-8 rounded-full ${config.iconBg} flex items-center justify-center shrink-0 mt-1`}
+                    className={`w-8 h-8 shrink-0 mt-1 ${groupedWithNext ? "invisible" : ""}`}
                   >
-                    {config.icon}
+                    <div
+                      className={`w-8 h-8 rounded-full ${config.iconBg} flex items-center justify-center`}
+                    >
+                      {config.icon}
+                    </div>
                   </div>
-                )}
+                ) : null}
               </div>
             );
           })
@@ -284,7 +479,7 @@ export function ChatWindow({
               setIsSending(false);
             }
           }}
-          className="flex items-end gap-2"
+          className="flex items-start gap-2"
         >
           <div className="flex-1 relative">
             <textarea
@@ -313,7 +508,7 @@ export function ChatWindow({
           <button
             type="submit"
             disabled={!inputValue.trim() || isSending}
-            className="shrink-0 p-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-emerald-600"
+            className="shrink-0 self-start w-[42px] h-[42px] flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-emerald-600"
           >
             {isSending ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -322,9 +517,6 @@ export function ChatWindow({
             )}
           </button>
         </form>
-        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 px-1">
-          Tin nhắn sẽ gửi trực tiếp — không qua Bot AI
-        </p>
       </div>
     </div>
   );
