@@ -5,8 +5,8 @@ export const SITE = {
   tagline: 'Tự động chốt đơn 24/7 bằng AI',
   description:
     'AI Chatbot thông minh cho shop online Việt Nam. Tự động trả lời khách hàng trên Facebook, Zalo, Website — 24/7 không nghỉ. Tiết kiệm 80% thời gian chăm sóc khách hàng.',
-  url: 'https://aichatbot.vn',
-  appUrl: 'https://app.aichatbot.vn',
+  url: 'https://mine-chatbot.vercel.app',
+  appUrl: 'https://cms-mine-chatbot.vercel.app',
   ogImage: '/og-image.png',
   themeColor: '#2563eb',
 } as const;
@@ -21,11 +21,11 @@ export const NAV_LINKS = [
 export const CTA = {
   trial: {
     label: 'Dùng thử miễn phí',
-    href: 'https://app.aichatbot.vn/register',
+    href: 'https://cms-mine-chatbot.vercel.app/login',
   },
   login: {
     label: 'Đăng nhập',
-    href: 'https://app.aichatbot.vn/login',
+    href: 'https://cms-mine-chatbot.vercel.app/login',
   },
   demo: {
     label: 'Xem Demo',

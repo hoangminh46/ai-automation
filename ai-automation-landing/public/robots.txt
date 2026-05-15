@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://aichatbot.vn/sitemap-index.xml
+Sitemap: https://mine-chatbot.vercel.app/sitemap-index.xml

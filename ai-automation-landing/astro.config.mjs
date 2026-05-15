@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://aichatbot.vn',
+  site: 'https://mine-chatbot.vercel.app',
 
   integrations: [
     react(),
