@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI M-Suite — Nền tảng Chatbot AI",
+  title: "Mine Chatbot — Nền tảng Chatbot AI",
   description: "Quản lý binh đoàn Bot AI bán hàng cho cửa hàng TMĐT",
 };
 

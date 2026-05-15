@@ -12,7 +12,7 @@ Inject branding watermark cho gói Free. Tạo REST APIs cho seller xem plans, s
 - GET /sellers/me/usage (auth) — aggregate across tenants
 
 ## Implementation Steps
-1. [x] `QuotaService.injectBranding(sellerId, content)` — nếu Free → append `\n\n🤖 Được hỗ trợ bởi AIChatbot.vn`
+1. [x] `QuotaService.injectBranding(sellerId, content)` — nếu Free → append `\n\n🤖 Được hỗ trợ bởi Mine Chatbot`
 2. [x] Gọi injectBranding trong conversation.service.ts `sendMessage()` (sau LLM response)
 3. [x] Gọi injectBranding trong channel.service.ts (sau LLM response)
 4. [x] KHÔNG gọi trong `testMessage()` (Playground)

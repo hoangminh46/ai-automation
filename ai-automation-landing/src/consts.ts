@@ -1,10 +1,10 @@
 /** Site-wide constants — single source of truth */
 
 export const SITE = {
-  name: 'AI Chatbot',
+  name: 'Mine Chatbot',
   tagline: 'Tự động chốt đơn 24/7 bằng AI',
   description:
-    'AI Chatbot thông minh cho shop online Việt Nam. Tự động trả lời khách hàng trên Facebook, Zalo, Website — 24/7 không nghỉ. Tiết kiệm 80% thời gian chăm sóc khách hàng.',
+    'Mine Chatbot thông minh cho shop online Việt Nam. Tự động trả lời khách hàng trên Facebook, Zalo, Website — 24/7 không nghỉ. Tiết kiệm 80% thời gian chăm sóc khách hàng.',
   url: 'https://mine-chatbot.vercel.app',
   appUrl: 'https://cms-mine-chatbot.vercel.app',
   ogImage: '/og-image.png',
@@ -170,7 +170,7 @@ export const FAQS = [
   {
     question: 'AI có trả lời sai không?',
     answer:
-      'AI Chatbot sử dụng công nghệ RAG (Retrieval-Augmented Generation) — nghĩa là bot chỉ trả lời dựa trên tài liệu bạn cung cấp, không tự "bịa" thông tin. Nếu câu hỏi nằm ngoài kiến thức đã upload, bot sẽ thông báo và chuyển cho nhân viên xử lý.',
+      'Mine Chatbot sử dụng công nghệ RAG (Retrieval-Augmented Generation) — nghĩa là bot chỉ trả lời dựa trên tài liệu bạn cung cấp, không tự "bịa" thông tin. Nếu câu hỏi nằm ngoài kiến thức đã upload, bot sẽ thông báo và chuyển cho nhân viên xử lý.',
   },
   {
     question: 'Dữ liệu của tôi có an toàn không?',

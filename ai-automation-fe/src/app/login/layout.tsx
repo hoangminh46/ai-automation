@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Đăng nhập - AI Automation Suite',
+  title: 'Đăng nhập - Mine Chatbot',
   description: 'Đăng nhập để quản lý chatbot của bạn',
 };
 

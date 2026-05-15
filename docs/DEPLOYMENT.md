@@ -1,4 +1,4 @@
-# 🚀 Deployment Guide — AI Chatbot
+# 🚀 Deployment Guide — Mine Chatbot
 
 ## Architecture
 ```

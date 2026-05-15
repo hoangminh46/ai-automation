@@ -1,4 +1,4 @@
-# Hướng dẫn cài đặt SePay cho AI M-Suite
+# Hướng dẫn cài đặt SePay cho Mine Chatbot
 
 ## 1. Tạo tài khoản SePay
 

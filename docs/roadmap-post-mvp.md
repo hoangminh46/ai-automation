@@ -1,4 +1,4 @@
-# Roadmap: AI Chatbot — Post-MVP Features
+# Roadmap: Mine Chatbot — Post-MVP Features
 Created: 2026-04-24 | Status: 📋 Backlog
 
 ## Context
@@ -120,7 +120,7 @@ MVP core: Seller đăng ký → upload knowledge → kết nối FB → chatbot 
 - [ ] Sound effect khi nhận WS `new_message` (conversation khác đang xem)
 - [ ] Badge count trên sidebar "Live Chat" menu item
 - [ ] Favicon badge (unread count)
-- [ ] Tab title flash: "(3) Tin nhắn mới — AI Chatbot"
+- [ ] Tab title flash: "(3) Tin nhắn mới — Mine Chatbot"
 
 **Effort:** FE 0.5 ngày | **Giá trị:** ⭐⭐ Thấp nhưng cải thiện UX đáng kể
 
@@ -200,7 +200,7 @@ MVP core: Seller đăng ký → upload knowledge → kết nối FB → chatbot 
 
 **Ghi chú:**
 - **Retargeting** có ở tất cả gói — AI responses dùng cho retargeting vẫn đếm vào quota tháng.
-- **Branding watermark (gói Free):** Mỗi AI response tự động kèm dòng *"🤖 Được hỗ trợ bởi AIChatbot.vn"* ở cuối tin nhắn. Upgrade lên Basic trở lên để bỏ branding.
+- **Branding watermark (gói Free):** Mỗi AI response tự động kèm dòng *"🤖 Được hỗ trợ bởi Mine Chatbot"* ở cuối tin nhắn. Upgrade lên Basic trở lên để bỏ branding.
 - **Channels:** Không giới hạn — tất cả gói đều kết nối không giới hạn kênh (FB, Zalo, Widget...).
 - **Feature gates tương lai:** Khi build xong Streaming, Analytics, Multimodal, ERP/API sẽ quyết định gating lúc đó.
 

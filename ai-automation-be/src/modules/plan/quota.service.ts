@@ -276,7 +276,7 @@ export class QuotaService {
     const subscription = await this.getSubscription(sellerId);
 
     if (subscription.plan.slug === 'free') {
-      return `${content}\n\n🤖 Được hỗ trợ bởi AIChatbot.vn`;
+      return `${content}\n\n🤖 Được hỗ trợ bởi Mine Chatbot`;
     }
 
     return content;

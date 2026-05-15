@@ -1,49 +1,68 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
-import { 
-  Bot, 
-  Store, 
-  MessageSquare, 
-  Database, 
-  LogOut, 
-  PanelLeft,
-  FlaskConical,
-  Radio,
+import { usePathname, useRouter } from "next/navigation";
+import {
   BarChart3,
-  CreditCard
+  Bot,
+  ChevronLeft,
+  ChevronRight,
+  CreditCard,
+  Database,
+  FlaskConical,
+  LogOut,
+  MessageSquare,
+  PanelLeft,
+  Radio,
+  Store,
+  type LucideIcon,
 } from "lucide-react";
+
+import { ExpiryWarningBanner } from "@/components/billing/expiry-warning-banner";
+import { QuotaWarningBanner } from "@/components/billing/quota-warning-banner";
+import { TenantSwitcher } from "@/components/tenant-switcher";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { createClient } from "@/lib/supabase/client";
 import { useTenantStore } from "@/store/tenant-store";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { QuotaWarningBanner } from "@/components/billing/quota-warning-banner";
-import { ExpiryWarningBanner } from "@/components/billing/expiry-warning-banner";
-import { TenantSwitcher } from "@/components/tenant-switcher";
 
-// Menu cho Sidebar
-const MENU_ITEMS = [
-  { name: "Cửa hàng của tôi", href: "/dashboard", icon: <Store className="w-5 h-5" /> },
-  { name: "Binh đoàn Bot AI", href: "/dashboard/agents", icon: <Bot className="w-5 h-5" /> },
-  { name: "Tri thức (RAG)", href: "/dashboard/knowledge", icon: <Database className="w-5 h-5" /> },
-  { name: "Playground", href: "/dashboard/playground", icon: <FlaskConical className="w-5 h-5" /> },
-  { name: "Kênh liên kết", href: "/dashboard/channels", icon: <Radio className="w-5 h-5" /> },
-  { name: "Live Chat CRM", href: "/dashboard/chat", icon: <MessageSquare className="w-5 h-5" /> },
-  { name: "Sử dụng", href: "/dashboard/usage", icon: <BarChart3 className="w-5 h-5" /> },
-  { name: "Gói dịch vụ", href: "/dashboard/billing", icon: <CreditCard className="w-5 h-5" /> },
+type MenuItem = {
+  name: string;
+  href: string;
+  icon: LucideIcon;
+};
+
+const MENU_ITEMS: MenuItem[] = [
+  { name: "Cửa hàng của tôi", href: "/dashboard", icon: Store },
+  { name: "Binh đoàn Bot AI", href: "/dashboard/agents", icon: Bot },
+  { name: "Tri thức (RAG)", href: "/dashboard/knowledge", icon: Database },
+  { name: "Playground", href: "/dashboard/playground", icon: FlaskConical },
+  { name: "Kênh liên kết", href: "/dashboard/channels", icon: Radio },
+  { name: "Live Chat CRM", href: "/dashboard/chat", icon: MessageSquare },
+  { name: "Sử dụng", href: "/dashboard/usage", icon: BarChart3 },
+  { name: "Gói dịch vụ", href: "/dashboard/billing", icon: CreditCard },
 ];
+
+const SIDEBAR_STORAGE_KEY = "dashboard-sidebar-collapsed";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+
   const [email, setEmail] = useState("Đang tải...");
-  
-  // Dùng selector chuẩn của Zustand để ép React cập nhật UI trên Layout (Đừng destructuring trực tiếp)
-  const activeTenant = useTenantStore(state => state.activeTenant);
-  const fetchTenants = useTenantStore(state => state.fetchTenants);
-  const clearStore = useTenantStore(state => state.clearStore);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true";
+  });
+
+  const activeTenant = useTenantStore((state) => state.activeTenant);
+  const fetchTenants = useTenantStore((state) => state.fetchTenants);
+  const clearStore = useTenantStore((state) => state.clearStore);
 
   useEffect(() => {
     fetchTenants();
@@ -51,108 +70,170 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setEmail(user.email || "Seller");
+      if (user) {
+        setEmail(user.email || "Seller");
+      }
     });
   }, [supabase.auth]);
 
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed((previous) => {
+      const next = !previous;
+      window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(next));
+      return next;
+    });
+  };
+
   const handleLogout = async () => {
-    // 1. Dọn dẹp cache màn hình (Zustand Cache)
     clearStore();
-    // 2. Ép xoá sạch token khỏi server và cookie browser
     await supabase.auth.signOut();
-    // 3. Router Refresh để huỷ data thừa
     router.refresh();
-    router.push("/login"); // Middleware sẽ chặn và kick hẳn về login
+    router.push("/login");
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-900 font-sans">
-      
-      {/* 1. SIDEBAR TRÁI */}
-      <aside className="w-64 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-all">
-        {/* Logo App */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-100 dark:border-slate-800">
-          <div className="p-2 bg-blue-600 rounded-lg mr-3">
-            <Bot className="w-5 h-5 text-white" />
+    <div className="flex h-screen bg-slate-50 font-sans dark:bg-slate-900">
+      <aside
+        className={`relative flex h-full shrink-0 flex-col border-r border-blue-500/30 bg-[linear-gradient(180deg,#2563eb_0%,#1d4ed8_48%,#1e3a8a_100%)] text-white shadow-[18px_0_40px_rgba(37,99,235,0.18)] transition-all duration-300 ${
+          isSidebarCollapsed ? "w-24" : "w-72"
+        }`}
+      >
+        <div
+          className={`flex h-20 items-center border-b border-white/12 ${
+            isSidebarCollapsed ? "justify-center px-4" : "justify-between px-5"
+          }`}
+        >
+          <div className={`flex min-w-0 items-center ${isSidebarCollapsed ? "justify-center" : "gap-3"}`}>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/12 ring-1 ring-white/20 backdrop-blur-sm">
+              <Image
+                src="/draft-image/logo2.png"
+                alt="Mine Chatbot"
+                width={34}
+                height={34}
+                className="h-8 w-8 object-contain"
+                priority
+              />
+            </div>
+
+            {!isSidebarCollapsed && (
+              <div className="min-w-0">
+                <p className="truncate text-base font-semibold tracking-[0.02em] text-white">Mine Chatbot</p>
+                <p className="text-xs text-blue-100/80">CRM & Chatbot Automation</p>
+              </div>
+            )}
           </div>
-          <span className="font-bold text-lg text-slate-900 dark:text-white">AI M-Suite</span>
+
+          {!isSidebarCollapsed && (
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/12 bg-white/10 text-white transition hover:bg-white/15"
+              aria-label="Thu gọn sidebar"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+          )}
         </div>
 
-        {/* Navigation Items */}
-        <nav className="flex-1 overflow-y-auto w-full py-4 px-3 space-y-1">
-          {MENU_ITEMS.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors font-medium text-sm ${
-                  isActive 
-                  ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" 
-                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800/50"
-                }`}
-              >
-                {item.icon}
-                {item.name}
-              </Link>
-            );
-          })}
+        {isSidebarCollapsed && (
+          <div className="px-3 pt-4">
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              className="flex h-10 w-full items-center justify-center rounded-xl border border-white/12 bg-white/10 text-white transition hover:bg-white/15"
+              aria-label="Mở rộng sidebar"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
+        )}
+
+        <nav className={`flex-1 overflow-y-auto py-5 ${isSidebarCollapsed ? "px-3" : "px-4"}`}>
+          <div className="space-y-2">
+            {MENU_ITEMS.map((item) => {
+              const isActive =
+                item.href === "/dashboard" ? pathname === item.href : pathname.startsWith(item.href);
+              const Icon = item.icon;
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  title={isSidebarCollapsed ? item.name : undefined}
+                  className={`group flex items-center rounded-2xl transition-all duration-200 ${
+                    isActive
+                      ? "bg-white/15 text-white ring-1 ring-white/20 shadow-[0_12px_30px_rgba(15,23,42,0.18)]"
+                      : "text-white/92 hover:bg-white/12"
+                  }`}
+                >
+                  <span
+                    className={`flex shrink-0 items-center justify-center ${
+                      isSidebarCollapsed ? "h-12 w-full" : "h-12 w-12"
+                    }`}
+                  >
+                    <Icon className="h-5 w-5 text-white" />
+                  </span>
+
+                  {!isSidebarCollapsed && (
+                    <span className="pr-4 text-sm font-medium tracking-[0.01em]">{item.name}</span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
         </nav>
 
-        {/* Sidebar Footer: Theme + Logout */}
-        <div className="p-3 border-t border-slate-200 dark:border-slate-800">
+        <div className={`border-t border-white/12 p-4 ${isSidebarCollapsed ? "space-y-3" : "space-y-2"}`}>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:text-slate-400 dark:hover:bg-red-900/30 dark:hover:text-red-400 rounded-xl transition-all font-medium text-sm"
+            title={isSidebarCollapsed ? "Đăng xuất" : undefined}
+            className={`flex w-full items-center rounded-2xl border border-white/10 bg-white/10 py-3 text-sm font-medium text-white transition hover:bg-white/15 ${
+              isSidebarCollapsed ? "justify-center px-3" : "gap-3 px-4"
+            }`}
           >
-            <LogOut className="w-4 h-4 shrink-0" />
-            <span>Đăng xuất</span>
+            <LogOut className="h-4 w-4 shrink-0" />
+            {!isSidebarCollapsed && <span>Đăng xuất</span>}
           </button>
         </div>
       </aside>
 
-      {/* 2. KHU VỰC NỘI DUNG CHÍNH */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        
-        {/* Top Header */}
-        <header className="h-16 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 z-10 w-full shrink-0">
+      <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="flex h-16 w-full shrink-0 items-center justify-between border-b border-slate-200 bg-white px-6 dark:border-slate-800 dark:bg-slate-950">
           <div className="flex items-center gap-2">
-            <button className="p-2 -ml-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg lg:hidden">
-              <PanelLeft className="w-5 h-5" />
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              className="rounded-lg p-2 text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-300"
+              aria-label={isSidebarCollapsed ? "Mở rộng sidebar" : "Thu gọn sidebar"}
+            >
+              <PanelLeft className="h-5 w-5" />
             </button>
-            {/* Tenant Switcher — dropdown with quota display */}
             <TenantSwitcher />
           </div>
 
-          {/* User Profile + Theme Toggle */}
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 shrink-0" />
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium text-slate-900 dark:text-white truncate max-w-[150px]">{email}</p>
+            <div className="h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700" />
+            <div className="hidden text-right sm:block">
+              <p className="max-w-[150px] truncate text-sm font-medium text-slate-900 dark:text-white">{email}</p>
               <p className="text-xs text-slate-500 dark:text-slate-400">Chủ cửa hàng</p>
             </div>
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold shrink-0 shadow-inner">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 font-bold text-white shadow-inner">
               {email.charAt(0).toUpperCase()}
             </div>
           </div>
         </header>
 
-        {/* Content Area (Các trang con sẽ đổ vào đây) */}
         <QuotaWarningBanner />
         <ExpiryWarningBanner />
+
         {pathname.startsWith("/dashboard/chat") ? (
-          <div className="flex-1 overflow-hidden bg-slate-50 dark:bg-slate-900">
-            {children}
-          </div>
+          <div className="flex-1 overflow-hidden bg-slate-50 dark:bg-slate-900">{children}</div>
         ) : (
           <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900">
-            <div className="p-6 md:p-8 max-w-7xl mx-auto w-full">
-              {children}
-            </div>
+            <div className="mx-auto w-full max-w-7xl p-6 md:p-8">{children}</div>
           </div>
         )}
-
       </main>
     </div>
   );

@@ -287,7 +287,7 @@ export default function ChatMockup() {
             </svg>
           </div>
           <div>
-            <p className="text-sm font-semibold text-white">AI Chatbot</p>
+            <p className="text-sm font-semibold text-white">Mine Chatbot</p>
             <p className="text-xs text-white/70">Đang hoạt động</p>
           </div>
         </div>

@@ -61,9 +61,9 @@ async function bootstrap() {
   // Swagger API docs — chỉ bật ở development
   if (nodeEnv === 'development') {
     const swaggerConfig = new DocumentBuilder()
-      .setTitle('AI Chatbot API')
+      .setTitle('Mine Chatbot API')
       .setDescription(
-        'Multi-tenant AI Chatbot backend cho seller TMĐT Việt Nam. ' +
+        'Multi-tenant Mine Chatbot backend cho seller TMĐT Việt Nam. ' +
           'RAG-based, Facebook Messenger integration, real-time WebSocket.',
       )
       .setVersion('1.0')
@@ -80,7 +80,7 @@ async function bootstrap() {
 
   await app.listen(port);
   logger.log(
-    `🚀 AI Chatbot Service running on http://localhost:${port} [${nodeEnv}]`,
+    `🚀 Mine Chatbot Service running on http://localhost:${port} [${nodeEnv}]`,
   );
 }
 

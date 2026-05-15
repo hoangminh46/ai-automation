@@ -76,13 +76,13 @@ export default function LoginPage() {
             <Bot className="w-8 h-8 text-white" />
           </div>
           <span className="text-xl font-bold text-white mt-4 block">
-            AI M-Suite
+            Mine Chatbot
           </span>
         </div>
 
         <div className="z-10 mb-10">
           <p className="text-slate-400 text-lg max-w-md leading-relaxed">
-            Hệ thống AI Chatbot tự động trực page, học kiến thức nghiệp vụ và chốt sale mạnh mẽ 24/7.
+            Hệ thống Mine Chatbot tự động trực page, học kiến thức nghiệp vụ và chốt sale mạnh mẽ 24/7.
           </p>
         </div>
       </div>
@@ -95,7 +95,7 @@ export default function LoginPage() {
             <div className="p-2 bg-blue-600 rounded-lg">
               <Bot className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold dark:text-white">AI M-Suite</span>
+            <span className="text-xl font-bold dark:text-white">Mine Chatbot</span>
           </div>
 
           <div className="text-center mb-10">
@@ -103,7 +103,7 @@ export default function LoginPage() {
               {isSignUp ? "Tạo Tài Khoản" : "Đăng Nhập"}
             </h2>
             <p className="text-slate-500 dark:text-slate-400">
-              {isSignUp ? "Khởi tạo quyền quản trị AI Chatbot của bạn" : "Nhập email và mật khẩu để vào trang quản trị"}
+              {isSignUp ? "Khởi tạo quyền quản trị Mine Chatbot của bạn" : "Nhập email và mật khẩu để vào trang quản trị"}
             </p>
           </div>
 
