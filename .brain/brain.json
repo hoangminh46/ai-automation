@@ -1,142 +1,681 @@
 {
-  "version": "1.0",
-  "project_name": "AI Automation Suite",
-  "updated_at": "2026-05-11T15:25:00+07:00",
-  "last_verified_sha": "d615444e37bfaa32a89576080f266ec3d13f0db3",
-
+  "version": "2.0",
+  "project_name": "AI Automation Suite (Monorepo)",
+  "updated_at": "2026-05-15T11:58:15+07:00",
+  "last_verified_sha": "f267d2f2d1696cb375ca2ab81b17faeae0ad759e",
   "tech_stack": {
-    "backend": {
-      "runtime": "Node.js v22",
-      "framework": "NestJS",
-      "orm": "Prisma 7.7",
-      "database": "PostgreSQL (Supabase)",
-      "auth": "Supabase Auth (Google OAuth + email/password)",
-      "ai": "Gemini 2.5 Flash via OpenAI-compatible API",
-      "realtime": "Socket.IO",
-      "payment": "SePay (VN QR payment)"
-    },
-    "frontend": {
-      "framework": "Next.js 15 (App Router)",
-      "language": "TypeScript",
-      "state": "Zustand",
-      "styling": "Tailwind CSS",
-      "http": "Axios",
-      "icons": "Lucide React",
-      "charts": "Recharts 3.8"
-    },
     "infrastructure": {
       "hosting": "Supabase (DB) + ngrok (dev tunnel)",
       "ci_cd": "none yet"
+    },
+    "backend": {
+      "runtime": "NestJS 11 (TypeScript 5.7)",
+      "database": "PostgreSQL (Supabase) + pgvector",
+      "orm": "Prisma 7 (adapted for 7.x breaking changes)",
+      "auth": "Supabase Auth Native SDK Edge Validation (getUser)",
+      "ai_llm": "Gemini 2.5 Flash via OpenAI-compatible API (openai npm package)",
+      "ai_embedding": "Gemini gemini-embedding-001 via @google/generative-ai SDK (1536d MRL)",
+      "ai_provider_details": {
+        "llm_sdk": "openai (npm)",
+        "llm_base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+        "llm_default_model": "gemini-2.5-flash",
+        "embedding_sdk": "@google/generative-ai (npm)",
+        "embedding_model": "gemini-embedding-001",
+        "embedding_dimensions": 1536,
+        "strategy": "OpenAI SDK cho LLM chat, Google SDK cho embedding — cùng 1 API key"
+      },
+      "pdf_parsing": "pdf-parse",
+      "validation": "class-validator (DTO) + Joi (env)",
+      "api_docs": "Swagger (@nestjs/swagger)",
+      "security": "Helmet, CORS, timingSafeEqual (webhook HMAC), AES-256-GCM (token encryption), HMAC-SHA256 (OAuth state), @nestjs/throttler (rate limiting)",
+      "realtime": "Socket.IO (@nestjs/websockets + @nestjs/platform-socket.io) + @nestjs/event-emitter (EventEmitter2)",
+      "payment": "SePay VietQR webhook (bank transfer detection), @nestjs/schedule (cron jobs)",
+      "dependencies_source": "package.json",
+      "last_verified_sha": "d73438d"
+    },
+    "frontend": {
+      "frontend": "Next.js 16 (App Router), React 19, Tailwind CSS v4, Zustand, Supabase SSR",
+      "theme": "next-themes (class-based dark mode, system preference support)",
+      "icons": "lucide-react",
+      "http": "axios (configured with Supabase auth interceptor)",
+      "realtime": "socket.io-client (Socket.IO WebSocket client)"
     }
   },
-
   "database_schema": {
-    "last_changed_sha": "04f2fc0",
-    "key_models": [
-      "Seller (user/owner)",
-      "Tenant (store/shop)",
-      "TenantMember (seller-tenant membership)",
-      "Agent (AI bot - has isDefault, isActive flags)",
-      "ChannelConnection (FB/Zalo - has agentId FK to Agent)",
-      "Customer",
-      "Conversation (has agentId FK)",
-      "Message",
-      "KnowledgeDocument (tenant-level)",
-      "KnowledgeChunk (vector embeddings)",
-      "AgentKnowledge (N:M junction: Agent ↔ KnowledgeDocument)",
-      "Plan (subscription tiers)",
-      "TenantPlan (tenant subscription)",
-      "UsageRecord (quota tracking)",
-      "PaymentOrder (SePay integration)"
-    ],
-    "key_relations": {
-      "Agent_Channel": "1:N - One bot serves many channels, one channel has one bot (agentId on ChannelConnection, onDelete: SetNull)",
-      "Agent_Knowledge": "N:M via AgentKnowledge junction table (onDelete: Cascade both sides)",
-      "Tenant_Agent": "1:N - Tenant owns agents, auto-creates default bot",
-      "Tenant_Knowledge": "1:N - Knowledge belongs to tenant, not bot"
-    }
-  },
-
-  "api_endpoints": {
-    "last_changed_sha": "d615444",
-    "key_endpoints": [
-      "POST /tenants - Create tenant (auto-creates default bot)",
-      "GET /tenants/:tenantId/agents - List agents with channels + knowledge",
-      "POST /tenants/:tenantId/agents - Create agent (channelIds, knowledgeIds)",
-      "PATCH /tenants/:tenantId/agents/:agentId - Update agent",
-      "DELETE /tenants/:tenantId/agents/:agentId - Delete (blocked if isDefault)",
-      "PATCH /tenants/:tenantId/agents/:agentId/toggle-active - Toggle active",
-      "PATCH /tenants/:tenantId/channels/:channelId/assign-bot - Assign/unassign bot",
-      "GET /tenants/:tenantId/knowledge/documents - List with agentLinks",
-      "POST /tenants/:tenantId/agents/:agentId/knowledge - Sync knowledge links",
-      "POST /tenants/:tenantId/chat - Send message (routed by agent's knowledge)",
-      "POST /tenants/:tenantId/chat/test - Playground test (no DB persist)",
-      "GET /sellers/me/payment-orders/pending - Resume pending payment (QR + bankInfo)",
-      "GET /tenants/:tenantId/stats?days=N - Dashboard analytics (daily conversations, customers, channel dist, bot perf)"
-    ]
-  },
-
-  "features": {
-    "bot_channel_binding": {
-      "status": "complete",
+    "global_overview": {
       "last_changed_sha": "04f2fc0",
-      "description": "Full bot-channel-knowledge binding with 15 business rules",
-      "spec_file": "docs/bot-channel-spec.md",
-      "plan_dir": "plans/260508-1037-bot-channel-binding/",
-      "phases_completed": 8,
-      "phases_total": 8
+      "key_models": [
+          "Seller (user/owner)",
+          "Tenant (store/shop)",
+          "TenantMember (seller-tenant membership)",
+          "Agent (AI bot - has isDefault, isActive flags)",
+          "ChannelConnection (FB/Zalo - has agentId FK to Agent)",
+          "Customer",
+          "Conversation (has agentId FK)",
+          "Message",
+          "KnowledgeDocument (tenant-level)",
+          "KnowledgeChunk (vector embeddings)",
+          "AgentKnowledge (N:M junction: Agent ↔ KnowledgeDocument)",
+          "Plan (subscription tiers)",
+          "TenantPlan (tenant subscription)",
+          "UsageRecord (quota tracking)",
+          "PaymentOrder (SePay integration)"
+        ],
+        "key_relations": {
+          "Agent_Channel": "1:N - One bot serves many channels, one channel has one bot (agentId on ChannelConnection, onDelete: SetNull)",
+          "Agent_Knowledge": "N:M via AgentKnowledge junction table (onDelete: Cascade both sides)",
+          "Tenant_Agent": "1:N - Tenant owns agents, auto-creates default bot",
+          "Tenant_Knowledge": "1:N - Knowledge belongs to tenant, not bot"
+        },
+      "tables": [
+        "sellers",
+        "tenants",
+        "tenant_members",
+        "agents",
+        "agent_tools",
+        "channel_connections",
+        "knowledge_documents",
+        "knowledge_chunks",
+        "customers",
+        "conversations",
+        "messages",
+        "plans",
+        "seller_subscriptions",
+        "response_pack_purchases",
+        "payment_orders"
+      ],
+      "enums": [
+        "TenantRole",
+        "ChannelType",
+        "DocumentStatus",
+        "MessageRole",
+        "ConversationStatus",
+        "BillingPeriod",
+        "SubscriptionStatus",
+        "OrderType",
+        "OrderStatus"
+      ],
+      "conversation_statuses": [
+        "BOT_HANDLING",
+        "OPEN",
+        "SNOOZED",
+        "RESOLVED"
+      ],
+      "message_roles": [
+        "CUSTOMER",
+        "ASSISTANT",
+        "SYSTEM",
+        "HUMAN_AGENT",
+        "TOOL"
+      ],
+      "channel_types": [
+        "FACEBOOK",
+        "ZALO"
+      ],
+      "channel_connection_fields": {
+        "accessTokenEnc": "String? — AES-256-GCM encrypted (enc:iv:authTag:ciphertext) or plaintext (dev)",
+        "refreshTokenEnc": "String? — Zalo refresh token, encrypted same as accessTokenEnc",
+        "tokenExpiresAt": "DateTime? — null for FB (non-expiring), set for Zalo (1h access token)"
+      },
+      "key_relations": {
+        "Seller -> Tenant": "1:N (seller_id FK, owner who created)",
+        "Seller -> TenantMember": "1:N (RBAC membership)",
+        "Seller -> SellerSubscription": "1:1 (sellerId @unique)",
+        "Seller -> ResponsePackPurchase": "1:N",
+        "Plan -> SellerSubscription": "1:N",
+        "Tenant -> TenantMember": "1:N (staff of shop)",
+        "Tenant -> Agent": "1:N (AI bots per shop)",
+        "Tenant -> ChannelConnection": "1:N (FB pages + Zalo OA per shop)",
+        "Tenant -> Conversation": "1:N",
+        "Agent -> Conversation": "1:N",
+        "Customer -> Conversation": "1:N",
+        "Conversation -> Message": "1:N"
+      },
+      "source_file": "prisma/schema.prisma",
+      "notes": "Plan model includes maxTenants (Int, default 1) — per-plan tenant limits: Free=1, Basic=2, Standard=5, Premium=10",
+      "last_verified_sha": "ba92d40",
+      "frontend_perspective": {
+        "tenant": "Cửa hàng độc lập thuộc về seller",
+        "agent": "Bot AI cấu hình per-tenant: name, persona, greeting (model/temperature/maxTokens do platform quản lý, ẩn khỏi user)"
+      }
+    }
+  },
+  "api_endpoints": [
+    {
+      "method": "POST",
+      "path": "/tenants",
+      "module": "tenant",
+      "auth": "JWT"
     },
-    "billing_management": {
-      "status": "complete",
-      "description": "Plan CRUD, subscription, usage tracking, SePay payment"
+    {
+      "method": "GET",
+      "path": "/tenants",
+      "module": "tenant",
+      "auth": "JWT"
     },
-    "chat_crm": {
-      "status": "complete",
-      "description": "Real-time chat with WebSocket, human takeover, bot handover"
+    {
+      "method": "GET",
+      "path": "/tenants/:id",
+      "module": "tenant",
+      "auth": "JWT+TenantGuard"
     },
-    "knowledge_rag": {
-      "status": "complete",
-      "description": "Document upload, chunking, vector search, agent-scoped RAG"
+    {
+      "method": "PATCH",
+      "path": "/tenants/:id",
+      "module": "tenant",
+      "auth": "JWT+TenantGuard"
     },
-    "channel_integration": {
-      "status": "complete",
-      "description": "Facebook Messenger + Zalo OA OAuth, webhook handling"
+    {
+      "method": "POST",
+      "path": "/tenants/:tenantId/agents",
+      "module": "agent",
+      "auth": "JWT+TenantGuard"
     },
-    "dashboard_analytics": {
-      "status": "in_progress",
-      "last_changed_sha": "working_tree",
-      "description": "Dashboard charts: daily conversations (Area), customer growth (Bar), channel distribution (Pie), bot performance (Horizontal Bar). BE stats API with Prisma groupBy. FE uses Recharts 3.8.",
-      "components": [
-        "BE: GET /tenants/:id/stats endpoint",
-        "FE: DashboardCharts component (4 charts)",
-        "FE: Redesigned stat cards (Bot AI, Kênh, Tài liệu, Khách hàng)"
+    {
+      "method": "GET",
+      "path": "/tenants/:tenantId/agents",
+      "module": "agent",
+      "auth": "JWT+TenantGuard"
+    },
+    {
+      "method": "GET",
+      "path": "/tenants/:tenantId/agents/:id",
+      "module": "agent",
+      "auth": "JWT+TenantGuard"
+    },
+    {
+      "method": "PATCH",
+      "path": "/tenants/:tenantId/agents/:id",
+      "module": "agent",
+      "auth": "JWT+TenantGuard"
+    },
+    {
+      "method": "DELETE",
+      "path": "/tenants/:tenantId/agents/:id",
+      "module": "agent",
+      "auth": "JWT+TenantGuard"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/:tenantId/chat",
+      "module": "conversation",
+      "description": "Send message to AI bot"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/:tenantId/chat/test",
+      "module": "conversation",
+      "description": "Test chat (rate limited 5/min)"
+    },
+    {
+      "method": "GET",
+      "path": "/tenants/:tenantId/conversations",
+      "module": "conversation"
+    },
+    {
+      "method": "GET",
+      "path": "/tenants/:tenantId/conversations/:id/messages",
+      "module": "conversation"
+    },
+    {
+      "method": "PATCH",
+      "path": "/tenants/:tenantId/conversations/:id/resolve",
+      "module": "conversation",
+      "description": "Mark conversation as RESOLVED"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/:tenantId/conversations/:id/human-reply",
+      "module": "conversation",
+      "description": "Staff sends message directly (no LLM), auto-switches status to OPEN, sends to FB/Zalo"
+    },
+    {
+      "method": "PATCH",
+      "path": "/tenants/:tenantId/conversations/:id/handover-bot",
+      "module": "conversation",
+      "description": "Hand conversation back to bot (OPEN → BOT_HANDLING), SYSTEM audit message"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/:tenantId/knowledge/documents",
+      "module": "knowledge",
+      "description": "Upload document (multipart, .txt/.pdf, max 10MB)"
+    },
+    {
+      "method": "GET",
+      "path": "/tenants/:tenantId/knowledge/documents",
+      "module": "knowledge",
+      "description": "List documents with status"
+    },
+    {
+      "method": "DELETE",
+      "path": "/tenants/:tenantId/knowledge/documents/:docId",
+      "module": "knowledge",
+      "description": "Delete document (cascade chunks)"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/:tenantId/knowledge/search",
+      "module": "knowledge",
+      "description": "Semantic search knowledge chunks"
+    },
+    {
+      "method": "GET",
+      "path": "/tenants/:tenantId/channels/facebook/auth-url",
+      "module": "channel",
+      "description": "Get Facebook OAuth URL (rate limited 5/min)"
+    },
+    {
+      "method": "GET",
+      "path": "/tenants/:tenantId/channels/zalo/auth-url",
+      "module": "channel",
+      "description": "Get Zalo OAuth URL (rate limited 5/min)"
+    },
+    {
+      "method": "GET",
+      "path": "/tenants/:tenantId/channels",
+      "module": "channel",
+      "description": "List channel connections"
+    },
+    {
+      "method": "DELETE",
+      "path": "/tenants/:tenantId/channels/facebook/disconnect",
+      "module": "channel",
+      "description": "Disconnect Facebook Page (unsubscribe webhook + clear tokens)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/tenants/:tenantId/channels/zalo/disconnect",
+      "module": "channel",
+      "description": "Disconnect Zalo OA (clear tokens)"
+    },
+    {
+      "method": "GET",
+      "path": "/tenants/:tenantId/channels/facebook/pending-pages/:sessionId",
+      "module": "channel",
+      "description": "Get pending pages for multi-page selection"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/:tenantId/channels/facebook/select-page",
+      "module": "channel",
+      "description": "Select a Facebook Page from pending session"
+    },
+    {
+      "method": "GET",
+      "path": "/channels/facebook/callback",
+      "module": "webhook",
+      "description": "Facebook OAuth callback (rate limited)"
+    },
+    {
+      "method": "GET",
+      "path": "/channels/zalo/callback",
+      "module": "webhook",
+      "description": "Zalo OAuth callback (rate limited)"
+    },
+    {
+      "method": "GET",
+      "path": "/webhook/facebook",
+      "module": "webhook",
+      "description": "FB webhook verification"
+    },
+    {
+      "method": "POST",
+      "path": "/webhook/facebook",
+      "module": "webhook",
+      "description": "FB webhook events"
+    },
+    {
+      "method": "POST",
+      "path": "/webhook/zalo",
+      "module": "webhook",
+      "description": "Zalo webhook events (HMAC verified)"
+    },
+    {
+      "method": "GET",
+      "path": "/plans",
+      "module": "plan",
+      "auth": "none (public)",
+      "description": "List active plans"
+    },
+    {
+      "method": "GET",
+      "path": "/sellers/me/subscription",
+      "module": "plan",
+      "auth": "JWT",
+      "description": "Current seller subscription details"
+    },
+    {
+      "method": "GET",
+      "path": "/sellers/me/usage",
+      "module": "plan",
+      "auth": "JWT",
+      "description": "Aggregate usage stats across tenants"
+    },
+    {
+      "method": "POST",
+      "path": "/sellers/me/payment-orders/subscription",
+      "module": "payment",
+      "auth": "JWT",
+      "description": "Create subscription upgrade order"
+    },
+    {
+      "method": "POST",
+      "path": "/sellers/me/payment-orders/response-pack",
+      "module": "payment",
+      "auth": "JWT",
+      "description": "Create response pack order"
+    },
+    {
+      "method": "GET",
+      "path": "/sellers/me/payment-orders/:id/status",
+      "module": "payment",
+      "auth": "JWT",
+      "description": "Poll order status"
+    },
+    {
+      "method": "DELETE",
+      "path": "/sellers/me/payment-orders/:id",
+      "module": "payment",
+      "auth": "JWT",
+      "description": "Cancel pending order"
+    },
+    {
+      "method": "GET",
+      "path": "/sellers/me/payment-orders",
+      "module": "payment",
+      "auth": "JWT",
+      "description": "Order history (paginated)"
+    },
+    {
+      "method": "POST",
+      "path": "/webhook/sepay",
+      "module": "webhook",
+      "auth": "Apikey header",
+      "description": "SePay bank transfer webhook (excluded from /api/v1 prefix)"
+    }
+  ],
+  "features": {
+    "global_modules": {
+      "bot_channel_binding": {
+        "status": "complete",
+          "last_changed_sha": "04f2fc0",
+          "description": "Full bot-channel-knowledge binding with 15 business rules",
+          "spec_file": "docs/bot-channel-spec.md",
+          "plan_dir": "plans/260508-1037-bot-channel-binding/",
+          "phases_completed": 8,
+          "phases_total": 8
+        },
+        "billing_management": {
+          "status": "complete",
+          "description": "Plan CRUD, subscription, usage tracking, SePay payment"
+        },
+        "chat_crm": {
+          "status": "complete",
+          "description": "Real-time chat with WebSocket, human takeover, bot handover"
+        },
+        "knowledge_rag": {
+          "status": "complete",
+          "description": "Document upload, chunking, vector search, agent-scoped RAG"
+        },
+        "channel_integration": {
+          "status": "complete",
+          "description": "Facebook Messenger + Zalo OA OAuth, webhook handling"
+        },
+        "dashboard_analytics": {
+          "status": "in_progress",
+          "last_changed_sha": "working_tree",
+          "description": "Dashboard charts: daily conversations (Area), customer growth (Bar), channel distribution (Pie), bot performance (Horizontal Bar). BE stats API with Prisma groupBy. FE uses Recharts 3.8.",
+          "components": [
+            "BE: GET /tenants/:id/stats endpoint",
+            "FE: DashboardCharts component (4 charts)",
+            "FE: Redesigned stat cards (Bot AI, Kênh, Tài liệu, Khách hàng)"
+          ]
+        },
+        "landing_page": {
+          "status": "complete",
+          "last_changed_sha": "0272d0f",
+          "description": "High-performance landing page with interactive chat mockup, snappy dark mode, and responsive layout"
+        },
+      "backend_phases": {
+        "phase_01_project_init": {
+          "status": "done",
+          "last_changed_sha": "750efb7"
+        },
+        "phase_02_db_auth": {
+          "status": "done",
+          "last_changed_sha": "b96af61"
+        },
+        "phase_03_tenant_agent_crud": {
+          "status": "done",
+          "last_changed_sha": "421a13d"
+        },
+        "phase_04_llm_integration": {
+          "status": "done",
+          "last_changed_sha": "cc2d9ff"
+        },
+        "phase_05_agent_pipeline": {
+          "status": "done",
+          "last_changed_sha": "3560291"
+        },
+        "phase_06_conversation_memory": {
+          "status": "done",
+          "last_changed_sha": "3560291"
+        },
+        "phase_07_knowledge_upload": {
+          "status": "done",
+          "last_changed_sha": "b2c1504"
+        },
+        "phase_08_knowledge_rag": {
+          "status": "done",
+          "last_changed_sha": "dfe8d15"
+        },
+        "phase_09_facebook_messenger": {
+          "status": "done",
+          "last_changed_sha": "2aef0b1",
+          "notes": "Refactored to OAuth flow (no manual token). Multi-page selection, token encryption, webhook unsubscribe on disconnect, rate limiting."
+        },
+        "phase_06E_websocket_realtime": {
+          "status": "done",
+          "last_changed_sha": "a0f6ab0"
+        },
+        "phase_10_selfserve_polish": {
+          "status": "done"
+        },
+        "phase_11_testing": {
+          "status": "done"
+        },
+        "zalo_oa_channel": {
+          "status": "done",
+          "last_changed_sha": "2aef0b1",
+          "notes": "Full Zalo OA integration: OAuth, token refresh (1h TTL), webhook (HMAC), message routing, ZaloAdapter for send/reply."
+        },
+        "facebook_oauth_refactor": {
+          "status": "done",
+          "last_changed_sha": "2aef0b1",
+          "notes": "Replaced manual token input with OAuth flow. HMAC-signed state, multi-page selection, encrypted token storage."
+        },
+        "security_enhancements": {
+          "status": "done",
+          "last_changed_sha": "2aef0b1",
+          "notes": "AES-256-GCM token encryption (crypto.util.ts), HMAC-SHA256 OAuth state, rate limiting (@Throttle 5/min on OAuth endpoints), token revocation on disconnect."
+        },
+        "billing_plans_system": {
+          "status": "done",
+          "notes": "4-tier plans (Free/Basic/Standard/Premium), QuotaService (auto-assign, limit checks, monthly reset cron), branding injection (Free watermark), downgrade LIFO deactivation, expiry cron (6h), REST APIs, FE Usage+Billing UI."
+        },
+        "payment_integration": {
+          "status": "done",
+          "last_changed_sha": "d73438d",
+          "notes": "VietQR+SePay: PaymentOrder model, webhook auto-detect, QR code modal, polling, subscription activate, response pack purchase, transaction history, expiry reminder (cron 6h), WebSocket notifications, FE ExpiryWarningBanner."
+        },
+        "tenant_quota_enforcement": {
+          "status": "done",
+          "notes": "maxTenants field in Plan model, checkTenantLimit() in QuotaService, tenants usage in getUsageStats(), TenantSwitcher dropdown with quota display + inline create + upgrade CTA."
+        }
+      },
+      "frontend_sprints": [
+        "Authentication (Hoàn thành - Sprint 1)",
+        "Tenant Onboarding (Hoàn thành - Sprint 2)",
+        "Agent CRUD UI (Hoàn thành - Sprint 3)",
+        "Dark/Light/System Theme Mode (Hoàn thành - Sprint 3)",
+        "Knowledge Upload UI — Drag & Drop, Document Table, Status Badges (Hoàn thành - Sprint 4)",
+        "Playground — Chat UI test Bot AI với RAG pipeline thực tế (Hoàn thành - Sprint 4)",
+        "Live Chat CRM UI — layout + data binding + human reply (Sprint 5)",
+        "Handover to Bot — button in CustomerPanel (Sprint 5)",
+        "Channel Management — Facebook OAuth + Zalo OA OAuth, setup guide, webhook URL copy (Sprint 6)",
+        "Facebook Multi-page Selection — interactive card UI for choosing FB Page when user manages multiple pages (Sprint 6)",
+        "Zalo OA Channel Section — OAuth connect/disconnect, status display (Sprint 6)",
+        "Real-time CRM — Socket.IO WebSocket, useSocket hook, reconnect resync, dedup (Sprint 5)",
+        "🎉 BE Module Complete — All 11 phases done",
+        "Deployment Guide — Render (BE) + Vercel (FE) free tier (Sprint 5)",
+        "Billing Usage UI — Usage page (progress bars), Billing page (plan comparison), QuotaWarningBanner, UpgradeModal (Sprint 7)"
+      ],
+      "landing_features": [
+        {
+          "name": "Interactive Chat Mockup",
+          "status": "completed",
+          "description": "Automated typing and cycling chat scenarios to demonstrate AI capabilities.",
+          "last_verified_sha": "0272d0f"
+        },
+        {
+          "name": "Snappy Dark Mode",
+          "status": "completed",
+          "description": "Instant theme switching using transition suppression hack and localStorage persistence.",
+          "last_verified_sha": "0272d0f"
+        },
+        {
+          "name": "Feature Grid",
+          "status": "completed",
+          "description": "Uniform height cards using CSS grid auto-rows-fr.",
+          "last_verified_sha": "0272d0f"
+        }
       ]
     }
   },
-
-  "business_rules": {
-    "bot_channel": {
-      "source": "docs/bot-channel-spec.md",
-      "rules_count": 15,
-      "key_rules": [
-        "1 channel = 1 bot only",
-        "1 bot = N channels",
-        "Each tenant has 1 undeletable default bot",
-        "Delete bot → channels unlinked (agentId=null), knowledge preserved",
-        "New channel → no auto-assign bot",
-        "Reassign bot → confirm dialog",
-        "Bot inactive + channel → no auto-reply",
-        "Knowledge belongs to tenant, not bot (N:M via AgentKnowledge)",
-        "Default bot counts toward quota"
-      ]
-    }
-  },
-
-  "coding_conventions": {
-    "language": "Vietnamese comments for business logic, English for technical",
-    "api_pattern": "NestJS Controller → Service → Prisma",
-    "frontend_pattern": "Zustand stores + service layer + page components",
-    "error_handling": "Axios error typed as { response?: { data?: { message?: string } } }",
-    "auth": "Supabase Bearer token → SupabaseAuthGuard → request.user = { authId, email, sellerId }"
-  }
+  "business_rules": [
+    "1 channel = 1 bot only",
+    "1 bot = N channels",
+    "Each tenant has 1 undeletable default bot",
+    "Delete bot → channels unlinked (agentId=null), knowledge preserved",
+    "New channel → no auto-assign bot",
+    "Reassign bot → confirm dialog",
+    "Bot inactive + channel → no auto-reply",
+    "Knowledge belongs to tenant, not bot (N:M via AgentKnowledge)",
+    "Default bot counts toward quota",
+    "Mỗi Tenant có Slug đơn nhất. FE tự convert name → slug khi gọi API.",
+    "FE dùng Zustand selectors (không destructure) để layout re-render ổn định với SSR.",
+    "Route Dashboard bảo vệ bằng middleware.ts gọi createServerClient.",
+    "fetchTenants() phải được gọi ở dashboard/layout.tsx (không chỉ ở page con).",
+    "AgentFormModal dùng key-based remount pattern thay vì useEffect+setState.",
+    "ThemeProvider bọc ở root layout với suppressHydrationWarning trên <html>.",
+    "Tailwind CSS v4 dark mode: @custom-variant dark.",
+    "Platform controls AI model — user chỉ cấu hình name/persona/greeting.",
+    "Knowledge upload: max 10MB, .txt/.pdf only, multipart/form-data qua axios.",
+    "Zustand store dùng loadedForTenantId pattern để gate loading.",
+    "CRM /dashboard/chat route dùng full-height layout (overflow-hidden).",
+    "Handover to Bot: chỉ hiện nút khi status OPEN/SNOOZED, optimistic update store.",
+    "WebSocket dedup: cả optimistic update và WS handler đều check message.id.",
+    "Channel page: parse URL query params (?facebook=connected, ?zalo=connected, ?facebook=select_page&session_id=xxx)",
+    "Facebook multi-page: pendingSessionId prop → component loads pages → user selects → onRefresh clears session to prevent remount bug",
+    "Channel disconnect: confirm dialog before disconnecting, toast notification on success",
+    "Billing: Plan interface fields must match Prisma schema exactly (price not priceMonthly, hasBrandingWatermark not hasBranding)",
+    "Billing: QuotaWarningBanner shows at >80% AI responses (amber), 100% (red), dismissable 24h via localStorage",
+    "Billing: UsageProgressBar handles limit=-1 (unlimited) and limit=0 edge cases",
+    "Billing: UpgradeModal is MVP — Zalo + Email contact only, no payment integration yet",
+    "Tao Tenant -> auto-create OWNER TenantMember + default Agent (transaction)",
+    "Slug unique, lowercase+numbers+hyphens only",
+    "RBAC: OWNER > ADMIN > AGENT",
+    "TenantGuard checks isActive on TenantMember",
+    "Chat: auto-create Customer if customerId not provided",
+    "Chat: history context uses LAST 20 messages",
+    "Chat: HUMAN_AGENT messages map to 'assistant' role for LLM context",
+    "Quota: check messageUsed < messageQuota before LLM call, increment after success",
+    "Knowledge: max 10MB, .txt/.pdf only, recursive split 1500 chars/200 overlap",
+    "RAG: soft-lock prompt — prioritize knowledge but allow general answers",
+    "RAG: similarity threshold 0.3, top-K=5, graceful fallback on search failure",
+    "Conversation status OPEN = nhân viên đang xử lý, bot không reply",
+    "Human agent reply → auto status OPEN + forward to Facebook/Zalo",
+    "Handover-to-bot → status BOT_HANDLING + SYSTEM audit message",
+    "FB webhook: respond 200 trong 5s, xử lý async",
+    "Zalo webhook: HMAC-SHA256 verify (OA Secret Key), respond 200 async",
+    "Message dedup: in-memory Map (TTL 5 phút) — cần Redis khi multi-instance",
+    "Webhook HMAC: timingSafeEqual (anti timing attack)",
+    "FB Graph API: Bearer auth header (không dùng query param)",
+    "FB OAuth: HMAC-signed state (tenantId.timestamp.sig16), TTL 10 phút",
+    "FB Multi-page: 1 page → auto-connect, N pages → pending session (in-memory, TTL 10 phút) → FE chọn",
+    "Token encryption: AES-256-GCM, backward-compatible (plaintext nếu KEY chưa set)",
+    "Token revocation: FB disconnect → DELETE /{pageId}/subscribed_apps (non-blocking) + clear tokens",
+    "Zalo token refresh: access_token 1h TTL, auto-refresh 5 phút trước khi hết, background job mỗi 15 phút",
+    "Rate limiting: OAuth endpoints 5/min, global 10/min + 100/hour",
+    "Billing: 4 plans seeded via prisma/seed-plans.ts (idempotent upsert by slug)",
+    "Billing: SellerSubscription 1:1 per seller (sellerId @unique) — UPDATE not CREATE on plan change",
+    "Billing: Auto-assign Free plan on first getSubscription() for new sellers",
+    "Billing: QuotaService enforces AI response limits (check before LLM, increment after success)",
+    "Billing: Monthly reset cron (1st of month 00:00) resets aiResponsesUsed to 0",
+    "Billing: Branding watermark appended for Free plan via injectBranding() (excluded from testMessage/Playground)",
+    "Billing: Downgrade uses LIFO — newest resources deactivated first, OWNER never deactivated",
+    "Billing: Knowledge over-limit is soft (log warning only, no deactivation)",
+    "Billing: ExpiryCheck cron (every 6h) — expired ACTIVE subscriptions reverted to Free plan",
+    "Payment: Only 1 PENDING order per seller at any time (ensureNoPendingOrder)",
+    "Payment: orderCode = 6 random digits, transferContent = PREFIX + orderCode",
+    "Payment: SePay webhook auth = 'Apikey {key}' header, timing-safe comparison",
+    "Payment: Webhook DTO uses @Allow() decorators (bypass Global ValidationPipe whitelist)",
+    "Payment: completeOrder() dedup by sepayTransId (Prisma @unique)",
+    "Payment: Response Pack purchase → bonusResponsesRemaining += packSize (atomic increment)",
+    "Payment: reminderSentAt reset to null on both plan downgrade and subscription renewal",
+    "Notification: WebSocket rooms = auth:{supabaseUserId}, Supabase JWT handshake verification",
+    "Tenant limit: Plan.maxTenants enforced by QuotaService.checkTenantLimit() before tenant creation",
+    "Tenant limit: Usage API includes tenants.used/tenants.limit for FE quota display",
+    "Tenant limit: TenantModule imports PlanModule for QuotaService DI",
+    "Bot responses are counted for pricing, staff messages are not.",
+    "Free trial requires no credit card."
+  ],
+  "coding_conventions": [
+    "language: Vietnamese comments for business logic, English for technical",
+    "api_pattern: NestJS Controller → Service → Prisma",
+    "frontend_pattern: Zustand stores + service layer + page components",
+    "error_handling: Axios error typed as { response?: { data?: { message?: string } } }",
+    "auth: Supabase Bearer token → SupabaseAuthGuard → request.user = { authId, email, sellerId }",
+    "Import paths use .js extension (ESM compat)",
+    "Controller user type: inline { sellerId: string }",
+    "Services receive sellerId as first param",
+    "Nested resources: /tenants/:tenantId/agents",
+    "DTOs use class-validator decorators + @nestjs/swagger ApiProperty",
+    "PrismaService is @Global() via CommonModule",
+    "LlmService is @Global() via CommonModule > LlmModule",
+    "LLM calls must be wrapped in try/catch with Logger",
+    "pgvector operations use $queryRawUnsafe with parameterized queries",
+    "Fire-and-forget pattern for sendHumanReplyToChannel (.catch log, no await block)",
+    "WS events: EventEmitter2 decoupled (Service emits → Gateway broadcasts to Socket.IO rooms)",
+    "WS room naming: tenant:{tenantId} (conversations) + auth:{authId} (billing notifications)",
+    "API prefix: /api/v1 globally, exclude webhook/* and channels/*/callback",
+    "Response format: ResponseInterceptor wraps { success: true, data } globally",
+    "Error format: GlobalExceptionFilter → { success: false, error: { statusCode, message, timestamp, path } }",
+    "Token encrypt/decrypt: encryptToken()/decryptToken() from src/common/crypto.util.ts — all token read/write must use these",
+    "OAuth state: createSignedState()/verifySignedState() from src/common/crypto.util.ts",
+    "Pending page sessions: in-memory Map with 10min TTL + 60s cleanup interval",
+    "Graceful shutdown: app.enableShutdownHooks() in main.ts",
+    "Dockerfile: non-root user (appuser), healthcheck, multi-stage build",
+    "useEffect+setState bị cấm — thay bằng key remount hoặc useSyncExternalStore.",
+    "Zustand store: dùng selector riêng lẻ (không destructure).",
+    "Service layer pattern: src/lib/services/[feature].service.ts.",
+    "Store layer pattern: src/store/[feature]-store.ts.",
+    "Component folder pattern: src/components/[feature]/[component].tsx.",
+    "CRM types: chat.service.ts là source of truth, types.ts re-export + UI helpers.",
+    "Store silent refresh: force=true giữ data cũ visible.",
+    "Store optimistic update: updateConversationLocally() thay vì force-fetch.",
+    "Socket hook pattern: src/hooks/useSocket.ts — returns { status, socket, reconnectCount }.",
+    "WS event handlers: payload typed as unknown + try-catch boundary + early return on invalid.",
+    "Stale closure prevention: useRef cho selectedConvId trong socket callbacks.",
+    "Axios auto-unwrap: response interceptor unwrap { success, data } → service layer vẫn dùng response.data.",
+    "Axios baseURL: /api/v1 prefix — webhook URL dùng raw base (không qua axios).",
+    "Channel section components: separate files per channel (FacebookChannelSection.tsx, ZaloChannelSection.tsx).",
+    "OAuth callback handling: page.tsx parses URL params → passes state to channel sections → sections manage own UI state.",
+    "Billing components: src/components/billing/*.tsx (UsageProgressBar, PlanComparisonTable, UpgradeModal, QuotaWarningBanner).",
+    "Billing pages: /dashboard/usage (progress cards + cycle info), /dashboard/billing (plan hero + comparison table).",
+    "Dark Mode uses .dark class on <html> root",
+    "Theme toggle uses disable-transitions class to prevent lag",
+    "Standardized surface color tokens (50-950) in global.css"
+  ]
 }

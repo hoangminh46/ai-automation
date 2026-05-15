@@ -1,118 +1,93 @@
-# Plan: Billing Plans System (No Payment)
+# Plan: Billing Plans System
+
 Created: 2026-05-06
-Status: 🟡 In Progress
+Status: Complete
 
 ## Overview
-Xây dựng hệ thống quản lý gói cước (Plans) và tracking usage cho AI Chatbot SaaS.
-- **Plan per-Seller**: 1 user = 1 subscription, tất cả tenants (shops) dùng chung quota.
-- **Data-driven**: Plans lưu DB → CMS quản lý sau.
-- **Sprint này KHÔNG bao gồm payment gateway** — upgrade = manual liên hệ.
 
-## Business Rules Đã Chốt
+Implemented the billing plan and usage tracking foundation for the AI Chatbot SaaS.
 
-### 1. Plan per-Seller (không per-Tenant)
-- Subscription gắn với Seller (user), không gắn Tenant (shop)
-- Quota tổng cộng across all tenants: 3 bots = 3 bots TỔNG cho tất cả shops
-- AI responses quota dùng chung tất cả shops
+- Plan per seller: 1 user = 1 subscription shared across all tenants.
+- Data-driven plans stored in DB for future CMS management.
+- This plan covers quota, usage, downgrade, and billing UI foundations.
+- Online payment was completed in the follow-up plan `260507-1000-payment-vietqr-sepay`.
 
-### 2. Hết responses → Block + Response Pack
-- Bot ngừng trả lời (fallback message)
-- Nhân viên vẫn chat tay bình thường (human reply không tốn AI response)
-- Seller mua thêm Response Pack (VD: 500 responses = 99k) để tiếp tục
-- Response Pack cộng dồn vào `bonusResponsesRemaining`
+## Business Rules
 
-### 3. Plan hết hạn → Auto-downgrade Free
-- Status → EXPIRED, auto-tạo subscription Free mới
-- Data KHÔNG bị xóa
-- Tài nguyên vượt quota bị deactivate (xem rule 4)
+### 1. Plan per Seller
+- Subscription belongs to Seller, not Tenant.
+- Quotas are aggregated across all tenants.
+- AI response quota is shared across all shops.
 
-### 4. Hard limit bots/team, Soft limit knowledge
-- **Bots**: Deactivate bots vượt quota (isActive=false). Seller chọn bots giữ lại.
-- **Team Members**: Deactivate members vượt quota (isActive=false).
-- **Knowledge**: Giữ nguyên tất cả files + RAG vẫn hoạt động. Chỉ chặn upload mới.
-- Data KHÔNG BAO GIỜ bị xóa.
+### 2. Out of Responses -> Block + Response Pack
+- Bot stops auto-replying when quota is exhausted.
+- Human replies still work normally.
+- Seller can buy response packs to continue.
+- Response packs accumulate in `bonusResponsesRemaining`.
+
+### 3. Expired Plan -> Auto-downgrade to Free
+- Status becomes `EXPIRED`, then seller falls back to Free.
+- Data is not deleted.
+- Resources above quota are deactivated based on policy.
+
+### 4. Hard Limit Bots/Team, Soft Limit Knowledge
+- Bots above quota are deactivated.
+- Team members above quota are deactivated.
+- Knowledge files are preserved; only new uploads are blocked when over limit.
 
 ## Core Entities
 
-### Plan (Gói cước — lưu DB, CMS-ready)
-```
-plans:
-  id                    UUID PK
-  slug                  String UNIQUE (free, basic, standard, premium)
-  name                  String
-  price                 Int (VND/tháng, 0 cho free — giá base monthly)
-  maxAiResponses        Int (per month)
-  maxBots               Int
-  maxTeamMembers        Int (-1 = unlimited)
-  maxKnowledgeFiles     Int
-  maxKnowledgeSizeMb    Int
-  hasBrandingWatermark  Boolean
-  displayOrder          Int
-  isActive              Boolean
-  createdAt, updatedAt
-```
+### Plan
+`plans(id, slug, name, price, maxAiResponses, maxBots, maxTeamMembers, maxKnowledgeFiles, maxKnowledgeSizeMb, hasBrandingWatermark, displayOrder, isActive, createdAt, updatedAt)`
 
-### SellerSubscription (1:1 với Seller)
-```
-seller_subscriptions:
-  id                        UUID PK
-  sellerId                  String FK → sellers (UNIQUE)
-  planId                    String FK → plans
-  billingPeriod             MONTHLY | QUARTERLY | SEMI_ANNUAL | ANNUAL
-  status                    ACTIVE | EXPIRED | CANCELLED
-  aiResponsesUsed           Int (reset monthly)
-  bonusResponsesRemaining   Int (từ response packs, không reset)
-  currentPeriodStart        DateTime
-  currentPeriodEnd          DateTime (null cho Free — không hết hạn)
-  createdAt, updatedAt
-```
+### SellerSubscription
+`seller_subscriptions(id, sellerId, planId, billingPeriod, status, aiResponsesUsed, bonusResponsesRemaining, currentPeriodStart, currentPeriodEnd, createdAt, updatedAt)`
 
-### ResponsePackPurchase (Lịch sử mua gói lẻ)
-```
-response_pack_purchases:
-  id            UUID PK
-  sellerId      String FK → sellers
-  amount        Int (số responses mua)
-  price         Int (VND)
-  purchasedAt   DateTime
-```
+### ResponsePackPurchase
+`response_pack_purchases(id, sellerId, amount, price, purchasedAt)`
 
 ## Quota Check Logic
-```
+
+```text
 totalAvailable = plan.maxAiResponses - subscription.aiResponsesUsed + subscription.bonusResponsesRemaining
 
-Khi AI response:
-  if totalAvailable <= 0 → BLOCK
-  if aiResponsesUsed < plan.maxAiResponses → increment aiResponsesUsed
-  else → decrement bonusResponsesRemaining
+When AI replies:
+  if totalAvailable <= 0 -> BLOCK
+  if aiResponsesUsed < plan.maxAiResponses -> increment aiResponsesUsed
+  else -> decrement bonusResponsesRemaining
 
-Monthly reset: chỉ reset aiResponsesUsed, KHÔNG reset bonusResponsesRemaining
+Monthly reset resets only aiResponsesUsed, not bonusResponsesRemaining
 ```
 
 ## Phases
 
 | Phase | Name | Status | Progress | Depends On |
 |-------|------|--------|----------|------------|
-| 01 | DB Schema, Plan Model & Seed | ✅ Done | 100% | - |
-| 02 | QuotaService Core (AI Responses) | ✅ Done | 100% | 01 |
-| 03 | Resource Limits & Monthly Reset | ✅ Done | 100% | 02 |
-| 04 | Branding Injection & REST APIs | ✅ Done | 100% | 02 |
-| 05 | Downgrade & Expiry Logic | ✅ Done | 100% | 03, 04 |
-| 06 | FE Usage & Billing UI | ✅ Done | 100% | 04 |
+| 01 | DB Schema, Plan Model & Seed | Complete | 100% | - |
+| 02 | QuotaService Core (AI Responses) | Complete | 100% | 01 |
+| 03 | Resource Limits & Monthly Reset | Complete | 100% | 02 |
+| 04 | Branding Injection & REST APIs | Complete | 100% | 02 |
+| 05 | Downgrade & Expiry Logic | Complete | 100% | 03, 04 |
+| 06 | FE Usage & Billing UI | Complete | 100% | 04 |
 
 ## Acceptance Criteria
-- [x] Seller mới auto nhận Free plan
-- [x] AI response bị block khi hết quota (Free: 50)
-- [ ] Mua response pack → bonus cộng dồn → bot hoạt động tiếp (chưa có Payment flow)
-- [x] Branding watermark cuối AI response gói Free (không có ở Playground)
-- [x] Tạo bot/upload vượt limit → bị block (aggregate across all tenants)
-- [x] Plan hết hạn → auto-downgrade Free + deactivate bots/team vượt quota
-- [x] Knowledge giữ nguyên khi downgrade
-- [x] Monthly reset aiResponsesUsed, giữ bonusResponsesRemaining
-- [x] FE: Usage dashboard + Plan comparison + Warning banners
+
+- [x] New seller auto-gets Free plan
+- [x] AI responses are blocked when quota is exhausted
+- [x] Response pack purchase increases bonus quota and restores bot operation
+- [x] Free plan branding watermark is appended to AI replies
+- [x] Bot/upload creation above quota is blocked across all tenants
+- [x] Expired paid plan auto-downgrades to Free and deactivates excess resources
+- [x] Knowledge is preserved on downgrade
+- [x] Monthly reset keeps `bonusResponsesRemaining`
+- [x] Frontend includes usage dashboard, comparison table, and warning banners
+
+## Notes
+
+- Synced with `.brain/brain.json`: `billing_management.status = complete`.
+- Payment, VietQR, SePay webhook, transaction history, and expiry reminder were completed in the next dedicated payment plan.
 
 ## Quick Commands
-- Start: `/code phase-01`
-- Progress: `/next`
-- UI: `/visualize`
-- Save: `/save-brain`
+
+- Review progress: `/next`
+- Save context: `/save-brain`
